@@ -162,13 +162,13 @@ class _RoleSwitch extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon,
-                    size: 18, color: on ? Colors.white : AppColors.brand),
+                    size: 18, color: on ? AppColors.brandAccent : AppColors.brand),
                 const SizedBox(width: 8),
                 Text(
                   text,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: on ? Colors.white : AppColors.brand,
+                    color: on ? AppColors.brandAccent : AppColors.brand,
                   ),
                 ),
               ],
