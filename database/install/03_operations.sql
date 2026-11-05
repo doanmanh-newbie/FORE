@@ -139,29 +139,70 @@ begin
   return v_id;
 end $$;
 
+-- FIX 2: giới hạn qty (max_line_qty từ app_settings) + tổng bill dùng bigint; FIX 5: FOR SHARE trên ca
 create or replace function add_bill_line(p_bill uuid, p_size uuid, p_qty integer) returns uuid
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_status text; v_price integer; v_id uuid;
+declare
+  v_me        uuid    := _require_staff();
+  v_status    text;
+  v_shift     uuid;
+  v_price     integer;
+  v_id        uuid;
+  v_max_qty   integer;
+  v_cur_total bigint;
 begin
-  select status into v_status from bills where id = p_bill and shop_id = app_shop_id() for update;
+  select b.status, b.shift_id into v_status, v_shift
+    from bills b where b.id = p_bill and b.shop_id = app_shop_id() for update;
   if v_status is distinct from 'open' then raise exception 'BILL_NOT_OPEN'; end if;
+
+  perform 1 from shifts where id = v_shift and status = 'open' for share;
+  if not found then raise exception 'NO_OPEN_SHIFT'; end if;
+
+  if p_qty is null or p_qty <= 0 then raise exception 'QTY_INVALID'; end if;
+  v_max_qty := _setting('max_line_qty', 99);
+  if p_qty > v_max_qty then raise exception 'QTY_TOO_LARGE'; end if;
+
   select price into v_price from menu_sizes where id = p_size and active and shop_id = app_shop_id();
   if v_price is null then raise exception 'ITEM_UNAVAILABLE'; end if;
+
+  select coalesce(sum(bl.qty::bigint * bl.unit_price), 0)
+    into v_cur_total
+    from bill_lines bl where bl.bill_id = p_bill and bl.voided_at is null;
+  if v_cur_total + (p_qty::bigint * v_price) > 2000000000 then
+    raise exception 'BILL_TOTAL_OVERFLOW';
+  end if;
+
   insert into bill_lines (bill_id, size_id, qty, unit_price, created_by)
   values (p_bill, p_size, p_qty, v_price, v_me) returning id into v_id;
   return v_id;
 end $$;
 
+-- FIX 3: trả LINE_ALREADY_VOIDED khi dòng đã bị bỏ; FIX 5: FOR SHARE trên ca
 create or replace function void_bill_line(p_line uuid, p_reason text) returns void
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_bill uuid; v_status text;
+declare
+  v_me     uuid := _require_staff();
+  v_bill   uuid;
+  v_shift  uuid;
+  v_status text;
+  v_voided timestamptz;
 begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
-  select bill_id into v_bill from bill_lines where id = p_line and shop_id = app_shop_id();
-  select status into v_status from bills where id = v_bill and shop_id = app_shop_id() for update;
+
+  select bl.bill_id, bl.voided_at into v_bill, v_voided
+    from bill_lines bl where bl.id = p_line and bl.shop_id = app_shop_id();
+  if not found then raise exception 'NOT_FOUND'; end if;
+  if v_voided is not null then raise exception 'LINE_ALREADY_VOIDED'; end if;
+
+  select b.status, b.shift_id into v_status, v_shift
+    from bills b where b.id = v_bill and b.shop_id = app_shop_id() for update;
   if v_status is distinct from 'open' then raise exception 'BILL_NOT_OPEN'; end if;
+
+  perform 1 from shifts where id = v_shift and status = 'open' for share;
+  if not found then raise exception 'NO_OPEN_SHIFT'; end if;
+
   update bill_lines set voided_at = now(), voided_by = v_me, void_reason = p_reason
-   where id = p_line and voided_at is null;
+   where id = p_line;
   perform _audit('void_line', 'bill_lines', p_line, jsonb_build_object('reason', p_reason, 'bill', v_bill));
 end $$;
 
@@ -179,10 +220,15 @@ begin
   perform _audit('discount', 'bills', p_bill, jsonb_build_object('discount', p_discount, 'reason', p_reason));
 end $$;
 
--- Thanh toán. Cập nhật có điều kiện: nếu máy khác đã thanh toán thì báo BILL_NOT_OPEN.
+-- Thanh toán. FIX 1: kiểm tra discount <= subtotal sau khi có thể đã bỏ dòng; dùng bigint tránh tràn số.
 create or replace function pay_bill(p_bill uuid, p_method text default 'cash') returns integer
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_bill bills%rowtype; v_sub integer; v_total integer; v_n integer;
+declare
+  v_me    uuid := _require_staff();
+  v_bill  bills%rowtype;
+  v_sub   bigint;
+  v_total bigint;
+  v_n     integer;
 begin
   if p_method is null or p_method not in ('cash', 'transfer') then
     raise exception 'PAYMENT_METHOD_INVALID';
@@ -190,24 +236,33 @@ begin
   select * into v_bill from bills where id = p_bill and shop_id = app_shop_id() for update;
   if not found or v_bill.status <> 'open' then raise exception 'BILL_NOT_OPEN'; end if;
 
-  select coalesce(sum(qty * unit_price), 0) into v_sub from bill_lines where bill_id = p_bill and voided_at is null;
+  select coalesce(sum(bl.qty::bigint * bl.unit_price), 0)
+    into v_sub
+    from bill_lines bl where bl.bill_id = p_bill and bl.voided_at is null;
   if v_sub = 0 then raise exception 'BILL_EMPTY'; end if;
+
+  -- FIX 1: giảm giá có thể lớn hơn tổng nếu nhân viên bỏ dòng sau khi set discount
+  if v_bill.discount > v_sub then raise exception 'DISCOUNT_INVALID'; end if;
   v_total := v_sub - v_bill.discount;
 
-  update bills set status = 'paid', paid_at = now(), paid_by = v_me, payment_method = p_method, total_amount = v_total
+  update bills
+     set status = 'paid', paid_at = now(), paid_by = v_me,
+         payment_method = p_method, total_amount = v_total::integer
    where id = p_bill and status = 'open';
   get diagnostics v_n = row_count;
   if v_n = 0 then raise exception 'BILL_NOT_OPEN'; end if;
 
   -- Ghi sổ kho: mỗi dòng bán x công thức tại THỜI ĐIỂM bán (đổi công thức sau này không làm lệch ca cũ)
   insert into stock_ledger (shift_id, ingredient_id, kind, qty_delta, ref_id, created_by)
-  select v_bill.shift_id, r.ingredient_id, 'sale', -sum(l.qty * r.qty)::integer, p_bill, v_me
-    from bill_lines l join recipe_lines r on r.size_id = l.size_id
-   where l.bill_id = p_bill and l.voided_at is null
+  select v_bill.shift_id, r.ingredient_id, 'sale',
+         (-sum(bl.qty::bigint * r.qty))::integer, p_bill, v_me
+    from bill_lines bl
+    join recipe_lines r on r.size_id = bl.size_id
+   where bl.bill_id = p_bill and bl.voided_at is null
    group by r.ingredient_id;
 
   perform _audit('pay', 'bills', p_bill, jsonb_build_object('total', v_total, 'method', p_method));
-  return v_total;
+  return v_total::integer;
 end $$;
 
 -- Hủy bill CHƯA thanh toán (cần lý do, ghi nhật ký)
@@ -258,11 +313,26 @@ begin
 end $$;
 
 -- ---------- Kho ----------
-create or replace function add_purchase(p_ingredient uuid, p_qty integer, p_late boolean default false, p_note text default null) returns uuid
+-- FIX 4: kiểm tra qty > 0 (QTY_INVALID); FIX 5: FOR SHARE trên ca chống ghi vào ca đã đóng
+create or replace function add_purchase(
+  p_ingredient uuid,
+  p_qty        integer,
+  p_late       boolean default false,
+  p_note       text    default null
+) returns uuid
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_shift uuid := _open_shift_id(); v_id uuid;
+declare
+  v_me    uuid := _require_staff();
+  v_shift uuid := _open_shift_id();
+  v_id    uuid;
 begin
-  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then raise exception 'NOT_FOUND'; end if;
+  if p_qty is null or p_qty <= 0 then raise exception 'QTY_INVALID'; end if;
+  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then
+    raise exception 'NOT_FOUND';
+  end if;
+  perform 1 from shifts where id = v_shift and status = 'open' for share;
+  if not found then raise exception 'NO_OPEN_SHIFT'; end if;
+
   insert into purchases (shift_id, ingredient_id, qty, is_late_entry, note, entered_by)
   values (v_shift, p_ingredient, p_qty, p_late, p_note, v_me) returning id into v_id;
   insert into stock_ledger (shift_id, ingredient_id, kind, qty_delta, ref_id, created_by)
@@ -271,11 +341,20 @@ begin
 end $$;
 
 -- Kiểm kê MÙ: nhân viên nhập số đo thực tế, hàm này không trả về số dự kiến.
+-- FIX 5: FOR SHARE trên ca chống ghi vào ca đã đóng
 create or replace function submit_stock_count(p_ingredient uuid, p_kind text, p_qty integer) returns uuid
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_shift uuid := _open_shift_id(); v_id uuid;
+declare
+  v_me    uuid := _require_staff();
+  v_shift uuid := _open_shift_id();
+  v_id    uuid;
 begin
-  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then raise exception 'NOT_FOUND'; end if;
+  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then
+    raise exception 'NOT_FOUND';
+  end if;
+  perform 1 from shifts where id = v_shift and status = 'open' for share;
+  if not found then raise exception 'NO_OPEN_SHIFT'; end if;
+
   insert into stock_counts (shift_id, ingredient_id, kind, counted_qty, counted_by)
   values (v_shift, p_ingredient, p_kind, p_qty, v_me) returning id into v_id;
   return v_id;
@@ -283,19 +362,37 @@ end $$;
 
 -- Hao hụt: phải CHỌN LOẠI trong bảng waste_types (+ ghi chú). Loại có requires_note thì bắt buộc ghi chú.
 -- Nguyên liệu tính theo đơn vị gốc (trân châu: gram KHÔ quy đổi).
-create or replace function add_waste(p_ingredient uuid, p_qty integer, p_type text, p_note text default null) returns uuid
+-- FIX 4: kiểm tra qty > 0 (QTY_INVALID); FIX 5: FOR SHARE trên ca chống ghi vào ca đã đóng
+create or replace function add_waste(
+  p_ingredient uuid,
+  p_qty        integer,
+  p_type       text,
+  p_note       text default null
+) returns uuid
 language plpgsql security definer set search_path = public as $$
-declare v_me uuid := _require_staff(); v_shift uuid := _open_shift_id(); v_id uuid; v_wt waste_types;
+declare
+  v_me    uuid := _require_staff();
+  v_shift uuid := _open_shift_id();
+  v_id    uuid;
+  v_wt    waste_types;
 begin
-  select * into v_wt from waste_types where code = p_type and active and shop_id = app_shop_id();
+  if p_qty is null or p_qty <= 0 then raise exception 'QTY_INVALID'; end if;
 
+  select * into v_wt from waste_types where code = p_type and active and shop_id = app_shop_id();
   if not found then raise exception 'WASTE_TYPE_INVALID'; end if;
   if v_wt.requires_note and char_length(btrim(coalesce(p_note, ''))) < 5 then
     raise exception 'NOTE_REQUIRED';
   end if;
-  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then raise exception 'NOT_FOUND'; end if;
+  if not exists (select 1 from ingredients where id = p_ingredient and shop_id = app_shop_id()) then
+    raise exception 'NOT_FOUND';
+  end if;
+
+  perform 1 from shifts where id = v_shift and status = 'open' for share;
+  if not found then raise exception 'NO_OPEN_SHIFT'; end if;
+
   insert into waste_logs (shift_id, ingredient_id, qty, reason_type, reason, entered_by)
-  values (v_shift, p_ingredient, p_qty, p_type, coalesce(nullif(btrim(p_note), ''), v_wt.label_vi), v_me)
+  values (v_shift, p_ingredient, p_qty, p_type,
+          coalesce(nullif(btrim(p_note), ''), v_wt.label_vi), v_me)
   returning id into v_id;
   insert into stock_ledger (shift_id, ingredient_id, kind, qty_delta, ref_id, created_by)
   values (v_shift, p_ingredient, 'waste', -p_qty, v_id, v_me);

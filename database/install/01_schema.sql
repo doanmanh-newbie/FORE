@@ -288,7 +288,8 @@ begin
     (p_shop, 'recount_flag_after',    2, 'Một nguyên liệu bị đếm lại quá số lần này trong 1 ca thì đưa vào danh sách cần chú ý'),
     (p_shop, 'streak_shifts',         3, 'Số ca LIÊN TIẾP lệch cùng chiều (vàng/đỏ) thì gắn cờ xu hướng trong shift_report (tối thiểu 2)'),
     (p_shop, 'pin_max_attempts',      3, 'Số lần nhập sai PIN chủ liên tiếp thì khóa'),
-    (p_shop, 'pin_lock_minutes',     15, 'Số phút khóa PIN sau khi sai quá số lần')
+    (p_shop, 'pin_lock_minutes',     15, 'Số phút khóa PIN sau khi sai quá số lần'),
+    (p_shop, 'max_line_qty',         99, 'Số lượng tối đa một dòng bill (mặc định 99); tránh gõ nhầm làm tràn tổng')
   on conflict do nothing;
   insert into waste_types (shop_id, code, label_vi, requires_note, sort_order) values
     (p_shop, 'expired',    'Đổ bỏ (quá giờ/hết hạn)', false, 1),
