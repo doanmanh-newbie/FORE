@@ -57,13 +57,17 @@ class StatusChip extends StatelessWidget {
                 children: [
                   Icon(_icon, size: compact ? 14 : 16, color: _foreground),
                   const SizedBox(width: 5),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: _foreground,
-                      fontSize: compact ? 11 : 12,
-                      fontWeight: FontWeight.w700,
-                      height: 1.1,
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _foreground,
+                        fontSize: compact ? 11 : 12,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
                     ),
                   ),
                 ],

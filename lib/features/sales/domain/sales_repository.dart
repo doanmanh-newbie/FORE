@@ -12,9 +12,9 @@ abstract interface class SalesRepository {
 
   /// Mở bill mới. Ăn tại quán cần `tableId`; mang đi thì để `null`. Trả mã bill.
   Future<String> openBill(
-      {String? tableId, required BillType type, int? guests});
+      {String? tableId, required BillType type, int? guests, String? requestId});
 
-  Future<void> addLine(String billId, String sizeId, int qty);
+  Future<void> addLine(String billId, String sizeId, int qty, {String? requestId});
 
   Future<void> voidLine(String lineId, String reason);
 
@@ -23,7 +23,7 @@ abstract interface class SalesRepository {
   Future<void> cancelOpenBill(String billId, String reason);
 
   /// Thu tiền và chốt bill. Trả số tiền đã thu.
-  Future<int> pay(String billId, PaymentMethod method);
+  Future<int> pay(String billId, PaymentMethod method, {String? requestId});
 
   Future<void> markPrepDone(String billId);
 }

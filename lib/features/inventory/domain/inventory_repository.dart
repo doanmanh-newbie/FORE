@@ -11,6 +11,7 @@ abstract interface class InventoryRepository {
     required int qty,
     bool late = false,
     String? note,
+    String? requestId,
   });
 
   /// Ghi hao hụt có lý do để đối soát không tính nhầm.
@@ -19,6 +20,7 @@ abstract interface class InventoryRepository {
     required int qty,
     required String typeCode,
     String? note,
+    String? requestId,
   });
 }
 

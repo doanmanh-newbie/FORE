@@ -6,6 +6,7 @@ class CurrentShift {
     required this.openedAt,
     this.openedByMe = false,
     this.openBills = 0,
+    this.serverNow,
   });
 
   /// Đọc từ một dòng của hàm database `current_shift()`.
@@ -15,6 +16,9 @@ class CurrentShift {
         openedAt: DateTime.parse(map['opened_at'] as String),
         openedByMe: map['opened_by_me'] as bool? ?? false,
         openBills: (map['open_bills'] as num?)?.toInt() ?? 0,
+        serverNow: map['server_now'] != null
+            ? DateTime.tryParse(map['server_now'] as String)
+            : null,
       );
 
   final String id;
@@ -28,4 +32,7 @@ class CurrentShift {
 
   /// Số bill đang mở trong ca. Phải xử lý hết thì mới đóng ca được.
   final int openBills;
+
+  /// Thời gian máy chủ tại thời điểm truy vấn (để đồng bộ đồng hồ, tính thời gian chờ).
+  final DateTime? serverNow;
 }

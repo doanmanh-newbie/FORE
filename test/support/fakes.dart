@@ -186,13 +186,13 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
 
   @override
   Future<String> openBill(
-      {String? tableId, required BillType type, int? guests}) async {
+      {String? tableId, required BillType type, int? guests, String? requestId}) async {
     await enter('openBill', '${tableId ?? '-'}:${type.wire}:${guests ?? '-'}');
     return 'b${_billSeq++}';
   }
 
   @override
-  Future<void> addLine(String id, String sizeId, int qty) async {
+  Future<void> addLine(String id, String sizeId, int qty, {String? requestId}) async {
     await enter('addLine', '$id:$sizeId:$qty');
     lines.add(BillLine(
       id: 'l${_lineSeq++}',
@@ -237,7 +237,7 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
   }
 
   @override
-  Future<int> pay(String id, PaymentMethod method) async {
+  Future<int> pay(String id, PaymentMethod method, {String? requestId}) async {
     await enter('pay', '$id:${method.wire}');
     final total = (subtotal - discount).clamp(0, 1 << 40);
     status = BillStatus.paid;
@@ -297,6 +297,7 @@ class FakeInventoryRepository
     required int qty,
     bool late = false,
     String? note,
+    String? requestId,
   }) =>
       enter('addPurchase', '$ingredientId:$qty:$late:${note ?? ''}');
 
@@ -306,6 +307,7 @@ class FakeInventoryRepository
     required int qty,
     required String typeCode,
     String? note,
+    String? requestId,
   }) =>
       enter('addWaste', '$ingredientId:$qty:$typeCode:${note ?? ''}');
 

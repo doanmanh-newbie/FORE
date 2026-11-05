@@ -84,7 +84,10 @@ class ForeHeader extends StatelessWidget {
                 ),
                 if (pill != null) ...[
                   const SizedBox(height: 12),
-                  pill!,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: pill!,
+                  ),
                 ],
               ],
             ),

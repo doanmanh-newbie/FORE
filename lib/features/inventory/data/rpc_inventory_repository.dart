@@ -39,13 +39,16 @@ class RpcInventoryRepository implements InventoryRepository, CashRepository {
     required int qty,
     bool late = false,
     String? note,
+    String? requestId,
   }) async {
-    await _rpc.call('add_purchase', {
+    final params = <String, dynamic>{
       'p_ingredient': ingredientId,
       'p_qty': qty,
       'p_late': late,
       'p_note': _clean(note),
-    });
+    };
+    if (requestId != null) params['p_request_id'] = requestId;
+    await _rpc.call('add_purchase', params);
   }
 
   @override
@@ -54,13 +57,16 @@ class RpcInventoryRepository implements InventoryRepository, CashRepository {
     required int qty,
     required String typeCode,
     String? note,
+    String? requestId,
   }) async {
-    await _rpc.call('add_waste', {
+    final params = <String, dynamic>{
       'p_ingredient': ingredientId,
       'p_qty': qty,
       'p_type': typeCode,
       'p_note': _clean(note),
-    });
+    };
+    if (requestId != null) params['p_request_id'] = requestId;
+    await _rpc.call('add_waste', params);
   }
 
   @override

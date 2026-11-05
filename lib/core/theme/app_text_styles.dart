@@ -4,8 +4,8 @@ import 'app_colors.dart';
 
 /// Hai phông của app (file nằm ở `assets/fonts`, khai báo trong pubspec.yaml).
 abstract final class AppFonts {
-  static const body = 'BeVietnamPro';
-  static const display = 'PlayfairDisplay';
+  static const body = 'Inter';
+  static const display = 'Inter';
 }
 
 /// Kiểu chữ dùng chung. Tiêu đề dùng chữ có chân (Playfair Display), phần còn lại

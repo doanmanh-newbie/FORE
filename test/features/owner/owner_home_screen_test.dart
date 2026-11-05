@@ -357,6 +357,7 @@ class _FakeInventoryRepository implements InventoryRepository, CashRepository {
     required int qty,
     bool late = false,
     String? note,
+    String? requestId,
   }) async {}
 
   @override
@@ -365,6 +366,7 @@ class _FakeInventoryRepository implements InventoryRepository, CashRepository {
     required int qty,
     required String typeCode,
     String? note,
+    String? requestId,
   }) async {}
 
   @override

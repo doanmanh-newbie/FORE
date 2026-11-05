@@ -31,13 +31,15 @@ class RpcSalesRepository implements SalesRepository {
 
   @override
   Future<String> openBill(
-          {String? tableId, required BillType type, int? guests}) =>
+          {String? tableId, required BillType type, int? guests, String? requestId}) =>
       _parse(() async {
-        final id = await _rpc.call('open_bill', {
+        final params = <String, dynamic>{
           'p_table': tableId,
           'p_type': type.wire,
           'p_guests': guests,
-        });
+        };
+        if (requestId != null) params['p_request_id'] = requestId;
+        final id = await _rpc.call('open_bill', params);
         if (id is! String) {
           throw FormatException('open_bill cần trả mã bill, nhận: $id');
         }
@@ -45,9 +47,14 @@ class RpcSalesRepository implements SalesRepository {
       });
 
   @override
-  Future<void> addLine(String billId, String sizeId, int qty) async {
-    await _rpc.call(
-        'add_bill_line', {'p_bill': billId, 'p_size': sizeId, 'p_qty': qty});
+  Future<void> addLine(String billId, String sizeId, int qty, {String? requestId}) async {
+    final params = <String, dynamic>{
+      'p_bill': billId,
+      'p_size': sizeId,
+      'p_qty': qty,
+    };
+    if (requestId != null) params['p_request_id'] = requestId;
+    await _rpc.call('add_bill_line', params);
   }
 
   @override
@@ -70,9 +77,13 @@ class RpcSalesRepository implements SalesRepository {
   }
 
   @override
-  Future<int> pay(String billId, PaymentMethod method) => _parse(() async {
-        final total = await _rpc
-            .call('pay_bill', {'p_bill': billId, 'p_method': method.wire});
+  Future<int> pay(String billId, PaymentMethod method, {String? requestId}) => _parse(() async {
+        final params = <String, dynamic>{
+          'p_bill': billId,
+          'p_method': method.wire,
+        };
+        if (requestId != null) params['p_request_id'] = requestId;
+        final total = await _rpc.call('pay_bill', params);
         if (total is! int) {
           throw FormatException('pay_bill cần trả số tiền, nhận: $total');
         }

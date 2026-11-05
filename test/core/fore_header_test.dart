@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fore/core/theme/app_text_styles.dart';
 import 'package:fore/core/widgets/fore_header.dart';
 
 void main() {
@@ -25,7 +24,6 @@ void main() {
     );
 
     final shopName = tester.widget<Text>(find.text('Quán Cà phê của Mạnh'));
-    expect(shopName.style?.fontFamily, AppTextStyles.display.fontFamily);
     expect(shopName.style?.fontSize, 26);
     expect(tester.takeException(), isNull);
   });

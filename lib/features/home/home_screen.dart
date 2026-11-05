@@ -69,7 +69,7 @@ class _HomeScreenState extends State<OpsHomeScreen>
   late final TableMapController _tables = TableMapController(_salesRepo);
   late final TakeawayController _takeaway = TakeawayController(_salesRepo);
 
-  int _tab = 0;
+  int _tab = 2;
   bool _hadShift = false;
   Timer? _shiftTimer;
 
@@ -115,19 +115,19 @@ class _HomeScreenState extends State<OpsHomeScreen>
       _tables.load();
       _takeaway.load();
     } else if (_tab != 4) {
-      _tab = 0;
+      _tab = 2; // Về Trang chủ (ở giữa, index 2)
     }
     _syncTimers();
     if (mounted) setState(() {});
   }
 
   void _syncTimers() {
-    if (_shift.hasOpenShift && _tab == 0) {
+    if (_shift.hasOpenShift && _tab == 2) {
       _tables.startAutoRefresh(_tablesRefresh);
     } else {
       _tables.stopAutoRefresh();
     }
-    if (_shift.hasOpenShift && _tab == 1) {
+    if (_shift.hasOpenShift && _tab == 0) {
       _takeaway.startAutoRefresh(_tablesRefresh);
     } else {
       _takeaway.stopAutoRefresh();
@@ -137,8 +137,8 @@ class _HomeScreenState extends State<OpsHomeScreen>
   void _select(int tab) {
     setState(() => _tab = tab);
     _syncTimers();
-    if (tab == 0 && _shift.hasOpenShift) _tables.load();
-    if (tab == 1) _takeaway.load();
+    if (tab == 2 && _shift.hasOpenShift) _tables.load();
+    if (tab == 0) _takeaway.load();
   }
 
   // ---------------------------------------------------------------- điều hướng sang màn phụ
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<OpsHomeScreen>
       builder: (context, _) {
         final hasShift = _shift.hasOpenShift;
         final ready = _shift.phase == OpsShiftPhase.ready;
-        final tab = hasShift || _tab == 4 ? _tab : 0;
+        final tab = hasShift || _tab == 4 ? _tab : 2;
         return Scaffold(
           backgroundColor: AppColors.background,
           body: Column(
@@ -212,9 +212,9 @@ class _HomeScreenState extends State<OpsHomeScreen>
             selected: tab,
             onSelect: _select,
             items: [
-              const NavItem(label: 'Trang chủ', icon: ForeIcons.home),
               NavItem(label: 'Mang đi', icon: ForeIcons.bag, enabled: hasShift),
               NavItem(label: 'Kho', icon: ForeIcons.package, enabled: hasShift),
+              const NavItem(label: 'Trang chủ', icon: ForeIcons.home),
               NavItem(
                   label: 'Đóng ca', icon: ForeIcons.lock, enabled: hasShift),
               const NavItem(label: 'Thêm', icon: ForeIcons.plus),
@@ -276,22 +276,22 @@ class _HomeScreenState extends State<OpsHomeScreen>
             );
     }
     return switch (tab) {
-      0 => TablesView(
-          tables: _tables,
-          servingLabel: _shift.servingLabel,
-          onOpenBill: _openBill),
-      1 => TakeawayView(
+      0 => TakeawayView(
           takeaway: _takeaway,
           servingLabel: _shift.servingLabel,
           onOpenBill: _openBill),
-      2 => InventoryHubView(
+      1 => InventoryHubView(
           shift: _shift,
           onPurchase: () => _push(PurchaseScreen(repository: _inventoryRepo)),
           onCount: _openCount,
         ),
+      2 => TablesView(
+          tables: _tables,
+          servingLabel: _shift.servingLabel,
+          onOpenBill: _openBill),
       3 => CloseShiftView(
           shift: _shift,
-          onViewBills: () => _select(0),
+          onViewBills: () => _select(2),
           onCountStock: () => _openCount(CountKind.close),
         ),
       _ => more,
