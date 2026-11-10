@@ -17,6 +17,7 @@ class MoreView extends StatelessWidget {
     required this.shopName,
     required this.hasOpenShift,
     required this.isOwner,
+    this.onShiftBills,
     required this.onWaste,
     required this.onCash,
     required this.onSwitchShop,
@@ -30,9 +31,10 @@ class MoreView extends StatelessWidget {
   final String roleLabel;
   final String shopName;
 
-  /// Ghi hao hụt và thu/chi chỉ làm được khi đang có ca.
+  /// Ghi hao hụt, thu/chi và xem hóa đơn trong ca chỉ làm được khi đang có ca.
   final bool hasOpenShift;
   final bool isOwner;
+  final VoidCallback? onShiftBills;
   final VoidCallback onWaste;
   final VoidCallback onCash;
   final VoidCallback onSwitchShop;
@@ -46,6 +48,17 @@ class MoreView extends StatelessWidget {
         children: [
           const Text('Thêm', style: AppTextStyles.display),
           const SizedBox(height: 20),
+          if (onShiftBills != null) ...[
+            ActionTile(
+              icon: const Icon(Icons.receipt_long_outlined, color: AppColors.ink),
+              title: 'Hóa đơn trong ca',
+              subtitle: hasOpenShift
+                  ? 'Xem lịch sử, chi tiết và hủy bill đã thu'
+                  : 'Mở ca để dùng',
+              onTap: hasOpenShift ? onShiftBills : null,
+            ),
+            const SizedBox(height: 12),
+          ],
           ActionTile(
             icon: const Icon(Icons.storefront_outlined, color: AppColors.ink),
             title: shopName.isEmpty ? 'Quán' : shopName,

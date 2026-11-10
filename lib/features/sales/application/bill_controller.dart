@@ -187,9 +187,37 @@ class BillController extends ActionNotifier {
   }
 
   /// Thu tiền. Trả số tiền đã thu; `null` nếu đang bận.
-  Future<int?> pay(PaymentMethod method) => runAction<int>(() async {
-        final total = await _repo.pay(billId, method);
+  Future<int?> pay(
+    PaymentMethod method, {
+    int? tendered,
+    String? paymentRef,
+  }) =>
+      runAction<int>(() async {
+        final total = await _repo.pay(
+          billId,
+          method,
+          tendered: tendered,
+          paymentRef: paymentRef,
+        );
         await _refreshBill();
         return total;
+      });
+
+  Future<PaymentQrInfo> loadQrInfo() => _repo.paymentQrInfo();
+
+  Future<bool> hasOwnerPin() => _repo.hasOwnerPin();
+
+  Future<String?> cancelPaidBill({
+    required String ownerPin,
+    required String reason,
+  }) =>
+      runAction<String>(() async {
+        final res = await _repo.cancelPaidBill(
+          billId: billId,
+          ownerPin: ownerPin,
+          reason: reason,
+        );
+        if (res == 'OK') await _refreshBill();
+        return res;
       });
 }

@@ -59,17 +59,38 @@ class _BillScreenState extends State<BillScreen> {
   Future<void> _pay() async {
     final bill = _c.bill;
     if (bill == null) return;
-    final method = await showForeSheet<PaymentMethod>(
+    final qrInfo = await _c.loadQrInfo();
+    if (!mounted) return;
+
+    final payResult = await showForeSheet<_PayResult>(
       context,
       title: 'Thanh toán',
       subtitle:
           '${bill.title} · ${formatServings(bill.portions, widget.servingLabel)}',
-      builder: (_) => _PayForm(amount: bill.payable),
+      builder: (_) => _PayForm(
+        amount: bill.payable,
+        billNo: bill.billNo,
+        qrInfo: qrInfo,
+      ),
     );
-    if (method == null || !mounted) return;
-    final total = await guarded(context, () => _c.pay(method));
+    if (payResult == null || !mounted) return;
+
+    final total = await guarded(
+      context,
+      () => _c.pay(
+        payResult.method,
+        tendered: payResult.tendered,
+        paymentRef: payResult.ref,
+      ),
+    );
     if (total != null && mounted) {
-      showNotice(context, 'Đã thu ${formatVnd(total)} · ${method.label}');
+      final changeText = payResult.change > 0
+          ? ' · Thối lại ${formatVnd(payResult.change)}'
+          : '';
+      showNotice(
+        context,
+        'Đã thu ${formatVnd(total)} (${payResult.method.label})$changeText',
+      );
       Navigator.of(context).pop();
     }
   }
@@ -117,6 +138,81 @@ class _BillScreenState extends State<BillScreen> {
     }
   }
 
+  Future<void> _cancelPaidBill() async {
+    final bill = _c.bill;
+    if (bill == null) return;
+
+    final hasPin = await _c.hasOwnerPin();
+    if (!mounted) return;
+    if (!hasPin) {
+      showNotice(
+        context,
+        'Quán chưa đặt mã PIN chủ. Hãy nhờ chủ quán cài đặt PIN trước.',
+      );
+      return;
+    }
+
+    final reason = await askReason(
+      context,
+      title: 'Hủy bill đã thu',
+      subtitle:
+          'Hủy bill ${formatBillNo(bill.billNo)} (${formatVnd(bill.payable)}). Hành động này hoàn lại kho và cần mã PIN của chủ quán.',
+      confirmLabel: 'Tiếp tục',
+      destructive: true,
+    );
+    if (reason == null || !mounted) return;
+
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final pinController = TextEditingController();
+        return AlertDialog(
+          title: const Text('Nhập mã PIN chủ quán'),
+          content: TextField(
+            controller: pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 6,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Mã PIN chủ quán (4-6 số)',
+              counterText: '',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, pinController.text.trim()),
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+    if (pin == null || pin.isEmpty || !mounted) return;
+
+    final result = await guarded(
+      context,
+      () => _c.cancelPaidBill(ownerPin: pin, reason: reason),
+    );
+    if (!mounted) return;
+
+    if (result == 'OK') {
+      showNotice(context, 'Đã hủy bill và hoàn lại sổ kho thành công.');
+      Navigator.of(context).pop();
+    } else if (result == 'WRONG_PIN') {
+      showNotice(context, 'Sai mã PIN chủ quán. Hãy kiểm tra lại.');
+    } else if (result == 'PIN_LOCKED') {
+      showNotice(
+        context,
+        'Nhập sai PIN quá số lần. Chức năng đã bị khóa tạm thời.',
+      );
+    }
+  }
+
   Future<bool> _confirmLeave() async {
     final leave = await showDialog<bool>(
       context: context,
@@ -155,7 +251,9 @@ class _BillScreenState extends State<BillScreen> {
                   title: _c.bill?.title ?? 'Bill',
                   subtitle: _subtitle(),
                   onBack: () => Navigator.of(context).maybePop(),
-                  onCancel: _c.isOpen ? _cancelBill : null,
+                  onCancel: _c.isOpen
+                      ? _cancelBill
+                      : (_c.bill?.status == BillStatus.paid ? _cancelPaidBill : null),
                 ),
                 Expanded(child: _body()),
                 if (_c.bill != null) _bottomBar(),
@@ -737,10 +835,30 @@ class _LineRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------- thanh toán
+class _PayResult {
+  const _PayResult({
+    required this.method,
+    this.tendered,
+    this.ref,
+    this.change = 0,
+  });
+
+  final PaymentMethod method;
+  final int? tendered;
+  final String? ref;
+  final int change;
+}
+
 class _PayForm extends StatefulWidget {
-  const _PayForm({required this.amount});
+  const _PayForm({
+    required this.amount,
+    required this.billNo,
+    required this.qrInfo,
+  });
 
   final int amount;
+  final int billNo;
+  final PaymentQrInfo qrInfo;
 
   @override
   State<_PayForm> createState() => _PayFormState();
@@ -748,47 +866,240 @@ class _PayForm extends StatefulWidget {
 
 class _PayFormState extends State<_PayForm> {
   PaymentMethod _method = PaymentMethod.cash;
+  late final TextEditingController _tenderedController;
+  final TextEditingController _refController = TextEditingController();
+  int? _tendered;
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-              child: Text(formatVnd(widget.amount),
-                  style: AppTextStyles.numberXL)),
-          const SizedBox(height: 4),
-          const Center(
-              child: Text('Số tiền phải thu', style: AppTextStyles.caption)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              for (final m in PaymentMethod.values)
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        right: m == PaymentMethod.values.last ? 0 : 10),
-                    child: _MethodTile(
-                      label: m.label,
-                      selected: m == _method,
-                      onTap: () => setState(() => _method = m),
-                    ),
+  void initState() {
+    super.initState();
+    _tendered = widget.amount;
+    _tenderedController = TextEditingController(
+      text: formatVnd(widget.amount).replaceAll('đ', '').trim(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tenderedController.dispose();
+    _refController.dispose();
+    super.dispose();
+  }
+
+  int get _change => (_tendered != null && _tendered! >= widget.amount)
+      ? _tendered! - widget.amount
+      : 0;
+
+  bool get _canSubmit {
+    if (_method == PaymentMethod.cash) {
+      return _tendered != null && _tendered! >= widget.amount;
+    }
+    return true;
+  }
+
+  void _quickTender(int val) {
+    setState(() {
+      _tendered = val;
+      _tenderedController.text = formatVnd(val).replaceAll('đ', '').trim();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final qrUrl = widget.qrInfo.makeQrUrl(
+      billNo: widget.billNo,
+      amount: widget.amount,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: Text(
+            formatVnd(widget.amount),
+            style: AppTextStyles.numberXL,
+          ),
+        ),
+        const SizedBox(height: 4),
+        const Center(
+          child: Text('Số tiền phải thu', style: AppTextStyles.caption),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            for (final m in PaymentMethod.values)
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: m == PaymentMethod.values.last ? 0 : 10,
                   ),
+                  child: _MethodTile(
+                    label: m.label,
+                    selected: m == _method,
+                    onTap: () => setState(() => _method = m),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_method == PaymentMethod.cash) ...[
+          MoneyField(
+            controller: _tenderedController,
+            label: 'Tiền khách đưa',
+            errorText: (_tendered != null && _tendered! < widget.amount)
+                ? 'Tiền khách đưa chưa đủ'
+                : null,
+            onChanged: (val) => setState(() => _tendered = val),
+          ),
+          const SizedBox(height: 8),
+          // Các phím chọn nhanh mệnh giá
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              ActionChip(
+                label: const Text('Đúng số tiền'),
+                onPressed: () => _quickTender(widget.amount),
+              ),
+              if (widget.amount < 50000)
+                ActionChip(
+                  label: const Text('50.000đ'),
+                  onPressed: () => _quickTender(50000),
+                ),
+              if (widget.amount < 100000)
+                ActionChip(
+                  label: const Text('100.000đ'),
+                  onPressed: () => _quickTender(100000),
+                ),
+              if (widget.amount < 200000)
+                ActionChip(
+                  label: const Text('200.000đ'),
+                  onPressed: () => _quickTender(200000),
+                ),
+              if (widget.amount < 500000)
+                ActionChip(
+                  label: const Text('500.000đ'),
+                  onPressed: () => _quickTender(500000),
                 ),
             ],
           ),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(_method),
-            child: Text('Thu ${formatVnd(widget.amount)}'),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Thanh toán xong không sửa được. Muốn hủy phải có chủ quán xác nhận.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption,
+          if (_change > 0) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.statusHealthyTint,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Tiền thối lại cho khách:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.statusHealthy,
+                    ),
+                  ),
+                  Text(
+                    formatVnd(_change),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.statusHealthy,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ] else ...[
+          // Phương thức Chuyển khoản
+          if (qrUrl != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      qrUrl,
+                      height: 180,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          'Không tải được mã QR. Xem thông tin STK bên dưới.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.caption,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${widget.qrInfo.bankCode} · ${widget.qrInfo.accountNo}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    widget.qrInfo.accountName ?? '',
+                    style: AppTextStyles.caption,
+                  ),
+                  Text(
+                    'Nội dung: ${widget.qrInfo.contentPrefix} BILL${widget.billNo}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.brandAccent,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          TextField(
+            controller: _refController,
+            decoration: const InputDecoration(
+              labelText: 'Mã chuẩn chi / 4 số cuối (tùy chọn)',
+              hintText: 'Ví dụ: 1234 hoặc mã giao dịch',
+            ),
           ),
         ],
-      );
+        const SizedBox(height: 20),
+        FilledButton(
+          onPressed: _canSubmit
+              ? () => Navigator.of(context).pop(
+                    _PayResult(
+                      method: _method,
+                      tendered: _method == PaymentMethod.cash ? _tendered : null,
+                      ref: _method == PaymentMethod.transfer
+                          ? _refController.text.trim()
+                          : null,
+                      change: _change,
+                    ),
+                  )
+              : null,
+          child: Text('Thu ${formatVnd(widget.amount)}'),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Thanh toán xong không sửa được. Muốn hủy phải có chủ quán xác nhận bằng PIN.',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption,
+        ),
+      ],
+    );
+  }
 }
 
 class _MethodTile extends StatelessWidget {

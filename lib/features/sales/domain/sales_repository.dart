@@ -23,7 +23,30 @@ abstract interface class SalesRepository {
   Future<void> cancelOpenBill(String billId, String reason);
 
   /// Thu tiền và chốt bill. Trả số tiền đã thu.
-  Future<int> pay(String billId, PaymentMethod method, {String? requestId});
+  Future<int> pay(
+    String billId,
+    PaymentMethod method, {
+    String? requestId,
+    int? tendered,
+    String? paymentRef,
+  });
 
   Future<void> markPrepDone(String billId);
+
+  /// Lấy thông tin tài khoản chuyển khoản / QR của quán
+  Future<PaymentQrInfo> paymentQrInfo();
+
+  /// Xem danh sách bill trong ca đang mở (mới nhất lên đầu)
+  Future<List<ShiftBillSummary>> shiftBills({int limit = 50, DateTime? before});
+
+  /// Kiểm tra chủ quán đã cài đặt mã PIN chưa
+  Future<bool> hasOwnerPin();
+
+  /// Hủy bill đã thu tiền bằng mã PIN chủ (chỉ trong ca hiện tại)
+  /// Trả về chuỗi: 'OK' | 'WRONG_PIN' | 'PIN_LOCKED'
+  Future<String> cancelPaidBill({
+    required String billId,
+    required String ownerPin,
+    required String reason,
+  });
 }

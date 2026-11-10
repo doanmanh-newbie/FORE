@@ -126,6 +126,13 @@ const databaseMessages = <String, String>{
   'REVIEW_STATUS_INVALID': 'Trạng thái xử lý không hợp lệ.',
   'TOO_MANY_NOTIFICATIONS': 'Chọn quá nhiều thông báo cùng lúc.',
   'DIRECTION_INVALID': 'Loại thu/chi không hợp lệ.',
+  'TENDERED_INSUFFICIENT': 'Tiền khách đưa chưa đủ số tiền phải thu.',
+  'BANK_CODE_REQUIRED': 'Hãy nhập mã ngân hàng (ví dụ: VCB, MB, TCB...).',
+  'ACCOUNT_NO_REQUIRED': 'Hãy nhập số tài khoản ngân hàng.',
+  'ACCOUNT_NAME_REQUIRED': 'Hãy nhập tên chủ tài khoản.',
+  'WRONG_PIN': 'Mã PIN của chủ quán chưa đúng.',
+  'PIN_LOCKED': 'Nhập sai PIN quá số lần cho phép. Chức năng đã bị khóa tạm thời.',
+  'NO_OWNER_PIN': 'Quán chưa đặt mã PIN chủ. Hãy nhờ chủ quán thiết lập PIN.',
   'APP_API_MISSING':
       'Database chưa có API giao diện mới. Hãy chạy database/011_app_read_api.sql trên Supabase rồi tải lại.',
 };

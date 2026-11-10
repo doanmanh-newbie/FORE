@@ -27,6 +27,7 @@ import '../sales/application/table_map_controller.dart';
 import '../sales/application/takeaway_controller.dart';
 import '../sales/data/rpc_sales_repository.dart';
 import '../sales/presentation/bill_screen.dart';
+import '../sales/presentation/shift_bills_screen.dart';
 import '../sales/presentation/tables_view.dart';
 import '../sales/presentation/takeaway_view.dart';
 import '../ops/shift/application/shift_controller.dart';
@@ -260,6 +261,12 @@ class _HomeScreenState extends State<OpsHomeScreen>
               : _shift.shopName),
       hasOpenShift: _shift.hasOpenShift,
       isOwner: profile?.role.isOwner ?? false,
+      onShiftBills: () => _push(
+        ShiftBillsScreen(
+          repository: _salesRepo,
+          servingLabel: _shift.servingLabel,
+        ),
+      ),
       onWaste: () => _push(WasteScreen(repository: _inventoryRepo)),
       onCash: () => _push(CashScreen(repository: _inventoryRepo)),
       onSwitchShop: () => showShopSwitcher(context),

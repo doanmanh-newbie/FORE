@@ -237,7 +237,13 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
   }
 
   @override
-  Future<int> pay(String id, PaymentMethod method, {String? requestId}) async {
+  Future<int> pay(
+    String id,
+    PaymentMethod method, {
+    String? requestId,
+    int? tendered,
+    String? paymentRef,
+  }) async {
     await enter('pay', '$id:${method.wire}');
     final total = (subtotal - discount).clamp(0, 1 << 40);
     status = BillStatus.paid;
@@ -252,6 +258,55 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
       for (final o in takeaways)
         if (o.billId != id) o
     ];
+  }
+
+  @override
+  Future<PaymentQrInfo> paymentQrInfo() async {
+    await enter('paymentQrInfo');
+    return const PaymentQrInfo(
+      configured: true,
+      bankCode: 'MB',
+      accountNo: '0901234567',
+      accountName: 'QUAN CA PHE FORE',
+      contentPrefix: 'FORE',
+    );
+  }
+
+  @override
+  Future<List<ShiftBillSummary>> shiftBills({int limit = 50, DateTime? before}) async {
+    await enter('shiftBills');
+    return [
+      ShiftBillSummary(
+        billId: billId,
+        billNo: 84,
+        billType: type,
+        status: status,
+        portions: lines.where((l) => !l.voided).fold(0, (s, l) => s + l.qty),
+        totalAmount: status == BillStatus.paid ? (subtotal - discount).clamp(0, 1 << 40) : null,
+        paymentMethod: paymentMethod,
+        openedAt: DateTime(2026, 10, 23, 8, 16),
+      ),
+    ];
+  }
+
+  @override
+  Future<bool> hasOwnerPin() async {
+    await enter('hasOwnerPin');
+    return true;
+  }
+
+  @override
+  Future<String> cancelPaidBill({
+    required String billId,
+    required String ownerPin,
+    required String reason,
+  }) async {
+    await enter('cancelPaidBill', '$billId:$ownerPin:$reason');
+    if (ownerPin == '1234') {
+      status = BillStatus.cancelled;
+      return 'OK';
+    }
+    return 'WRONG_PIN';
   }
 }
 

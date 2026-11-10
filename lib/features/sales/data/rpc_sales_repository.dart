@@ -77,12 +77,23 @@ class RpcSalesRepository implements SalesRepository {
   }
 
   @override
-  Future<int> pay(String billId, PaymentMethod method, {String? requestId}) => _parse(() async {
+  Future<int> pay(
+    String billId,
+    PaymentMethod method, {
+    String? requestId,
+    int? tendered,
+    String? paymentRef,
+  }) =>
+      _parse(() async {
         final params = <String, dynamic>{
           'p_bill': billId,
           'p_method': method.wire,
         };
         if (requestId != null) params['p_request_id'] = requestId;
+        if (tendered != null) params['p_tendered'] = tendered;
+        if (paymentRef != null && paymentRef.trim().isNotEmpty) {
+          params['p_ref'] = paymentRef.trim();
+        }
         final total = await _rpc.call('pay_bill', params);
         if (total is! int) {
           throw FormatException('pay_bill cần trả số tiền, nhận: $total');
@@ -94,6 +105,43 @@ class RpcSalesRepository implements SalesRepository {
   Future<void> markPrepDone(String billId) async {
     await _rpc.call('mark_prep_done', {'p_bill': billId});
   }
+
+  @override
+  Future<PaymentQrInfo> paymentQrInfo() => _parse(() async {
+        final rows = asRows(await _rpc.call('payment_qr_info'));
+        if (rows.isEmpty) return const PaymentQrInfo(configured: false);
+        return PaymentQrInfo.fromRow(rows.first);
+      });
+
+  @override
+  Future<List<ShiftBillSummary>> shiftBills({int limit = 50, DateTime? before}) =>
+      _parse(() async {
+        final params = <String, dynamic>{'p_limit': limit};
+        if (before != null) params['p_before'] = before.toIso8601String();
+        final rows = asRows(await _rpc.call('shift_bills', params));
+        return [for (final r in rows) ShiftBillSummary.fromRow(r)];
+      });
+
+  @override
+  Future<bool> hasOwnerPin() => _parse(() async {
+        final res = await _rpc.call('owner_pin_status');
+        return res is bool ? res : false;
+      });
+
+  @override
+  Future<String> cancelPaidBill({
+    required String billId,
+    required String ownerPin,
+    required String reason,
+  }) =>
+      _parse(() async {
+        final res = await _rpc.call('cancel_paid_bill', {
+          'p_bill': billId,
+          'p_owner_pin': ownerPin,
+          'p_reason': reason,
+        });
+        return res is String ? res : 'UNKNOWN';
+      });
 
   Future<T> _parse<T>(Future<T> Function() read) async {
     try {

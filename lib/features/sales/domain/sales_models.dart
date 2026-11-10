@@ -222,6 +222,10 @@ class BillView {
     required this.lines,
     required this.subtotal,
     required this.payable,
+    this.tenderedAmount,
+    this.paymentRef,
+    this.cancelledAt,
+    this.cancelReason,
   });
 
   factory BillView.fromJson(Map<String, dynamic> json) => BillView(
@@ -242,6 +246,10 @@ class BillView {
         ],
         subtotal: json.integer('subtotal'),
         payable: json.integer('payable'),
+        tenderedAmount: json.intOrNull('tendered_amount'),
+        paymentRef: json.strOrNull('payment_ref'),
+        cancelledAt: json['cancelled_at'] != null ? json.time('cancelled_at') : null,
+        cancelReason: json.strOrNull('cancel_reason'),
       );
 
   final String id;
@@ -259,6 +267,10 @@ class BillView {
   final List<BillLine> lines;
   final int subtotal;
   final int payable;
+  final int? tenderedAmount;
+  final String? paymentRef;
+  final DateTime? cancelledAt;
+  final String? cancelReason;
 
   bool get isOpen => status == BillStatus.open;
   List<BillLine> get activeLines => [
@@ -268,6 +280,94 @@ class BillView {
   int get portions => activeLines.fold(0, (sum, l) => sum + l.qty);
 
   String get title => type == BillType.takeAway
+      ? 'Mang đi ${formatBillNo(billNo)}'
+      : (tableName ?? 'Bill ${formatBillNo(billNo)}');
+}
+
+/// Thông tin chuyển khoản / QR ngân hàng của quán
+class PaymentQrInfo {
+  const PaymentQrInfo({
+    required this.configured,
+    this.bankCode,
+    this.accountNo,
+    this.accountName,
+    this.contentPrefix = 'FORE',
+  });
+
+  factory PaymentQrInfo.fromRow(Map<String, dynamic> row) => PaymentQrInfo(
+        configured: row.flag('configured'),
+        bankCode: row.strOrNull('bank_code'),
+        accountNo: row.strOrNull('account_no'),
+        accountName: row.strOrNull('account_name'),
+        contentPrefix: row.strOrNull('content_prefix') ?? 'FORE',
+      );
+
+  final bool configured;
+  final String? bankCode;
+  final String? accountNo;
+  final String? accountName;
+  final String contentPrefix;
+
+  /// Tạo link mã VietQR chuẩn theo thông tin hóa đơn
+  String? makeQrUrl({required int billNo, required int amount}) {
+    if (!configured || bankCode == null || accountNo == null) return null;
+    final content = Uri.encodeComponent('$contentPrefix BILL$billNo');
+    return 'https://img.vietqr.io/image/$bankCode-$accountNo-compact2.png?amount=$amount&addInfo=$content&accountName=${Uri.encodeComponent(accountName ?? '')}';
+  }
+}
+
+/// Tóm tắt một hóa đơn trong ca (dùng cho danh sách lịch sử)
+class ShiftBillSummary {
+  const ShiftBillSummary({
+    required this.billId,
+    required this.billNo,
+    required this.billType,
+    required this.status,
+    this.tableName,
+    this.areaName,
+    required this.portions,
+    this.totalAmount,
+    this.paymentMethod,
+    this.paymentRef,
+    required this.openedAt,
+    this.paidAt,
+    this.cancelledAt,
+    this.cancelReason,
+  });
+
+  factory ShiftBillSummary.fromRow(Map<String, dynamic> row) => ShiftBillSummary(
+        billId: row.str('bill_id'),
+        billNo: row.integer('bill_no'),
+        billType: BillType.parse(row.str('bill_type')),
+        status: BillStatus.parse(row.str('status')),
+        tableName: row.strOrNull('table_name'),
+        areaName: row.strOrNull('area_name'),
+        portions: row.integer('portions'),
+        totalAmount: row.intOrNull('total_amount'),
+        paymentMethod: row.strOrNull('payment_method'),
+        paymentRef: row.strOrNull('payment_ref'),
+        openedAt: row.time('opened_at'),
+        paidAt: row['paid_at'] != null ? row.time('paid_at') : null,
+        cancelledAt: row['cancelled_at'] != null ? row.time('cancelled_at') : null,
+        cancelReason: row.strOrNull('cancel_reason'),
+      );
+
+  final String billId;
+  final int billNo;
+  final BillType billType;
+  final BillStatus status;
+  final String? tableName;
+  final String? areaName;
+  final int portions;
+  final int? totalAmount;
+  final String? paymentMethod;
+  final String? paymentRef;
+  final DateTime openedAt;
+  final DateTime? paidAt;
+  final DateTime? cancelledAt;
+  final String? cancelReason;
+
+  String get title => billType == BillType.takeAway
       ? 'Mang đi ${formatBillNo(billNo)}'
       : (tableName ?? 'Bill ${formatBillNo(billNo)}');
 }
