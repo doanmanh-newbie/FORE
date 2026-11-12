@@ -100,6 +100,8 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
   List<TableSlot> tables = [];
   List<TakeawayOrder> takeaways = [];
   List<MenuItemEntry> menuItems = [];
+  List<ModifierGroup> modifierGroups = [];
+  Set<String> soldOutItemIds = {};
 
   String billId = 'b1';
   BillStatus status = BillStatus.open;
@@ -156,7 +158,36 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
   @override
   Future<List<MenuItemEntry>> menu() async {
     await enter('menu');
-    return List.of(menuItems);
+    return [
+      for (final i in menuItems)
+        MenuItemEntry(
+          id: i.id,
+          name: i.name,
+          group: i.group,
+          sizes: i.sizes,
+          soldOut: soldOutItemIds.contains(i.id) || i.soldOut,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<ModifierGroup>> modifiers() async {
+    await enter('modifiers');
+    return List.of(modifierGroups);
+  }
+
+  @override
+  Future<void> setItemSoldOut({
+    required String itemId,
+    required bool soldOut,
+    String? reason,
+  }) async {
+    await enter('setItemSoldOut', '$itemId:$soldOut:$reason');
+    if (soldOut) {
+      soldOutItemIds.add(itemId);
+    } else {
+      soldOutItemIds.remove(itemId);
+    }
   }
 
   @override
@@ -192,16 +223,42 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
   }
 
   @override
-  Future<void> addLine(String id, String sizeId, int qty, {String? requestId}) async {
+  Future<void> addLine(
+    String id,
+    String sizeId,
+    int qty, {
+    String? requestId,
+    List<String>? options,
+    String? note,
+  }) async {
     await enter('addLine', '$id:$sizeId:$qty');
+    final selectedMods = <SelectedModifier>[];
+    int extraPrice = 0;
+    if (options != null) {
+      for (final optId in options) {
+        for (final g in modifierGroups) {
+          for (final opt in g.options) {
+            if (opt.id == optId) {
+              selectedMods.add(SelectedModifier(
+                name: opt.name,
+                priceDelta: opt.priceDelta,
+              ));
+              extraPrice += opt.priceDelta;
+            }
+          }
+        }
+      }
+    }
     lines.add(BillLine(
       id: 'l${_lineSeq++}',
       sizeId: sizeId,
       itemName: _itemName(sizeId),
       sizeName: _sizeName(sizeId),
       qty: qty,
-      unitPrice: _sizePrice(sizeId),
+      unitPrice: _sizePrice(sizeId) + extraPrice,
       voided: false,
+      note: note,
+      modifiers: selectedMods,
     ));
   }
 

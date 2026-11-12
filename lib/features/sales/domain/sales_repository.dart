@@ -8,13 +8,30 @@ abstract interface class SalesRepository {
 
   Future<List<MenuItemEntry>> menu();
 
+  /// Danh sách nhóm tùy chọn và topping của các món
+  Future<List<ModifierGroup>> modifiers();
+
+  /// Báo hết món hoặc mở lại món trong ca đang mở
+  Future<void> setItemSoldOut({
+    required String itemId,
+    required bool soldOut,
+    String? reason,
+  });
+
   Future<BillView> bill(String billId);
 
   /// Mở bill mới. Ăn tại quán cần `tableId`; mang đi thì để `null`. Trả mã bill.
   Future<String> openBill(
       {String? tableId, required BillType type, int? guests, String? requestId});
 
-  Future<void> addLine(String billId, String sizeId, int qty, {String? requestId});
+  Future<void> addLine(
+    String billId,
+    String sizeId,
+    int qty, {
+    String? requestId,
+    List<String>? options,
+    String? note,
+  });
 
   Future<void> voidLine(String lineId, String reason);
 

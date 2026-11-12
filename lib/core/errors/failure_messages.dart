@@ -93,6 +93,7 @@ const databaseMessages = <String, String>{
   'BILL_NOT_OPEN': 'Bill này đã được thanh toán hoặc hủy. Đang tải lại.',
   'BILL_EMPTY': 'Bill chưa có món nào.',
   'ITEM_UNAVAILABLE': 'Món này đã ngừng bán.',
+  'ITEM_SOLD_OUT': 'Món này đã tạm hết trong ca. Vui lòng chọn món khác.',
   'REASON_REQUIRED': 'Hãy nhập lý do.',
   'DISCOUNT_INVALID': 'Giảm giá không hợp lệ.',
   'OPEN_BILLS_REMAIN': 'Còn bill đang mở. Hãy xử lý hết rồi đóng ca.',

@@ -21,6 +21,7 @@ class BillController extends ActionNotifier {
   LoadPhase phase = LoadPhase.loading;
   BillView? bill;
   List<MenuItemEntry> menu = const [];
+  List<ModifierGroup> modifiers = const [];
   AppFailure? failure;
 
   final Map<String, int> _cart = {};
@@ -29,6 +30,9 @@ class BillController extends ActionNotifier {
 
   String get query => _query;
   String? get selectedGroup => _group;
+
+  List<ModifierGroup> modifiersForItem(String itemId) =>
+      modifiers.where((g) => g.appliesToItem(itemId)).toList();
 
   Future<void> load() async {
     if (bill == null) {
@@ -40,6 +44,11 @@ class BillController extends ActionNotifier {
           await Future.wait<Object>([_repo.bill(billId), _repo.menu()]);
       bill = results[0] as BillView;
       menu = results[1] as List<MenuItemEntry>;
+      try {
+        modifiers = await _repo.modifiers();
+      } catch (_) {
+        modifiers = const [];
+      }
       failure = null;
       phase = LoadPhase.ready;
     } on AppFailure catch (f) {
@@ -144,6 +153,45 @@ class BillController extends ActionNotifier {
       } finally {
         await _refreshBill();
       }
+      return true;
+    });
+    return done ?? false;
+  }
+
+  /// Thêm dòng món có tùy chọn (độ ngọt, đá, topping) hoặc ghi chú riêng.
+  Future<bool> addCustomLine({
+    required String sizeId,
+    required int qty,
+    List<String>? options,
+    String? note,
+  }) async {
+    final done = await runAction<bool>(() async {
+      await _repo.addLine(
+        billId,
+        sizeId,
+        qty,
+        options: options,
+        note: note,
+      );
+      await _refreshBill();
+      return true;
+    });
+    return done ?? false;
+  }
+
+  /// Báo hết món hoặc mở lại món trong ca đang mở
+  Future<bool> setItemSoldOut({
+    required String itemId,
+    required bool soldOut,
+    String? reason,
+  }) async {
+    final done = await runAction<bool>(() async {
+      await _repo.setItemSoldOut(
+        itemId: itemId,
+        soldOut: soldOut,
+        reason: reason,
+      );
+      menu = await _repo.menu();
       return true;
     });
     return done ?? false;

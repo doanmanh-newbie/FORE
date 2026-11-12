@@ -26,6 +26,26 @@ class RpcSalesRepository implements SalesRepository {
       () async => groupMenuRows(asRows(await _rpc.call('menu_for_sale'))));
 
   @override
+  Future<List<ModifierGroup>> modifiers() => _parse(
+      () async => groupModifierRows(asRows(await _rpc.call('menu_modifiers'))));
+
+  @override
+  Future<void> setItemSoldOut({
+    required String itemId,
+    required bool soldOut,
+    String? reason,
+  }) async {
+    final params = <String, dynamic>{
+      'p_item': itemId,
+      'p_sold_out': soldOut,
+    };
+    if (reason != null && reason.trim().isNotEmpty) {
+      params['p_reason'] = reason.trim();
+    }
+    await _rpc.call('set_item_sold_out', params);
+  }
+
+  @override
   Future<BillView> bill(String billId) => _parse(() async => BillView.fromJson(
       asObject(await _rpc.call('bill_detail', {'p_bill': billId}))));
 
@@ -47,13 +67,22 @@ class RpcSalesRepository implements SalesRepository {
       });
 
   @override
-  Future<void> addLine(String billId, String sizeId, int qty, {String? requestId}) async {
+  Future<void> addLine(
+    String billId,
+    String sizeId,
+    int qty, {
+    String? requestId,
+    List<String>? options,
+    String? note,
+  }) async {
     final params = <String, dynamic>{
       'p_bill': billId,
       'p_size': sizeId,
       'p_qty': qty,
     };
     if (requestId != null) params['p_request_id'] = requestId;
+    if (options != null && options.isNotEmpty) params['p_options'] = options;
+    if (note != null && note.trim().isNotEmpty) params['p_note'] = note.trim();
     await _rpc.call('add_bill_line', params);
   }
 

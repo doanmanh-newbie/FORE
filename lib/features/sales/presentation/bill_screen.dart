@@ -604,40 +604,488 @@ class _MenuItemCard extends StatelessWidget {
   final BillController controller;
 
   @override
-  Widget build(BuildContext context) => ForeCard(
-        radius: 20,
-        padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.name, style: AppTextStyles.title),
-            if (item.group != null)
-              Text(item.group!, style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            for (final size in item.sizes)
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final isSoldOut = item.soldOut;
+    final itemMods = controller.modifiersForItem(item.id);
+    final hasOptions = itemMods.isNotEmpty;
+
+    return ForeCard(
+      radius: 20,
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        if (item.sizes.length > 1 || size.name.isNotEmpty)
-                          Text(size.name, style: AppTextStyles.bodyStrong),
-                        Text(formatVnd(size.price),
-                            style: AppTextStyles.caption),
+                        Flexible(
+                          child: Text(
+                            item.name,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isSoldOut ? AppColors.textMuted : AppColors.ink,
+                              decoration: isSoldOut ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                        ),
+                        if (isSoldOut) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.statusOff.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Hết món',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.statusOff,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (item.group != null)
+                      Text(item.group!, style: AppTextStyles.caption),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_horiz_rounded, size: 20, color: AppColors.textMuted),
+                padding: EdgeInsets.zero,
+                tooltip: 'Thao tác món',
+                onSelected: (action) {
+                  if (action == 'toggle_sold_out') {
+                    _toggleSoldOut(context);
+                  } else if (action == 'customize') {
+                    _openCustomize(context);
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  if (!isSoldOut)
+                    const PopupMenuItem(
+                      value: 'customize',
+                      child: Row(
+                        children: [
+                          Icon(Icons.tune_rounded, size: 18, color: AppColors.ink),
+                          SizedBox(width: 8),
+                          Text('Tùy chọn & ghi chú', style: AppTextStyles.body),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'toggle_sold_out',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isSoldOut ? Icons.check_circle_outline_rounded : Icons.block_rounded,
+                          size: 18,
+                          color: isSoldOut ? AppColors.statusOk : AppColors.statusOff,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isSoldOut ? 'Mở bán lại món này' : 'Báo hết món trong ca',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isSoldOut ? AppColors.statusOk : AppColors.statusOff,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  QtyStepper(
-                    value: controller.cartQty(size.id),
-                    max: controller.maxLineQty,
-                    onChanged: (q) => controller.setCartQty(size.id, q),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (isSoldOut)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Món này đã báo hết trong ca hiện tại.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _toggleSoldOut(context),
+                    child: const Text('Mở lại', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
+            )
+          else ...[
+            for (final size in item.sizes)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (item.sizes.length > 1 || size.name.isNotEmpty)
+                            Text(size.name, style: AppTextStyles.bodyStrong),
+                          Text(formatVnd(size.price), style: AppTextStyles.caption),
+                        ],
+                      ),
+                    ),
+                    QtyStepper(
+                      value: controller.cartQty(size.id),
+                      max: controller.maxLineQty,
+                      onChanged: (q) => controller.setCartQty(size.id, q),
+                    ),
+                  ],
+                ),
+              ),
+            if (hasOptions) ...[
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: InkWell(
+                  onTap: () => _openCustomize(context),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.brand.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.tune_rounded, size: 14, color: AppColors.brand),
+                        SizedBox(width: 4),
+                        Text(
+                          'Tùy chọn topping & ghi chú...',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brand,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _openCustomize(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _CustomizeSheet(item: item, controller: controller),
+    );
+  }
+
+  void _toggleSoldOut(BuildContext context) async {
+    final isSoldOut = item.soldOut;
+    final reasonController = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isSoldOut ? 'Mở bán lại món?' : 'Báo hết món trong ca?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isSoldOut
+                  ? 'Món "${item.name}" sẽ được mở bán lại ngay trong ca.'
+                  : 'Món "${item.name}" sẽ tạm thời bị khóa cho đến khi hết ca.',
+              style: AppTextStyles.body,
+            ),
+            if (!isSoldOut) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                decoration: const InputDecoration(
+                  labelText: 'Lý do (tùy chọn)',
+                  hintText: 'Ví dụ: hết trân châu, hỏng máy xay...',
+                ),
+              ),
+            ],
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              isSoldOut ? 'Mở bán lại' : 'Xác nhận hết món',
+              style: TextStyle(
+                color: isSoldOut ? AppColors.brand : AppColors.statusOff,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true && context.mounted) {
+      await controller.setItemSoldOut(
+        itemId: item.id,
+        soldOut: !isSoldOut,
+        reason: reasonController.text.trim().isEmpty ? null : reasonController.text.trim(),
       );
+      if (context.mounted) {
+        showNotice(
+          context,
+          isSoldOut ? 'Đã mở bán lại "${item.name}"' : 'Đã báo hết "${item.name}" trong ca',
+        );
+      }
+    }
+  }
+}
+
+class _CustomizeSheet extends StatefulWidget {
+  const _CustomizeSheet({required this.item, required this.controller});
+
+  final MenuItemEntry item;
+  final BillController controller;
+
+  @override
+  State<_CustomizeSheet> createState() => _CustomizeSheetState();
+}
+
+class _CustomizeSheetState extends State<_CustomizeSheet> {
+  late MenuSizeOption _selectedSize;
+  final Set<String> _selectedOptionIds = {};
+  final TextEditingController _noteController = TextEditingController();
+  int _qty = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedSize = widget.item.sizes.first;
+    final groups = widget.controller.modifiersForItem(widget.item.id);
+    for (final g in groups) {
+      for (final opt in g.options) {
+        if (opt.isDefault) {
+          _selectedOptionIds.add(opt.id);
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  int get _extraPrice {
+    final groups = widget.controller.modifiersForItem(widget.item.id);
+    int total = 0;
+    for (final g in groups) {
+      for (final opt in g.options) {
+        if (_selectedOptionIds.contains(opt.id)) {
+          total += opt.priceDelta;
+        }
+      }
+    }
+    return total;
+  }
+
+  int get _unitPrice => _selectedSize.price + _extraPrice;
+  int get _totalPrice => _unitPrice * _qty;
+
+  void _onOptionToggled(ModifierGroup group, ModifierOption opt, bool selected) {
+    setState(() {
+      if (group.isSingleSelect) {
+        for (final o in group.options) {
+          _selectedOptionIds.remove(o.id);
+        }
+        if (selected || group.minSelect > 0) {
+          _selectedOptionIds.add(opt.id);
+        }
+      } else {
+        if (selected) {
+          final currentInGroup = group.options.where((o) => _selectedOptionIds.contains(o.id)).length;
+          if (currentInGroup < group.maxSelect) {
+            _selectedOptionIds.add(opt.id);
+          }
+        } else {
+          _selectedOptionIds.remove(opt.id);
+        }
+      }
+    });
+  }
+
+  Future<void> _submit() async {
+    final note = _noteController.text.trim();
+    final ok = await widget.controller.addCustomLine(
+      sizeId: _selectedSize.id,
+      qty: _qty,
+      options: _selectedOptionIds.toList(),
+      note: note.isEmpty ? null : note,
+    );
+    if (mounted && ok) {
+      Navigator.of(context).pop();
+      showNotice(context, 'Đã thêm ${widget.item.name} (${_selectedSize.name}) vào bill');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = widget.controller.modifiersForItem(widget.item.id);
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.item.name, style: AppTextStyles.headline),
+                    const Text(
+                      'Tùy chỉnh topping, đường, đá và ghi chú',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                if (widget.item.sizes.length > 1) ...[
+                  const Text('Chọn kích cỡ', style: AppTextStyles.bodyStrong),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final s in widget.item.sizes)
+                        ChoiceChip(
+                          label: Text('${s.name} (${formatVnd(s.price)})'),
+                          selected: _selectedSize.id == s.id,
+                          onSelected: (val) {
+                            if (val) setState(() => _selectedSize = s);
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                for (final g in groups) ...[
+                  Row(
+                    children: [
+                      Text(g.name, style: AppTextStyles.bodyStrong),
+                      const SizedBox(width: 6),
+                      Text(
+                        g.isSingleSelect
+                            ? '(Chọn 1)'
+                            : '(Tối đa ${g.maxSelect})',
+                        style: AppTextStyles.caption,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final opt in g.options)
+                        FilterChip(
+                          label: Text(
+                            opt.priceDelta > 0
+                                ? '${opt.name} +${formatVnd(opt.priceDelta)}'
+                                : opt.name,
+                          ),
+                          selected: _selectedOptionIds.contains(opt.id),
+                          onSelected: (val) => _onOptionToggled(g, opt, val),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                const Text('Ghi chú món', style: AppTextStyles.bodyStrong),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _noteController,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    hintText: 'Ví dụ: ít ngọt, 30% đá, không lấy thìa...',
+                    counterText: '',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Số lượng', style: AppTextStyles.bodyStrong),
+                    QtyStepper(
+                      value: _qty,
+                      max: widget.controller.maxLineQty,
+                      onChanged: (val) {
+                        if (val > 0) setState(() => _qty = val);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _submit,
+            child: Text('Thêm vào bill · ${formatVnd(_totalPrice)}'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------- tab "Bill"
@@ -797,6 +1245,36 @@ class _LineRow extends StatelessWidget {
                   '${line.sizeName} · ${formatVnd(line.unitPrice)}${voided ? ' · Đã bỏ' : ''}',
                   style: AppTextStyles.caption,
                 ),
+                if (line.modifiers.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      line.modifiers
+                          .map((m) => m.priceDelta > 0
+                              ? '+ ${m.name} (+${formatVnd(m.priceDelta)})'
+                              : '+ ${m.name}')
+                          .join('\n'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: voided ? AppColors.textMuted : AppColors.brand,
+                        fontWeight: FontWeight.w500,
+                        decoration: strike,
+                      ),
+                    ),
+                  ),
+                if (line.note != null && line.note!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      'Ghi chú: ${line.note}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: voided ? AppColors.textMuted : AppColors.ink,
+                        decoration: strike,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

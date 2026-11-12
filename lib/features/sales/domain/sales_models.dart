@@ -136,12 +136,14 @@ class MenuItemEntry {
     required this.name,
     required this.group,
     required this.sizes,
+    this.soldOut = false,
   });
 
   final String id;
   final String name;
   final String? group;
   final List<MenuSizeOption> sizes;
+  final bool soldOut;
 }
 
 /// Gộp các dòng phẳng của `menu_for_sale()` thành danh sách món, mỗi món có nhiều size.
@@ -150,6 +152,7 @@ List<MenuItemEntry> groupMenuRows(List<Map<String, dynamic>> rows) {
   final order = <String>[];
   final names = <String, String>{};
   final groups = <String, String?>{};
+  final soldOuts = <String, bool>{};
   final sizes = <String, List<MenuSizeOption>>{};
   for (final row in rows) {
     final itemId = row.str('item_id');
@@ -157,6 +160,7 @@ List<MenuItemEntry> groupMenuRows(List<Map<String, dynamic>> rows) {
       order.add(itemId);
       names[itemId] = row.str('item_name');
       groups[itemId] = row.strOrNull('group_name');
+      soldOuts[itemId] = row['sold_out'] == true;
       sizes[itemId] = [];
     }
     sizes[itemId]!.add(MenuSizeOption(
@@ -168,8 +172,28 @@ List<MenuItemEntry> groupMenuRows(List<Map<String, dynamic>> rows) {
   return [
     for (final id in order)
       MenuItemEntry(
-          id: id, name: names[id]!, group: groups[id], sizes: sizes[id]!),
+        id: id,
+        name: names[id]!,
+        group: groups[id],
+        sizes: sizes[id]!,
+        soldOut: soldOuts[id] ?? false,
+      ),
   ];
+}
+
+class SelectedModifier {
+  const SelectedModifier({
+    required this.name,
+    required this.priceDelta,
+  });
+
+  factory SelectedModifier.fromJson(Map<String, dynamic> row) => SelectedModifier(
+        name: row.str('name'),
+        priceDelta: row.integer('price_delta'),
+      );
+
+  final String name;
+  final int priceDelta;
 }
 
 class BillLine {
@@ -181,6 +205,8 @@ class BillLine {
     required this.qty,
     required this.unitPrice,
     required this.voided,
+    this.note,
+    this.modifiers = const [],
   });
 
   factory BillLine.fromJson(Map<String, dynamic> row) => BillLine(
@@ -191,6 +217,13 @@ class BillLine {
         qty: row.integer('qty'),
         unitPrice: row.integer('unit_price'),
         voided: row.flag('voided'),
+        note: row.strOrNull('note'),
+        modifiers: row['modifiers'] == null
+            ? const []
+            : [
+                for (final m in asRows(row['modifiers']))
+                  SelectedModifier.fromJson(m),
+              ],
       );
 
   final String id;
@@ -200,6 +233,8 @@ class BillLine {
   final int qty;
   final int unitPrice;
   final bool voided;
+  final String? note;
+  final List<SelectedModifier> modifiers;
 
   int get total => qty * unitPrice;
 }
@@ -370,4 +405,87 @@ class ShiftBillSummary {
   String get title => billType == BillType.takeAway
       ? 'Mang đi ${formatBillNo(billNo)}'
       : (tableName ?? 'Bill ${formatBillNo(billNo)}');
+}
+
+/// Tùy chọn (đường, đá, topping...) thuộc một nhóm tùy chọn
+class ModifierOption {
+  const ModifierOption({
+    required this.id,
+    required this.groupId,
+    required this.name,
+    required this.priceDelta,
+    this.isDefault = false,
+  });
+
+  final String id;
+  final String groupId;
+  final String name;
+  final int priceDelta;
+  final bool isDefault;
+}
+
+/// Nhóm tùy chọn (ví dụ: Lượng đá, Độ ngọt, Topping)
+class ModifierGroup {
+  const ModifierGroup({
+    required this.id,
+    required this.name,
+    required this.minSelect,
+    required this.maxSelect,
+    required this.options,
+    required this.itemIds,
+  });
+
+  final String id;
+  final String name;
+  final int minSelect;
+  final int maxSelect;
+  final List<ModifierOption> options;
+  final List<String> itemIds;
+
+  bool get isSingleSelect => minSelect <= 1 && maxSelect == 1;
+  bool appliesToItem(String itemId) => itemIds.contains(itemId);
+}
+
+/// Gộp các dòng phẳng từ `menu_modifiers()` thành danh sách nhóm tùy chọn
+List<ModifierGroup> groupModifierRows(List<Map<String, dynamic>> rows) {
+  final groupOrder = <String>[];
+  final groupNames = <String, String>{};
+  final groupMins = <String, int>{};
+  final groupMaxs = <String, int>{};
+  final groupItems = <String, List<String>>{};
+  final groupOptions = <String, List<ModifierOption>>{};
+
+  for (final row in rows) {
+    final gId = row.str('group_id');
+    if (!groupOptions.containsKey(gId)) {
+      groupOrder.add(gId);
+      groupNames[gId] = row.str('group_name');
+      groupMins[gId] = row.integer('min_select');
+      groupMaxs[gId] = row.integer('max_select');
+      final rawItems = row['item_ids'];
+      groupItems[gId] = rawItems is List
+          ? rawItems.map((e) => e.toString()).toList()
+          : <String>[];
+      groupOptions[gId] = [];
+    }
+    groupOptions[gId]!.add(ModifierOption(
+      id: row.str('option_id'),
+      groupId: gId,
+      name: row.str('option_name'),
+      priceDelta: row.integer('price_delta'),
+      isDefault: row['is_default'] == true,
+    ));
+  }
+
+  return [
+    for (final id in groupOrder)
+      ModifierGroup(
+        id: id,
+        name: groupNames[id]!,
+        minSelect: groupMins[id]!,
+        maxSelect: groupMaxs[id]!,
+        options: groupOptions[id]!,
+        itemIds: groupItems[id]!,
+      ),
+  ];
 }

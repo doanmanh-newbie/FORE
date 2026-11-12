@@ -284,4 +284,92 @@ void main() {
       expect(await f, equals(45000));
     });
   });
+
+  group('tùy chọn và ghi chú (M3)', () {
+    test('lọc nhóm tùy chọn theo món và thêm dòng tùy chỉnh', () async {
+      repo.modifierGroups = [
+        const ModifierGroup(
+          id: 'g-ice',
+          name: 'Lượng đá',
+          minSelect: 1,
+          maxSelect: 1,
+          itemIds: ['cf'],
+          options: [
+            ModifierOption(id: 'ice-100', groupId: 'g-ice', name: 'Đá chung', priceDelta: 0),
+            ModifierOption(id: 'ice-separate', groupId: 'g-ice', name: 'Đá riêng', priceDelta: 0),
+          ],
+        ),
+        const ModifierGroup(
+          id: 'g-top',
+          name: 'Topping',
+          minSelect: 0,
+          maxSelect: 3,
+          itemIds: ['cf'],
+          options: [
+            ModifierOption(id: 'top-boba', groupId: 'g-top', name: 'Trân châu', priceDelta: 5000),
+          ],
+        ),
+        const ModifierGroup(
+          id: 'g-bread',
+          name: 'Bánh mì',
+          minSelect: 0,
+          maxSelect: 1,
+          itemIds: ['bm'],
+          options: [
+            ModifierOption(id: 'no-onion', groupId: 'g-bread', name: 'Không hành', priceDelta: 0),
+          ],
+        ),
+      ];
+      await c.load();
+
+      final cfMods = c.modifiersForItem('cf');
+      expect(cfMods, hasLength(2));
+      expect(cfMods.map((g) => g.name).toList(), equals(['Lượng đá', 'Topping']));
+
+      final bmMods = c.modifiersForItem('bm');
+      expect(bmMods, hasLength(1));
+      expect(bmMods.first.name, equals('Bánh mì'));
+
+      // Thêm dòng cà phê size M với trân châu (+5.000đ) và ghi chú
+      final ok = await c.addCustomLine(
+        sizeId: 'cf-m',
+        qty: 2,
+        options: ['top-boba'],
+        note: 'Ít ngọt',
+      );
+      expect(ok, isTrue);
+      expect(c.bill!.lines, hasLength(1));
+      final line = c.bill!.lines.first;
+      expect(line.itemName, equals('Cà phê sữa'));
+      expect(line.qty, equals(2));
+      expect(line.unitPrice, equals(25000 + 5000)); // 30.000
+      expect(line.total, equals(60000));
+      expect(line.note, equals('Ít ngọt'));
+      expect(line.modifiers, hasLength(1));
+      expect(line.modifiers.first.name, equals('Trân châu'));
+    });
+  });
+
+  group('báo hết món trong ca (M3)', () {
+    test('báo hết món và mở lại món cập nhật cờ soldOut', () async {
+      expect(c.menu.first.soldOut, isFalse);
+
+      final okSold = await c.setItemSoldOut(
+        itemId: 'cf',
+        soldOut: true,
+        reason: 'Hết sữa đặc',
+      );
+      expect(okSold, isTrue);
+      expect(c.menu.firstWhere((i) => i.id == 'cf').soldOut, isTrue);
+      expect(repo.calls, contains('setItemSoldOut:cf:true:Hết sữa đặc'));
+
+      final okReopen = await c.setItemSoldOut(
+        itemId: 'cf',
+        soldOut: false,
+      );
+      expect(okReopen, isTrue);
+      expect(c.menu.firstWhere((i) => i.id == 'cf').soldOut, isFalse);
+      expect(repo.calls, contains('setItemSoldOut:cf:false:null'));
+    });
+  });
 }
