@@ -66,10 +66,22 @@ class ShiftController extends ChangeNotifier {
   /// Quên trạng thái ca đã tải (đăng xuất, đổi tài khoản) để người sau không thấy
   /// thoáng qua dữ liệu của người trước.
   void reset() {
+    _generation++; // bỏ kết quả của các request đang bay
     _state = const ShiftLoading();
     _opening = false;
     _openError = null;
     notifyListeners();
+  }
+
+  int _generation = 0;
+  String? _scope;
+
+  /// Gắn controller với phạm vi hiện tại (quán + người dùng; `null` khi đã đăng xuất).
+  /// Đổi phạm vi thì quên ca đã tải, kể cả khi đăng xuất/đổi quán từ nơi không gọi [reset].
+  void bindScope(String? scope) {
+    if (scope == _scope) return;
+    _scope = scope;
+    reset();
   }
 
   /// Tải lại ca đang mở. Gọi khi vào Home và khi bấm "Thử lại".
@@ -81,10 +93,13 @@ class ShiftController extends ChangeNotifier {
       _state = const ShiftLoading();
       notifyListeners();
     }
+    final generation = _generation;
     try {
       final shift = await _repository.currentShift();
+      if (generation != _generation) return;
       _state = shift == null ? const ShiftNone() : ShiftOpen(shift);
     } on AppFailure catch (f) {
+      if (generation != _generation) return;
       if (!quiet || _state is ShiftLoading) _state = ShiftLoadFailed(f);
     }
     notifyListeners();
@@ -135,10 +150,13 @@ class ShiftController extends ChangeNotifier {
 
   /// Tải lại ca đang mở mà không chuyển sang trạng thái "đang tải" (tránh nháy màn).
   Future<void> _reloadQuietly() async {
+    final generation = _generation;
     try {
       final shift = await _repository.currentShift();
+      if (generation != _generation) return;
       _state = shift == null ? const ShiftNone() : ShiftOpen(shift);
     } on AppFailure catch (f) {
+      if (generation != _generation) return;
       _state = ShiftLoadFailed(f);
     }
   }

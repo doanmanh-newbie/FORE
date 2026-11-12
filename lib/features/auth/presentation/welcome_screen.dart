@@ -23,7 +23,7 @@ enum _Mode { owner, staff }
 
 /// Màn đầu kiêm đăng nhập. Công tắc "Chủ quán | Nhân viên" nằm ngay trên form, đổi là form đổi theo.
 /// Chủ quán: email + mật khẩu (phải có tài khoản rõ ràng).
-/// Nhân viên: chỉ số điện thoại hoặc email, không mật khẩu, không mã xác nhận (chỉ để thử).
+/// Nhân viên xác minh email hoặc số điện thoại bằng OTP.
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 

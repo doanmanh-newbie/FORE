@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/validation/field_validator.dart';
 import '../domain/auth_repository.dart';
 
 /// Gửi email đặt lại mật khẩu.
-class ForgotPasswordController extends ChangeNotifier {
+class ForgotPasswordController extends ChangeNotifier with NotifyWhenAlive {
   ForgotPasswordController(this._repository);
 
   final AuthRepository _repository;

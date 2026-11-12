@@ -19,6 +19,8 @@ class OwnerDashboardData {
     required this.businessStart,
     required this.businessEnd,
     this.recentSales = const [],
+    this.pendingReviewCount = 0,
+    this.unavailable = const {},
   });
 
   final List<Map<String, dynamic>> shifts;
@@ -26,6 +28,7 @@ class OwnerDashboardData {
   final Map<String, dynamic>? openShift;
   final int cashSales;
   final int transferSales;
+  /// Doanh thu hôm qua TÍNH ĐẾN CÙNG GIỜ (database tính), để so sánh công bằng với hôm nay.
   final int yesterdaySales;
   final int billCount;
   final int pendingInvites;
@@ -39,6 +42,12 @@ class OwnerDashboardData {
   final DateTime businessStart;
   final DateTime businessEnd;
   final List<DailySalesPoint> recentSales;
+
+  /// Số ca vàng/đỏ trong 7 ngày gần nhất mà chủ chưa đánh dấu đã xử lý.
+  final int pendingReviewCount;
+
+  /// Các phần số liệu phụ chưa tải được: `menu`, `stock`, `trend`.
+  final Set<String> unavailable;
 
   int get totalSales => cashSales + transferSales;
 
@@ -80,6 +89,23 @@ class OwnerShiftReport {
   Map<String, dynamic> get cash =>
       Map<String, dynamic>.from(report['cash'] as Map? ?? const {});
   String get overall => summary['overall'] as String? ?? 'no_data';
+}
+
+/// Một trang danh sách ca đã đóng (từ `owner_shift_list`).
+class OwnerShiftPage {
+  const OwnerShiftPage({
+    required this.items,
+    required this.hasMore,
+    this.nextBefore,
+    this.openShift,
+  });
+
+  final List<OwnerShiftReport> items;
+  final bool hasMore;
+
+  /// Con trỏ để lấy trang tiếp theo (giờ mở của ca cuối trang).
+  final DateTime? nextBefore;
+  final Map<String, dynamic>? openShift;
 }
 
 /// Thông báo có nguồn dữ liệu ổn định để theo dõi trạng thái đã đọc.

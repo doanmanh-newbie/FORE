@@ -96,6 +96,16 @@ begin
     raise exception 'owner invite history status wrong: %', v_status;
   end if;
   reset session authorization;
+
+  -- Tự sửa user_metadata không đổi được loại tài khoản mà máy chủ báo về.
+  update auth.users set raw_user_meta_data = '{"account_kind":"staff"}'
+   where id = v_owner::uuid;
+  perform set_config('request.jwt.claim.sub', v_owner, true);
+  set local session authorization authenticated;
+  if my_session_context()->>'account_kind' <> 'owner' then
+    raise exception 'account_kind must come from app_metadata, not user_metadata';
+  end if;
+  reset session authorization;
   raise notice 'SESSION CONTEXT + INVITE EXPIRY: PASS';
 end
 $test$;

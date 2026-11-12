@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="${FORE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DB="$ROOT/database"
 SUFFIX="$$"
-MIG_DB="fore_mig_${SUFFIX}"
-INS_DB="fore_ins_${SUFFIX}"
+SRC_DB="fore_src_${SUFFIX}"
 REB_DB="fore_reb_${SUFFIX}"
-TMP="$(mktemp -d "$ROOT/.install-drift.XXXXXX")"
+TMP="$(mktemp -d "$ROOT/.sql-module-drift.XXXXXX")"
 CREATED=()
 
 cleanup() {
   for name in "${CREATED[@]}"; do dropdb --if-exists "$name" >/dev/null 2>&1 || true; done
   case "$TMP" in
-    "$ROOT"/.install-drift.*) rm -rf -- "$TMP" ;;
+    "$ROOT"/.sql-module-drift.*) rm -rf -- "$TMP" ;;
     *) echo "Refusing to remove unexpected temporary path: $TMP" >&2 ;;
   esac
 }
 trap cleanup EXIT
 
-for command in psql createdb dropdb diff; do
+for command in psql createdb dropdb pg_dump diff; do
   command -v "$command" >/dev/null || { echo "Missing command: $command" >&2; exit 2; }
 done
 
@@ -33,26 +32,29 @@ make_db() {
 apply() { psql -X -v ON_ERROR_STOP=1 -d "$1" -f "$2" >/dev/null; }
 
 modules=(01_foundation.sql 02_operations_reconciliation.sql \
-  03_read_apis.sql 04_membership_sessions.sql)
+  03_read_apis.sql 04_membership_sessions.sql \
+  05_menu_management.sql 06_menu_options.sql \
+  07_inventory.sql 08_settings.sql)
 
-make_db "$MIG_DB"
+make_db "$SRC_DB"
 for source in "${modules[@]}"; do
-  apply "$MIG_DB" "$DB/$source"
-done
-
-make_db "$INS_DB"
-for source in "${modules[@]}"; do
-  apply "$INS_DB" "$DB/install/$source"
+  apply "$SRC_DB" "$DB/$source"
 done
 
 make_db "$REB_DB"
 apply "$REB_DB" "$DB/dev/rebuild_test_database.sql"
 
-query="select p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')|' || md5(pg_get_functiondef(p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' order by 1;"
-psql -X -At -d "$MIG_DB" -c "$query" > "$TMP/migrations"
-psql -X -At -d "$INS_DB" -c "$query" > "$TMP/install"
-psql -X -At -d "$REB_DB" -c "$query" > "$TMP/rebuild"
+dump_schema() {
+  local name="$1" out="$2"
+  pg_dump --schema-only --no-owner \
+    --schema=public --schema=auth --schema=extensions \
+    --dbname="$name" > "$out"
+  # Newer pg_dump versions emit a random psql guard token per output.
+  sed -i '/^\\restrict /d; /^\\unrestrict /d' "$out"
+}
 
-diff -u "$TMP/migrations" "$TMP/install"
-diff -u "$TMP/migrations" "$TMP/rebuild"
-echo 'INSTALL DRIFT: PASS (public function definitions match across grouped SQL, install copies, and test rebuild)'
+dump_schema "$SRC_DB" "$TMP/modules"
+dump_schema "$REB_DB" "$TMP/rebuild"
+
+diff -u "$TMP/modules" "$TMP/rebuild"
+echo 'SQL MODULE DRIFT: PASS (tables, columns, constraints, indexes, RLS/policies, grants, triggers and functions match across the eight source modules and generated test rebuild)'

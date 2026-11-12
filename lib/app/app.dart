@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,10 +10,14 @@ import '../features/auth/application/session_controller.dart';
 import '../features/auth/domain/auth_repository.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/inventory/data/rpc_inventory_repository.dart';
+import '../features/inventory/data/rpc_kho_repository.dart';
+import '../features/inventory/domain/kho_repository.dart';
+import '../features/settings/data/rpc_settings_repository.dart';
+import '../features/settings/domain/settings_repository.dart';
 import '../features/inventory/domain/inventory_repository.dart';
 import '../features/owner/data/owner_dashboard_repository.dart';
-import '../features/owner/data/supabase_owner_menu_repository.dart';
-import '../features/owner/domain/owner_menu_repository.dart';
+import '../features/owner/menu/menu_image_service.dart';
+import '../features/owner/menu/menu_repository.dart';
 import '../features/shift/application/shift_controller.dart';
 import '../features/shift/domain/shift_repository.dart';
 import '../features/shop/domain/shop_repository.dart';
@@ -54,17 +60,35 @@ class ForeApp extends StatelessWidget {
         Provider<InventoryRepository>(
           create: (context) => context.read<RpcInventoryRepository>(),
         ),
+        Provider<SettingsRepository>(
+          create: (context) => RpcSettingsRepository(context.read<RpcClient>()),
+        ),
+        Provider<KhoRepository>(
+          create: (context) => RpcKhoRepository(context.read<RpcClient>()),
+        ),
         Provider<CashRepository>(
           create: (context) => context.read<RpcInventoryRepository>(),
         ),
         Provider<OwnerDashboardDataSource>(
           create: (_) => OwnerDashboardRepository(Supabase.instance.client),
         ),
-        Provider<OwnerMenuRepository>(
-          create: (_) => SupabaseOwnerMenuRepository(Supabase.instance.client),
+        Provider<MenuRepository>(
+          create: (context) => RpcMenuRepository(context.read<RpcClient>()),
         ),
-        ChangeNotifierProvider<ShiftController>(
+        Provider<MenuImageService>(
+          create: (_) => SupabaseMenuImageService(Supabase.instance.client),
+        ),
+        ChangeNotifierProxyProvider<SessionController, ShiftController>(
           create: (_) => ShiftController(shiftRepository),
+          update: (_, session, shift) {
+            final state = session.state;
+            final scope = state is SessionReady
+                ? '${state.profile.shopId}|${state.profile.staffId}'
+                : null;
+            // Đổi quán/tài khoản/đăng xuất: quên ca cũ (hoãn để không báo thay đổi lúc build).
+            scheduleMicrotask(() => shift!.bindScope(scope));
+            return shift!;
+          },
         ),
       ],
       child: MaterialApp(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fore/core/errors/app_failure.dart';
 import 'package:fore/features/auth/domain/auth_models.dart';
 import 'package:fore/features/auth/domain/auth_repository.dart';
@@ -11,6 +13,7 @@ class FakeAuthRepository implements AuthRepository {
   SessionContext? sessionContext;
   String? rememberedShopId;
   AppFailure? failure;
+  bool staffDeviceTrustValid = true;
 
   /// Lỗi riêng cho đăng xuất (ví dụ mất mạng lúc đăng xuất).
   AppFailure? signOutFailure;
@@ -19,9 +22,22 @@ class FakeAuthRepository implements AuthRepository {
   final registered = <String>{};
   int signUpCalls = 0;
   int signOutCalls = 0;
+  int fetchSessionContextCalls = 0;
+
+  /// Mô phỏng phản hồi chậm/nhanh khác nhau theo tài khoản (để dựng race).
+  final contextByUser = <String, SessionContext>{};
+  final fetchDelayByUser = <String, Duration>{};
 
   @override
   AuthUser? get currentUser => user;
+
+  final _userIds = StreamController<String?>.broadcast();
+
+  @override
+  Stream<String?> get userIdChanges => _userIds.stream;
+
+  /// Mô phỏng phiên Auth đổi từ nơi khác (tab khác).
+  void emitUserId(String? id) => _userIds.add(id);
 
   @override
   Future<AuthUser> signIn({
@@ -57,44 +73,57 @@ class FakeAuthRepository implements AuthRepository {
 
   /// Tài khoản nhân viên đã tạo, theo `StaffContact.value`.
   final staffAccounts = <String>{};
-  int signUpStaffCalls = 0;
+  int staffOtpRequestCount = 0;
+  int staffOtpVerifyCount = 0;
+  bool? lastStaffOtpCreateUser;
+  String? lastStaffOtpFullName;
+  String? lastStaffOtpContact;
+  String? lastStaffOtpBirthDate;
 
   @override
-  Future<AuthUser> signInStaff(StaffContact contact) async {
-    await _wait();
-    if (failure != null) throw failure!;
-    if (!staffAccounts.contains(contact.value)) {
-      throw const StaffNotFoundFailure();
-    }
-    return user = AuthUser(
-      id: 'staff-${contact.value}',
-      email: contact.email ?? '',
-      phone: contact.phone?.substring(1) ?? '',
-      accountKind: AccountKind.staff,
-    );
-  }
-
-  @override
-  Future<AuthUser> signUpStaff({
-    required StaffContact contact,
-    required String fullName,
-    required DateTime birthDate,
+  Future<void> requestStaffOtp(
+    StaffContact contact, {
+    required bool createUser,
+    String? fullName,
+    DateTime? birthDate,
   }) async {
-    signUpStaffCalls++;
+    staffOtpRequestCount++;
+    lastStaffOtpCreateUser = createUser;
+    lastStaffOtpFullName = fullName;
+    lastStaffOtpContact = contact.value;
+    lastStaffOtpBirthDate = birthDate == null
+        ? null
+        : '${birthDate.year.toString().padLeft(4, '0')}-'
+            '${birthDate.month.toString().padLeft(2, '0')}-'
+            '${birthDate.day.toString().padLeft(2, '0')}';
     await _wait();
     if (failure != null) throw failure!;
-    if (!staffAccounts.add(contact.value)) {
+    if (createUser && staffAccounts.contains(contact.value)) {
       throw const StaffAlreadyExistsFailure();
     }
+    if (createUser) staffAccounts.add(contact.value);
+  }
+
+  @override
+  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token) async {
+    staffOtpVerifyCount++;
+    await _wait();
+    if (failure != null) throw failure!;
+    if (token != '123456' || !staffAccounts.contains(contact.value)) {
+      throw const InvalidOtpFailure();
+    }
     return user = AuthUser(
       id: 'staff-${contact.value}',
       email: contact.email ?? '',
       phone: contact.phone?.substring(1) ?? '',
-      displayName: fullName,
-      birthDate: birthDate.toIso8601String().substring(0, 10),
+      displayName: lastStaffOtpFullName ?? '',
+      birthDate: lastStaffOtpBirthDate ?? '',
       accountKind: AccountKind.staff,
     );
   }
+
+  @override
+  Future<bool> validateStaffDeviceTrust() async => staffDeviceTrustValid;
 
   @override
   Future<void> signOut() async {
@@ -117,6 +146,12 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<SessionContext> fetchSessionContext({String? preferredShopId}) async {
+    fetchSessionContextCalls++;
+    final byUser = contextByUser[user?.id];
+    if (byUser != null) {
+      await Future<void>.delayed(fetchDelayByUser[user?.id] ?? Duration.zero);
+      return byUser;
+    }
     await _wait();
     if (failure != null) throw failure!;
     if (sessionContext != null) return sessionContext!;

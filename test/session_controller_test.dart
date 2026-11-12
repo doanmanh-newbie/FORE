@@ -33,6 +33,21 @@ void main() {
     expect(c.state, isA<SessionSignedOut>());
   });
 
+  test('nhân viên mất thiết bị tin cậy thì bị đăng xuất trước khi tải dữ liệu',
+      () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.staffDeviceTrustValid = false;
+    final c = build();
+
+    await c.restore();
+
+    expect(repo.signOutCalls, 1);
+    expect(repo.fetchSessionContextCalls, 0);
+    expect(repo.user, isNull);
+    expect(c.state, isA<SessionSignedOut>());
+  });
+
   test('đăng nhập và có membership đang hoạt động -> Ready', () async {
     repo.user = const AuthUser(
         id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
@@ -143,6 +158,57 @@ void main() {
     expect(watch.elapsedMilliseconds, greaterThanOrEqualTo(18));
   });
 
+  test('lỗi dịch vụ khi còn phiên Auth -> Failed, không bị đăng xuất', () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.failure = const UnknownFailure();
+    final c = build();
+    await c.restore();
+    expect(c.state, isA<SessionFailed>());
+    expect(AppRoutes.routeFor(c.state), isNull);
+    repo.failure = null;
+    repo.profile = profile;
+    await c.restore();
+    expect(c.state, isA<SessionReady>());
+  });
+
+  test('tab khác đăng xuất -> SignedOut', () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.profile = profile;
+    final c = build();
+    await c.restore();
+    expect(c.state, isA<SessionReady>());
+    repo.user = null;
+    repo.emitUserId(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(c.state, isA<SessionSignedOut>());
+  });
+
+  test('tab khác đổi sang tài khoản khác -> tải lại phiên', () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.profile = profile;
+    final c = build();
+    await c.restore();
+    repo.user = const AuthUser(
+        id: 'u2', email: 'binh@quan.vn', accountKind: AccountKind.staff);
+    repo.profile = const Profile(
+      staffId: 's2',
+      fullName: 'Bình',
+      role: StaffRole.staff,
+      hasPin: false,
+      active: true,
+      shopId: 'shop-1',
+      shopName: 'Quán A',
+    );
+    repo.emitUserId('u2');
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+    final state = c.state as SessionReady;
+    expect(state.profile.fullName, 'Bình');
+  });
+
   test('sign out -> SignedOut', () async {
     repo.user = const AuthUser(
         id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
@@ -190,5 +256,105 @@ void main() {
     repo.signOutFailure = const NoNetworkFailure();
     expect(await c.signOut(), isA<NoNetworkFailure>());
     expect(c.state, isA<SessionReady>());
+  });
+
+  test('kết quả _resolve cũ về sau không ghi đè trạng thái mới hơn', () async {
+    SessionContext ctxFor(String shopId) => SessionContext(
+          accountKind: AccountKind.staff,
+          pendingInviteCount: 0,
+          shops: [
+            SessionShop(
+              shopId: shopId,
+              shopName: shopId,
+              staffId: 's',
+              fullName: 'An',
+              role: StaffRole.staff,
+              active: true,
+              hasPin: false,
+              isCurrent: true,
+            ),
+          ],
+        );
+    AuthUser staff(String id) =>
+        AuthUser(id: id, email: '$id@quan.vn', accountKind: AccountKind.staff);
+
+    repo.user = staff('u1');
+    repo.profile = profile;
+    final c = build();
+    await c.restore();
+    expect(c.state, isA<SessionReady>());
+
+    repo.contextByUser['u1'] = ctxFor('shop-cu');
+    repo.fetchDelayByUser['u1'] = const Duration(milliseconds: 100);
+    repo.contextByUser['u2'] = ctxFor('shop-moi');
+
+    final slow = c.chooseShop('shop-cu'); // chậm, thuộc tài khoản u1
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    repo.user = staff('u2');
+    repo.emitUserId('u2'); // đổi tài khoản, trả về nhanh
+    await slow;
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+
+    expect((c.state as SessionReady).profile.shopId, 'shop-moi');
+  });
+
+  test('đăng xuất khi đang tải phiên thì kết quả tải về sau bị bỏ', () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.profile = profile;
+    final c = build();
+    await c.restore();
+
+    repo.contextByUser['u1'] = const SessionContext(
+      accountKind: AccountKind.staff,
+      pendingInviteCount: 0,
+      shops: [
+        SessionShop(
+          shopId: 'shop-1',
+          shopName: 'Quán A',
+          staffId: 's1',
+          fullName: 'Nguyễn An',
+          role: StaffRole.staff,
+          active: true,
+          hasPin: false,
+          isCurrent: true,
+        ),
+      ],
+    );
+    repo.fetchDelayByUser['u1'] = const Duration(milliseconds: 100);
+
+    final slow = c.chooseShop('shop-1');
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    await c.signOut();
+    await slow;
+
+    expect(c.state, isA<SessionSignedOut>());
+  });
+
+  test('có quán nhưng tất cả đã ngưng hoạt động -> không kẹt, chờ lời mời',
+      () async {
+    repo.user = const AuthUser(
+        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
+    repo.sessionContext = const SessionContext(
+      accountKind: AccountKind.staff,
+      pendingInviteCount: 0,
+      shops: [
+        SessionShop(
+          shopId: 'shop-1',
+          shopName: 'Quán A',
+          staffId: 's1',
+          fullName: 'Nguyễn An',
+          role: StaffRole.staff,
+          active: false,
+          hasPin: false,
+          isCurrent: false,
+        ),
+      ],
+    );
+    final c = build();
+
+    await c.restore();
+
+    expect(c.state, isA<SessionAwaitingInvite>());
   });
 }

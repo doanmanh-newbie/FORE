@@ -1,5 +1,0 @@
-[    3922ms] [INFO] DDC is about to load 1/2 scripts with pool size = 1000 @ http://localhost:29488/ddc_module_loader.js:1014
-[    4479ms] [INFO] DDC is about to load 987/987 scripts with pool size = 1000 @ http://localhost:29488/ddc_module_loader.js:1014
-[   27187ms] [LOG] Starting application from main method in: org-dartlang-app:///web_entrypoint.dart. @ http://localhost:29488/ddc_module_loader.js:1585
-[   28228ms] [LOG] supabase.supabase_flutter: INFO: ***** Supabase init completed *****  @ http://localhost:29488/dart_sdk.js:26345
-[  217206ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:29488/#/welcome:0

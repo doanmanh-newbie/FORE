@@ -134,14 +134,16 @@ end $$;
 -- Thực đơn đang bán (món và size đều đang bật). Không có công thức.
 create or replace function menu_for_sale()
 returns table (item_id uuid, item_name text, group_name text, size_id uuid, size_name text, price integer)
-language plpgsql stable security definer set search_path = public as $$
+language plpgsql volatile security definer set search_path = public as $$
 begin
   perform _require_staff();
+  perform _menu_apply_due();     -- giá hẹn tới giờ thì áp dụng
   return query
     select mi.id, mi.name, mi.group_name, ms.id, ms.size_name, ms.price
       from menu_items mi join menu_sizes ms on ms.item_id = mi.id
-     where mi.active and ms.active and mi.shop_id = app_shop_id() and ms.shop_id = app_shop_id()
-     order by mi.group_name nulls last, mi.name, ms.price, ms.size_name;
+      left join menu_categories mc on mc.shop_id = mi.shop_id and lower(btrim(mc.name)) = lower(btrim(mi.group_name))
+     where mi.active and not mi.is_draft and ms.active and mi.shop_id = app_shop_id() and ms.shop_id = app_shop_id()
+     order by coalesce(mc.sort_order, 9999), mi.group_name nulls last, mi.name, ms.price, ms.size_name;
 end $$;
 
 -- Chi tiết một bill (màn gọi món / thanh toán). Số tiền tính ở database, app chỉ hiển thị.
@@ -354,6 +356,9 @@ declare
   v_bills integer;
   v_invites integer;
   v_missing integer;
+  v_missing_sizes jsonb;
+  v_pending integer := 0;
+  v_old record;
   v_staff_active integer := 0;
   v_low_stock jsonb;
   v_notifications jsonb := '[]'::jsonb;
@@ -399,12 +404,20 @@ begin
     from bills b
    where b.shop_id = v_shop and b.status = 'paid'
      and b.paid_at >= p_from - interval '1 day'
-     and b.paid_at < p_to - interval '1 day';
+     and b.paid_at < least(now(), p_to) - interval '1 day';   -- hôm qua TÍNH ĐẾN CÙNG GIỜ, để so sánh công bằng
 
   select count(*)::integer into v_invites
     from shop_invites i where i.shop_id = v_shop and i.status = 'pending';
 
   select count(*)::integer into v_missing
+    from menu_sizes ms
+    join menu_items mi on mi.id = ms.item_id and mi.shop_id = ms.shop_id
+   where ms.shop_id = v_shop and ms.active and mi.active
+     and not exists (select 1 from recipe_lines rl
+                      where rl.shop_id = v_shop and rl.size_id = ms.id);
+
+  select coalesce(jsonb_agg(ms.id order by mi.name, ms.size_name), '[]'::jsonb)
+    into v_missing_sizes
     from menu_sizes ms
     join menu_items mi on mi.id = ms.item_id and mi.shop_id = ms.shop_id
    where ms.shop_id = v_shop and ms.active and mi.active
@@ -431,7 +444,8 @@ begin
                'status', recent.status,
                'opened_at', recent.opened_at,
                'closed_at', recent.closed_at,
-               'opened_by_name', recent.opened_by_name),
+               'opened_by_name', recent.opened_by_name,
+               'closed_by_name', recent.closed_by_name),
              'review', jsonb_build_object(
                'handled', coalesce(recent.handled, false),
                'note', recent.note),
@@ -442,14 +456,39 @@ begin
     into v_reports
     from (
       select s.id, s.status, s.opened_at, s.closed_at, st.full_name as opened_by_name,
-             r.handled, r.note
+             cl.full_name as closed_by_name, r.handled, r.note
         from shifts s
         join staff st on st.id = s.opened_by and st.shop_id = s.shop_id
+        left join staff cl on cl.id = s.closed_by and cl.shop_id = s.shop_id
         left join owner_shift_reviews r on r.shop_id = s.shop_id and r.shift_id = s.id
        where s.shop_id = v_shop
        order by s.opened_at desc
        limit 3
     ) recent;
+
+  -- Ca cần xử lý = vàng/đỏ mà chủ chưa đánh dấu đã xử lý, trong 7 ngày gần nhất.
+  -- 3 ca mới nhất đã có báo cáo ở trên; chỉ tính thêm tối đa 7 ca cũ hơn để giữ tốc độ.
+  select count(*)::integer into v_pending
+    from jsonb_array_elements(v_reports) e
+   where e -> 'shift' ->> 'status' = 'closed'
+     and (e -> 'shift' ->> 'opened_at')::timestamptz >= now() - interval '7 days'
+     and coalesce(e -> 'report' -> 'summary' ->> 'overall', '') in ('warn', 'alert')
+     and not coalesce((e -> 'review' ->> 'handled')::boolean, false);
+  for v_old in
+    select s.id
+      from shifts s
+      left join owner_shift_reviews r on r.shop_id = s.shop_id and r.shift_id = s.id
+     where s.shop_id = v_shop and s.status = 'closed'
+       and s.opened_at >= now() - interval '7 days'
+       and s.id not in (select (e -> 'shift' ->> 'id')::uuid from jsonb_array_elements(v_reports) e)
+       and not coalesce(r.handled, false)
+     order by s.opened_at desc
+     limit 7
+  loop
+    if coalesce(shift_report(v_old.id) -> 'summary' ->> 'overall', '') in ('warn', 'alert') then
+      v_pending := v_pending + 1;
+    end if;
+  end loop;
 
   select coalesce(jsonb_agg(jsonb_build_object(
            'id', 'invite:' || i.id::text,
@@ -501,6 +540,8 @@ begin
     'bill_count', v_bills,
     'pending_invites', v_invites,
     'missing_recipe_count', v_missing,
+    'missing_recipe_sizes', v_missing_sizes,
+    'pending_review_count', v_pending,
     'active_staff_count', v_staff_active,
     'low_stock', v_low_stock,
     'notifications', v_notifications,
@@ -510,3 +551,91 @@ end $$;
 revoke all on function owner_dashboard(timestamptz, timestamptz) from public, anon;
 grant execute on function owner_dashboard(timestamptz, timestamptz) to authenticated;
 
+-- ---------- Danh sách ca đã đóng cho màn Đối soát (chọn ngày, lọc, tải thêm) ----------
+-- p_from/p_to: khoảng ngày làm việc (tối đa 62 ngày) tính theo giờ MỞ ca.
+-- p_filter: all | attention (ca vàng/đỏ) | unhandled (chủ chưa đánh dấu đã xử lý)
+--           | pending (vàng/đỏ VÀ chưa xử lý: việc chủ còn phải làm).
+-- p_before: con trỏ phân trang = opened_at của ca cuối trang trước.
+-- Trả về { open_shift, items:[{shift, review, report}], has_more, next_before }.
+create or replace function owner_shift_list(
+  p_from timestamptz,
+  p_to timestamptz,
+  p_filter text default 'all',
+  p_limit integer default 10,
+  p_before timestamptz default null)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare
+  v_shop uuid := app_shop_id();
+  v_limit integer := least(greatest(coalesce(p_limit, 10), 1), 30);
+  v_filter text := coalesce(p_filter, 'all');
+  v_items jsonb := '[]'::jsonb;
+  v_open jsonb;
+  v_count integer := 0;
+  v_has_more boolean := false;
+  v_last timestamptz;
+  v_report jsonb;
+  r record;
+begin
+  if v_shop is null or not app_is_owner() then
+    raise exception 'OWNER_ONLY';
+  end if;
+  if v_filter not in ('all', 'attention', 'unhandled', 'pending') then
+    raise exception 'FILTER_INVALID';
+  end if;
+  if p_from is null or p_to is null or p_to <= p_from
+     or p_to - p_from > interval '62 days' then
+    raise exception 'DATE_RANGE_INVALID';
+  end if;
+
+  select jsonb_build_object('id', s.id, 'opened_at', s.opened_at,
+                            'opened_by_name', st.full_name)
+    into v_open
+    from shifts s
+    join staff st on st.id = s.opened_by and st.shop_id = s.shop_id
+   where s.shop_id = v_shop and s.status = 'open'
+   limit 1;
+
+  for r in
+    select s.id, s.opened_at, s.closed_at, s.status,
+           st.full_name as opened_by_name, cl.full_name as closed_by_name,
+           coalesce(rv.handled, false) as handled, rv.note
+      from shifts s
+      join staff st on st.id = s.opened_by and st.shop_id = s.shop_id
+      left join staff cl on cl.id = s.closed_by and cl.shop_id = s.shop_id
+      left join owner_shift_reviews rv on rv.shop_id = s.shop_id and rv.shift_id = s.id
+     where s.shop_id = v_shop and s.status = 'closed'
+       and s.opened_at >= p_from and s.opened_at < p_to
+       and (p_before is null or s.opened_at < p_before)
+       and (v_filter not in ('unhandled', 'pending') or not coalesce(rv.handled, false))
+     order by s.opened_at desc
+  loop
+    v_report := shift_report(r.id);
+    if v_filter in ('attention', 'pending')
+       and coalesce(v_report -> 'summary' ->> 'overall', '') not in ('warn', 'alert') then
+      continue;
+    end if;
+    if v_count >= v_limit then
+      v_has_more := true;
+      exit;
+    end if;
+    v_items := v_items || jsonb_build_array(jsonb_build_object(
+      'shift', jsonb_build_object(
+        'id', r.id, 'status', r.status,
+        'opened_at', r.opened_at, 'closed_at', r.closed_at,
+        'opened_by_name', r.opened_by_name, 'closed_by_name', r.closed_by_name),
+      'review', jsonb_build_object('handled', r.handled, 'note', r.note),
+      'report', v_report));
+    v_count := v_count + 1;
+    v_last := r.opened_at;
+  end loop;
+
+  return jsonb_build_object(
+    'open_shift', v_open,
+    'items', v_items,
+    'has_more', v_has_more,
+    'next_before', v_last);
+end $$;
+
+revoke all on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) from public, anon;
+grant execute on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) to authenticated;

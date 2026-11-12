@@ -52,7 +52,7 @@ begin
   with sh as (select s.id, s.opened_at from shifts s where s.id = p_shift),
   prev as (
     select s.id from shifts s, sh
-     where s.shop_id = v_shop and s.status = 'closed' and s.closed_at <= sh.opened_at
+     where s.shop_id = v_shop and s.status = 'closed' and s.id <> sh.id and s.closed_at <= sh.opened_at
      order by s.closed_at desc limit 1
   ),
   ing as (select i.* from ingredients i where i.active and i.shop_id = v_shop),
@@ -84,7 +84,7 @@ begin
     select r.ingredient_id as iid, sum(bl.qty) as cups, sum(bl.qty::bigint * bl.unit_price) as revenue
       from bill_lines bl
       join bills b on b.id = bl.bill_id and b.status = 'paid' and b.shift_id = p_shift
-      join recipe_lines r on r.size_id = bl.size_id
+      cross join lateral _recipe_at(bl.size_id, b.paid_at) r   -- công thức có hiệu lực LÚC bán
      where bl.voided_at is null
      group by r.ingredient_id
   ),
@@ -285,7 +285,7 @@ begin
   prev as (   -- ca đã đóng gần nhất trước ca này
     select p.closing_cash
       from shifts p, sh
-     where p.shop_id = v_shop and p.status = 'closed' and p.closed_at < sh.opened_at and p.closing_cash is not null
+     where p.shop_id = v_shop and p.status = 'closed' and p.id <> sh.id and p.closed_at <= sh.opened_at and p.closing_cash is not null
      order by p.closed_at desc limit 1
   ),
   sales as (
@@ -778,6 +778,10 @@ declare
   v_waste       jsonb;
   v_moves       jsonb;
   v_missing     integer;
+  v_cancelled   jsonb;
+  v_waste_log   jsonb;
+  v_purchases   jsonb;
+  v_open_diff   boolean := false;
   v_streak      integer;
   v_rank        integer := 0;              -- 0 ok, 1 warn, 2 alert
   v_has_data    boolean := false;
@@ -854,6 +858,14 @@ begin
     elsif v_cash_status = 'warn' then v_rank := greatest(v_rank, 1); end if;
   end if;
 
+  -- Tiền đầu ca lệch so với cuối ca trước từ ngưỡng opening_diff_warn_vnd: đáng chú ý (vàng)
+  if v_cash is not null and v_cash ->> 'opening_diff' is not null
+     and abs((v_cash ->> 'opening_diff')::integer) >= _setting('opening_diff_warn_vnd', 1000, v_shop) then
+    v_open_diff := true;
+    v_cash := v_cash || jsonb_build_object('opening_diff_flag', true);
+    v_rank := greatest(v_rank, 1);
+  end if;
+
   -- (5) Hao hụt
   select coalesce(jsonb_agg(to_jsonb(w)), '[]'::jsonb), count(*) filter (where w.flag = 'warn')
     into v_waste, n_waste_warn from waste_report(p_shift) w;
@@ -867,13 +879,67 @@ begin
    where ms.shop_id = v_shop and ms.active and mi.active
      and not exists (select 1 from recipe_lines rl where rl.size_id = ms.id);
 
+  -- Bill đã thu tiền rồi mới hủy trong ca (chủ nên xem: ai hủy, vì sao, ai duyệt)
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'bill_no', b.bill_no,
+           'amount', coalesce(b.total_amount, 0),
+           'payment_method', b.payment_method,
+           'paid_at', b.paid_at,
+           'cancelled_at', b.cancelled_at,
+           'reason', b.cancel_reason,
+           'cancelled_by_name', cs.full_name,
+           'approved_by_name', ap.full_name) order by b.cancelled_at), '[]'::jsonb)
+    into v_cancelled
+    from bills b
+    left join staff cs on cs.id = b.cancelled_by
+    left join staff ap on ap.id = b.approved_by
+   where b.shift_id = p_shift and b.status = 'cancelled' and b.paid_at is not null;
+
+  -- Từng lần ghi hao hụt: ai ghi, lúc nào, loại gì. qty = số lượng hiệu lực sau điều chỉnh của chủ.
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'id', w.id,
+           'ingredient_name', i.name, 'unit', i.unit,
+           'qty', coalesce((select -sum(l.qty_delta) from stock_ledger l
+                             where l.kind = 'waste' and l.ref_id = w.id), w.qty),
+           'original_qty', w.qty,
+           'reason_type', w.reason_type, 'reason_label', t.label_vi, 'note', w.reason,
+           'entered_at', w.entered_at, 'entered_by_name', st.full_name)
+           order by w.entered_at), '[]'::jsonb)
+    into v_waste_log
+    from waste_logs w
+    join ingredients i on i.id = w.ingredient_id
+    left join waste_types t on t.code = w.reason_type and t.shop_id = w.shop_id
+    left join staff st on st.id = w.entered_by
+   where w.shift_id = p_shift;
+
+  -- Phiếu nhập kho trong ca (số lượng hiệu lực sau điều chỉnh) để chủ đối chiếu khi nguyên liệu lệch
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'id', pu.id,
+           'ingredient_name', i.name, 'unit', i.unit,
+           'qty', coalesce((select sum(l.qty_delta) from stock_ledger l
+                             where l.kind = 'purchase' and l.ref_id = pu.id), pu.qty),
+           'original_qty', pu.qty,
+           'is_late_entry', pu.is_late_entry, 'note', pu.note,
+           'entered_at', pu.entered_at, 'entered_by_name', st.full_name)
+           order by pu.entered_at), '[]'::jsonb)
+    into v_purchases
+    from purchases pu
+    join ingredients i on i.id = pu.ingredient_id
+    left join staff st on st.id = pu.entered_by
+   where pu.shift_id = p_shift;
+
   v_overall := case when not v_has_data then 'no_data'
                     when v_rank >= 2 then 'alert'
                     when v_rank = 1 then 'warn'
                     else 'ok' end;
 
-  select jsonb_build_object('id', s.id, 'opened_at', s.opened_at, 'closed_at', s.closed_at, 'status', s.status)
-    into v_shift from shifts s where s.id = p_shift;
+  select jsonb_build_object('id', s.id, 'opened_at', s.opened_at, 'closed_at', s.closed_at, 'status', s.status,
+                            'opened_by_name', o.full_name, 'closed_by_name', c.full_name)
+    into v_shift
+    from shifts s
+    left join staff o on o.id = s.opened_by
+    left join staff c on c.id = s.closed_by
+   where s.id = p_shift;
 
   return jsonb_build_object(
     'shift', v_shift,
@@ -881,6 +947,7 @@ begin
       'overall', v_overall,
       'ingredient_alerts', n_alert, 'ingredient_warns', n_warn,
       'streak_flags', n_streak,
+      'opening_diff_flag', v_open_diff,
       'cash_status', coalesce(v_cash_status, 'no_data'),
       'waste_warns', n_waste_warn,
       'streak_shifts_setting', v_n),
@@ -888,6 +955,9 @@ begin
     'cash', coalesce(v_cash, '{}'::jsonb),
     'waste', v_waste,
     'cash_movements', v_moves,
+    'cancelled_bills', v_cancelled,
+    'waste_entries', v_waste_log,
+    'purchases', v_purchases,
     'warnings', jsonb_build_object('items_without_recipe', v_missing));
 end $$;
 

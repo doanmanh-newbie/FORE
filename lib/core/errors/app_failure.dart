@@ -85,11 +85,6 @@ class OtpSendFailure extends AppFailure {
   const OtpSendFailure() : super('OTP_SEND_FAILED');
 }
 
-/// Đăng nhập nhân viên: số/email này chưa có tài khoản.
-class StaffNotFoundFailure extends AppFailure {
-  const StaffNotFoundFailure() : super('STAFF_NOT_FOUND');
-}
-
 /// Tạo tài khoản nhân viên: số/email này đã có tài khoản.
 class StaffAlreadyExistsFailure extends AppFailure {
   const StaffAlreadyExistsFailure() : super('STAFF_ALREADY_EXISTS');
@@ -98,12 +93,6 @@ class StaffAlreadyExistsFailure extends AppFailure {
 /// Supabase đang bật "Confirm email" nên đăng ký xong chưa vào được ngay (lỗi cấu hình khi thử).
 class EmailConfirmRequiredFailure extends AppFailure {
   const EmailConfirmRequiredFailure() : super('EMAIL_CONFIRM_REQUIRED');
-}
-
-/// Supabase từ chối email giả của số điện thoại (tên miền bị coi là không hợp lệ). Chỉ gặp khi thử.
-class PhoneLoginDomainRejectedFailure extends AppFailure {
-  const PhoneLoginDomainRejectedFailure()
-      : super('PHONE_LOGIN_DOMAIN_REJECTED');
 }
 
 class UnknownFailure extends AppFailure {

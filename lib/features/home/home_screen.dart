@@ -18,8 +18,7 @@ import '../auth/application/session_controller.dart';
 import '../auth/domain/auth_models.dart';
 import '../inventory/data/rpc_inventory_repository.dart';
 import '../inventory/presentation/cash_screen.dart';
-import '../inventory/presentation/inventory_hub_view.dart';
-import '../inventory/presentation/purchase_screen.dart';
+import '../inventory/presentation/staff_kho_home.dart';
 import '../inventory/presentation/waste_screen.dart';
 import '../more/more_view.dart';
 import '../sales/application/table_map_controller.dart';
@@ -283,11 +282,7 @@ class _HomeScreenState extends State<OpsHomeScreen>
           takeaway: _takeaway,
           servingLabel: _shift.servingLabel,
           onOpenBill: _openBill),
-      2 => InventoryHubView(
-          shift: _shift,
-          onPurchase: () => _push(PurchaseScreen(repository: _inventoryRepo)),
-          onCount: _openCount,
-        ),
+      2 => StaffKhoHome(shift: _shift, onCount: _openCount),
       3 => CloseShiftView(
           shift: _shift,
           onViewBills: () => _select(0),

@@ -11,6 +11,10 @@ abstract interface class AuthRepository {
   /// Người đang đăng nhập (đọc từ bộ nhớ máy, không cần mạng). `null` nếu chưa.
   AuthUser? get currentUser;
 
+  /// Phát id người dùng (hoặc `null` khi đăng xuất) mỗi khi phiên Auth đổi,
+  /// kể cả khi đổi từ tab/cửa sổ khác. Chỉ phát khi id thật sự thay đổi.
+  Stream<String?> get userIdChanges;
+
   Future<AuthUser> signIn({required String email, required String password});
 
   /// Tạo tài khoản chủ quán (email + mật khẩu). Trả về `true` nếu đã đăng nhập luôn
@@ -31,18 +35,20 @@ abstract interface class AuthRepository {
   Future<String?> lastActiveShopId();
   Future<void> rememberShop(String shopId);
 
-  /// Đăng nhập nhân viên chỉ bằng số điện thoại hoặc email (xem `StaffCredentials`).
-  /// Chưa có tài khoản thì ném `StaffNotFoundFailure`.
-  Future<AuthUser> signInStaff(StaffContact contact);
-
-  /// Tạo tài khoản nhân viên và đăng nhập luôn. Tên và ngày sinh được lưu vào tài khoản
-  /// và chép sang hồ sơ trong quán khi nhân viên chấp nhận lời mời.
-  /// Đã có tài khoản thì ném `StaffAlreadyExistsFailure`.
-  Future<AuthUser> signUpStaff({
-    required StaffContact contact,
-    required String fullName,
-    required DateTime birthDate,
+  /// Gửi OTP tới email/số điện thoại thật; không tự động đăng nhập.
+  /// Khi [createUser] là false, không tạo tài khoản mới.
+  Future<void> requestStaffOtp(
+    StaffContact contact, {
+    required bool createUser,
+    String? fullName,
+    DateTime? birthDate,
   });
+
+  /// Xác minh OTP, đăng nhập và ghi nhận thiết bị hiện tại làm thiết bị tin cậy.
+  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token);
+
+  /// Xác minh bằng máy chủ rằng phiên nhân viên còn thiết bị tin cậy hợp lệ.
+  Future<bool> validateStaffDeviceTrust();
 
   Future<void> signOut();
 

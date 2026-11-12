@@ -16,6 +16,7 @@ alter table auth.users add column if not exists phone text;
 alter table auth.users add column if not exists phone_confirmed_at timestamptz;
 alter table auth.users add column if not exists email_confirmed_at timestamptz;
 alter table auth.users add column if not exists raw_user_meta_data jsonb not null default '{}'::jsonb;
+alter table auth.users add column if not exists raw_app_meta_data jsonb not null default '{}'::jsonb;
 create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;

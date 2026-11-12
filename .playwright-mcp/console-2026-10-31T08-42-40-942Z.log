@@ -1,4 +1,0 @@
-[    2398ms] [INFO] DDC is about to load 1/2 scripts with pool size = 1000 @ http://localhost:59897/ddc_module_loader.js:1014
-[    3733ms] [INFO] DDC is about to load 992/992 scripts with pool size = 1000 @ http://localhost:59897/ddc_module_loader.js:1014
-[   12688ms] [LOG] Starting application from main method in: org-dartlang-app:///web_entrypoint.dart. @ http://localhost:59897/ddc_module_loader.js:1585
-[   13160ms] [LOG] supabase.supabase_flutter: INFO: ***** Supabase init completed *****  @ http://localhost:59897/dart_sdk.js:26345

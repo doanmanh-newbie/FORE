@@ -8,15 +8,18 @@ extension _OwnerOverview on _OwnerHomeContentState {
     final belowThreshold = data.lowStock
         .where((item) => _number(item['expected_qty']) >= 0)
         .toList(growable: false);
-    OwnerShiftReport? reportNeedsReview;
-    for (final report in data.reports) {
-      if ((report.overall == 'alert' || report.overall == 'warn') &&
-          !report.handled) {
-        reportNeedsReview = report;
+    final reports = data.reports
+        .map(ReconcileReport.fromOwner)
+        .toList(growable: false);
+    ReconcileReport? needsReview;
+    for (final report in reports) {
+      if (report.needsAttention && !report.handled) {
+        needsReview = report;
         break;
       }
     }
-    final needsReview = reportNeedsReview;
+    final featured = needsReview;
+    final otherPending = data.pendingReviewCount - (featured == null ? 0 : 1);
     return RefreshIndicator(
       onRefresh: _refresh,
       child: PageScaffold(
@@ -105,8 +108,10 @@ extension _OwnerOverview on _OwnerHomeContentState {
               Expanded(
                 child: _QuickActionTile(
                   icon: Icons.groups_2_outlined,
-                  title: 'Người đã tạo bill',
-                  subtitle: '${data.activeStaffCount} người trong ca hiện tại',
+                  title: 'Nhân viên',
+                  subtitle: data.openShift == null
+                      ? 'Quản lý đội ngũ'
+                      : '${data.activeStaffCount} người đã tạo bill trong ca',
                   onTap: () => Navigator.of(context).pushNamed(AppRoutes.team),
                 ),
               ),
@@ -120,32 +125,66 @@ extension _OwnerOverview on _OwnerHomeContentState {
               child: const Text('Xem tất cả'),
             ),
           ),
-          if (needsReview != null)
-            _ReportCard(
-              report: needsReview,
-              featured: true,
+          if (featured != null)
+            _FeaturedReportCard(
+              report: featured,
               onTap: () => _updateState(() {
                 _tab = 1;
-                _selectedReport = needsReview;
+                _selectedReport = featured.source;
               }),
               onCheckStock: () => _updateState(() {
                 _tab = 3;
                 _selectedReport = null;
               }),
-            )
-          else if (data.reports.isNotEmpty)
-            const _InfoCard(
-              icon: Icons.check_circle_outline,
-              iconColor: AppColors.statusOk,
-              title: 'Không có ca cần xử lý',
-              status: StatusChip(
-                label: 'Đã kiểm tra',
-                severity: StatusSeverity.healthy,
+            ),
+          if (otherPending > 0)
+            _InfoCard(
+              icon: Icons.fact_check_outlined,
+              iconColor: AppColors.statusWatch,
+              title: featured == null
+                  ? '${data.pendingReviewCount} ca cần xử lý'
+                  : '$otherPending ca khác cần xử lý',
+              status: const StatusChip(
+                label: 'Chưa xử lý',
+                severity: StatusSeverity.attention,
                 compact: true,
               ),
-              body: 'Những ca đã đóng đều đang trong trạng thái phù hợp.',
+              body: 'Các ca có chênh lệch trong 7 ngày gần đây mà bạn chưa đánh dấu đã xử lý.',
+              onTap: () {
+                _reconcile.setFilter(ReconcileFilter.pending);
+                _updateState(() {
+                  _tab = 1;
+                  _selectedReport = null;
+                });
+              },
+              showArrow: true,
             )
-          else
+          else if (featured == null && reports.isNotEmpty)
+            reports.any((report) => report.overall == ReconcileStatus.noData)
+                ? const _InfoCard(
+                    icon: Icons.info_outline,
+                    iconColor: AppColors.textSecondary,
+                    title: 'Có ca chưa đủ dữ liệu',
+                    status: StatusChip(
+                      label: 'Chưa đối soát',
+                      severity: StatusSeverity.neutral,
+                      compact: true,
+                    ),
+                    body:
+                        'Ca thiếu kiểm kê đầu ca hoặc tiền đếm cuối ca nên chưa đối soát được.',
+                  )
+                : const _InfoCard(
+                    icon: Icons.check_circle_outline,
+                    iconColor: AppColors.statusOk,
+                    title: 'Không có ca cần xử lý',
+                    status: StatusChip(
+                      label: 'Khớp',
+                      severity: StatusSeverity.healthy,
+                      compact: true,
+                    ),
+                    body: 'Các ca gần đây đều khớp hoặc bạn đã xử lý.',
+                  )
+          else if (featured == null)
             const _InfoCard(
               icon: Icons.fact_check_outlined,
               iconColor: AppColors.textSecondary,
@@ -230,15 +269,18 @@ extension _OwnerOverview on _OwnerHomeContentState {
               body: 'Lịch sử ca sẽ xuất hiện ở đây sau khi đóng ca.',
             )
           else
-            ...data.reports.take(3).map(
-                  (report) => _ReportCard(
-                    report: report,
-                    onTap: () => _updateState(() {
-                      _tab = 1;
-                      _selectedReport = report;
-                    }),
-                  ),
+            ...reports.take(3).map(
+              (report) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
+                child: ReconcileShiftCard(
+                  report: report,
+                  onTap: () => _updateState(() {
+                    _tab = 1;
+                    _selectedReport = report.source;
+                  }),
                 ),
+              ),
+            ),
           const SizedBox(height: 12),
           Text(
             'Cập nhật lúc ${formatHm(data.updatedAt)} · ngày kinh doanh 06:00–05:59',

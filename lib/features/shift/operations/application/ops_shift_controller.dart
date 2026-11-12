@@ -22,8 +22,12 @@ class OpsShiftController extends ActionNotifier {
   String get shopName => shop?.name ?? 'Fore';
   String get servingLabel => shop?.servingLabel ?? 'phần';
 
+  int _loadSeq = 0;
+
   /// Tải hồ sơ quán và ca đang mở. Gọi khi vào màn hình, và khi kéo để làm mới.
+  /// Gọi chồng nhau thì chỉ lần gọi mới nhất được ghi kết quả; lần cũ về muộn bị bỏ.
   Future<void> load() async {
+    final seq = ++_loadSeq;
     // Chỉ hiện vòng chờ ở lần tải đầu; các lần sau giữ nguyên giao diện cho đỡ nháy.
     if (shift == null && shop == null) {
       phase = OpsShiftPhase.loading;
@@ -33,16 +37,22 @@ class OpsShiftController extends ActionNotifier {
       // The profile and the open shift are separate requests. The profile name
       // is already available from authentication, so a missing optional
       // shop_info RPC must not blank the entire signed-in home screen.
+      ShopInfo? newShop;
       try {
-        shop = await _repo.shopInfo();
+        newShop = await _repo.shopInfo();
       } on AppFailure {
-        shop = null;
+        newShop = null;
       }
-      shift = await _repo.currentShift();
+      if (seq != _loadSeq) return;
+      shop = newShop; // giữ hồ sơ quán dù ca tải lỗi ngay sau đó
+      final newShift = await _repo.currentShift();
+      if (seq != _loadSeq) return;
+      shift = newShift;
       if (shift == null) closeStatus = null;
       failure = null;
       phase = OpsShiftPhase.ready;
     } on AppFailure catch (f) {
+      if (seq != _loadSeq) return;
       failure = f;
       // Có dữ liệu cũ thì giữ dùng tiếp (mất mạng thoáng qua không nên đẩy người dùng ra ngoài).
       phase = (shop != null || shift != null)

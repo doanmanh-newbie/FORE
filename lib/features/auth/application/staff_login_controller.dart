@@ -1,16 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
+import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
 
-/// Đăng nhập nhân viên chỉ bằng số điện thoại HOẶC email (không mật khẩu, không mã xác nhận).
-/// Xem `StaffCredentials` để biết cách làm và vì sao chỉ dùng được khi thử.
-class StaffLoginController extends ChangeNotifier {
-  StaffLoginController(this._repository);
+/// Gửi và xác minh mã OTP nhân viên; không phân biệt tài khoản tồn tại trong thông báo gửi mã.
+class StaffLoginController extends ChangeNotifier with NotifyWhenAlive {
+  StaffLoginController(
+    this._repository, {
+    this.resendDelay = const Duration(seconds: 60),
+  });
 
   final AuthRepository _repository;
+  final Duration resendDelay;
 
   ContactKind _kind = ContactKind.phone;
   ContactKind get kind => _kind;
@@ -18,22 +24,32 @@ class StaffLoginController extends ChangeNotifier {
   bool _loading = false;
   bool get loading => _loading;
 
-  /// Lỗi của ô nhập số/email.
-  String? contactError;
+  bool _otpRequested = false;
+  bool get otpRequested => _otpRequested;
 
-  /// Lỗi chung không gắn với ô nào (mất mạng, lỗi lạ).
+  int _resendSeconds = 0;
+  int get resendSeconds => _resendSeconds;
+  bool get canResend => _otpRequested && !_loading && _resendSeconds == 0;
+
+  String? contactError;
+  String? otpError;
   String? formError;
+  StaffContact? _challengeContact;
+  Timer? _resendTimer;
 
   void setKind(ContactKind kind) {
     if (_loading || kind == _kind) return;
     _kind = kind;
-    contactError = formError = null;
+    _challengeContact = null;
+    _otpRequested = false;
+    _clearTimer();
+    contactError = otpError = formError = null;
     notifyListeners();
   }
 
-  /// Đăng nhập. Trả về `true` nếu đã đăng nhập và có thể vào app.
+  /// Gửi mã đăng nhập. Trả về true khi yêu cầu gửi được chấp nhận, chưa phải đăng nhập.
   Future<bool> submit(String raw) async {
-    contactError = formError = null;
+    contactError = otpError = formError = null;
     final parsed = StaffContact.tryParse(_kind, raw);
     final contact = parsed.contact;
     if (contact == null) {
@@ -41,21 +57,92 @@ class StaffLoginController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    _challengeContact = contact;
+    return _requestOtp(createUser: false);
+  }
+
+  Future<bool> verifyOtp(String rawToken) async {
+    final contact = _challengeContact;
+    final token = rawToken.trim();
+    otpError = formError = null;
+    if (contact == null) {
+      formError = 'Hãy yêu cầu mã xác nhận trước.';
+      notifyListeners();
+      return false;
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(token)) {
+      otpError = 'Nhập mã xác nhận gồm 6 chữ số.';
+      notifyListeners();
+      return false;
+    }
 
     _loading = true;
     notifyListeners();
     try {
-      await _repository.signInStaff(contact);
+      await _repository.verifyStaffOtp(contact, token);
+      _loading = false;
+      _clearTimer();
+      notifyListeners();
+      return true;
+    } on AppFailure catch (failure) {
+      otpError = failure.userMessage;
+      _loading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> resendOtp() async {
+    if (!canResend || _challengeContact == null) return;
+    await _requestOtp(createUser: false);
+  }
+
+  Future<bool> _requestOtp({required bool createUser}) async {
+    _loading = true;
+    notifyListeners();
+    try {
+      await _repository.requestStaffOtp(
+        _challengeContact!,
+        createUser: createUser,
+      );
+      _otpRequested = true;
+      _startTimer();
       _loading = false;
       notifyListeners();
       return true;
-    } on StaffNotFoundFailure catch (f) {
-      contactError = f.userMessage;
-    } on AppFailure catch (f) {
-      formError = f.userMessage;
+    } on AppFailure catch (failure) {
+      formError = failure.userMessage;
+      _loading = false;
+      notifyListeners();
+      return false;
     }
-    _loading = false;
-    notifyListeners();
-    return false;
+  }
+
+  void _startTimer() {
+    _clearTimer();
+    _resendSeconds = resendDelay.inSeconds;
+    if (_resendSeconds == 0) return;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendSeconds <= 1) {
+        _resendSeconds = 0;
+        timer.cancel();
+        _resendTimer = null;
+      } else {
+        _resendSeconds--;
+      }
+      notifyListeners();
+    });
+  }
+
+  void _clearTimer() {
+    _resendTimer?.cancel();
+    _resendTimer = null;
+    _resendSeconds = 0;
+  }
+
+  @override
+  void dispose() {
+    _clearTimer();
+    super.dispose();
   }
 }

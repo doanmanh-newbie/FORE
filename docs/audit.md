@@ -2,6 +2,9 @@
 
 Ngày lập: 2026-10-31
 
+> Cập nhật topology SQL ngày 2026-11-06: sáu module `database/01_foundation.sql` đến `database/06_menu_options.sql` là nguồn schema hiện hành. Các ghi chú lịch sử bên dưới có thể nhắc tới cấu trúc cũ (`install/`, patches hoặc nhóm bốn file).
+> Cập nhật 2026-11-08: thêm module `database/07_inventory.sql` (Kho v2: nhà cung cấp, lô, phiếu nhập, kiểm kê duyệt, hao hụt). Chi tiết và phần chưa kiểm chứng: [`docs/kho-v2.md`](kho-v2.md).
+
 ## Phạm vi và cách đọc
 
 Đây là kiểm kê ban đầu trước khi thực hiện các giai đoạn P0–P5. Các điểm nêu trong yêu cầu được xem là giả thuyết cần kiểm chứng; chưa coi là lỗi đã xác nhận nếu chưa có bằng chứng từ mã, test hoặc app đang chạy.

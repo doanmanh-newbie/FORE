@@ -1,5 +1,5 @@
 /// Tài khoản đăng nhập (Supabase Auth): id, email và/hoặc số điện thoại, tên hiển thị.
-/// Chủ quán đăng nhập bằng email + mật khẩu; luồng nhân viên không mật khẩu hiện chỉ là thử nghiệm.
+/// Chủ quán đăng nhập bằng email + mật khẩu; nhân viên xác minh email/số điện thoại bằng OTP.
 class AuthUser {
   const AuthUser({
     required this.id,

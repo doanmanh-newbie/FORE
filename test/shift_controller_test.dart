@@ -14,6 +14,47 @@ void main() {
     controller = ShiftController(repo);
   });
 
+  group('phạm vi tài khoản/quán', () {
+    CurrentShift shiftOf(String id) => CurrentShift(
+          id: id,
+          openedByName: 'An',
+          openedAt: DateTime(2026, 10, 25, 8, 2),
+        );
+
+    test('đổi phạm vi thì quên ca của người/quán trước', () async {
+      controller.bindScope('quan-a|an');
+      repo.shift = shiftOf('s1');
+      await controller.load();
+      expect(controller.state, isA<ShiftOpen>());
+
+      controller.bindScope('quan-b|binh');
+
+      expect(controller.state, isA<ShiftLoading>());
+    });
+
+    test('đăng xuất (phạm vi null) cũng xóa ca đã tải', () async {
+      controller.bindScope('quan-a|an');
+      repo.shift = shiftOf('s1');
+      await controller.load();
+
+      controller.bindScope(null);
+
+      expect(controller.state, isA<ShiftLoading>());
+    });
+
+    test('kết quả tải về sau khi đổi phạm vi bị bỏ', () async {
+      controller.bindScope('quan-a|an');
+      repo.shift = shiftOf('ca-cua-a');
+      repo.delay = const Duration(milliseconds: 50);
+      final pending = controller.load();
+
+      controller.bindScope('quan-b|binh');
+      await pending;
+
+      expect(controller.state, isA<ShiftLoading>());
+    });
+  });
+
   group('load', () {
     test('chưa có ca -> ShiftNone', () async {
       await controller.load();

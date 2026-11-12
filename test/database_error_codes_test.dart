@@ -20,7 +20,7 @@ void main() {
     for (final entity in Directory('database').listSync()) {
       if (entity is! File) continue;
       final name = entity.uri.pathSegments.last;
-      if (!RegExp(r'^0[1-4]_.*\.sql$').hasMatch(name)) continue;
+      if (!RegExp(r'^0([1-4]|[78])_.*\.sql$').hasMatch(name)) continue;
       for (final m in pattern.allMatches(entity.readAsStringSync())) {
         codes.add(m.group(1)!);
       }

@@ -26,6 +26,8 @@ flutter analyze
 flutter test
 ```
 
-Hướng dẫn cài database Supabase nằm trong [`HUONG_DAN_NHIEU_QUAN.md`](HUONG_DAN_NHIEU_QUAN.md). Schema được chia thành bốn nhóm SQL trong `database/`; chỉ chạy `database/00_reset_schema.sql` khi chủ động chấp nhận xóa dữ liệu nghiệp vụ trong schema `public`. Lịch sử kiểm tra và phần còn thiếu nằm trong [`docs/audit.md`](docs/audit.md). Cấu hình mẫu Supabase nằm trong `.env.example`; không đưa khóa thật vào Git.
+Hướng dẫn cài database Supabase nằm trong [`HUONG_DAN_NHIEU_QUAN.md`](HUONG_DAN_NHIEU_QUAN.md). Tám file SQL ở gốc `database/` là các module schema duy nhất. Chỉ chạy `database/dev/reset_schema.sql` trước khi cài lại nếu đã sao lưu hoặc chấp nhận xóa dữ liệu trong schema `public`. Các script trong `database/dev/` và `database/tests/` chỉ dành cho phát triển/kiểm tra. Lịch sử kiểm tra và phần còn thiếu nằm trong [`docs/audit.md`](docs/audit.md). Cấu hình mẫu Supabase nằm trong `.env.example`; không đưa khóa thật vào Git.
+
+Thiết lập OTP email/SMS và thiết bị nhân viên 60 ngày: [`docs/supabase-auth-setup.md`](docs/supabase-auth-setup.md).
 
 Kiến trúc thư mục và quy tắc phân lớp Dart được ghi trong [`docs/kien-truc-flutter.md`](docs/kien-truc-flutter.md).

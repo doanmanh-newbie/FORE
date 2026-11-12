@@ -41,6 +41,7 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final child = ForeCard(
       padding: const EdgeInsets.all(15),
+      onTap: onTap,
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, color: iconColor),
         const SizedBox(width: 12),
@@ -65,13 +66,7 @@ class _InfoCard extends StatelessWidget {
     );
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: onTap == null
-          ? child
-          : InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: onTap,
-              child: child,
-            ),
+      child: child,
     );
   }
 }

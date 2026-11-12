@@ -41,7 +41,7 @@ abstract final class AppRoutes {
 
   /// Đăng nhập xong thì đi đâu. `null` = chưa quyết được (đang kiểm tra / mất mạng).
   static String? routeFor(SessionState state) => switch (state) {
-        SessionChecking() || SessionOffline() => null,
+        SessionChecking() || SessionOffline() || SessionFailed() => null,
         SessionSignedOut() => welcome,
         SessionReady() => home,
         SessionNeedsShop() => createShop,

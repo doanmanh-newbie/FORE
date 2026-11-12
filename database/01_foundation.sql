@@ -344,6 +344,8 @@ create table audit_log (
   entity_id  uuid,
   detail     jsonb
 );
+create index if not exists audit_log_shop_feed_idx
+  on audit_log (shop_id, at desc, id desc);
 
 create table pin_attempts (
   id        bigint generated always as identity primary key,
@@ -533,6 +535,10 @@ create trigger audit_menu_sizes    after insert or update or delete on menu_size
 create or replace function recipe_lines_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
+  -- Chỉ hàm kích hoạt phiên bản công thức (_recipe_activate) được bật cờ này để thay công thức theo lịch
+  if current_setting('fore.recipe_apply', true) = 'on' then
+    return case when tg_op = 'DELETE' then old else new end;
+  end if;
   if exists (select 1 from bill_lines
               where size_id in (case when tg_op = 'INSERT' then new.size_id else old.size_id end,
                                 case when tg_op = 'UPDATE' then new.size_id else old.size_id end)) then
@@ -795,7 +801,10 @@ declare v_me uuid := _require_staff(); v_status text; v_price integer; v_id uuid
 begin
   select status into v_status from bills where id = p_bill and shop_id = app_shop_id() for update;
   if v_status is distinct from 'open' then raise exception 'BILL_NOT_OPEN'; end if;
-  select price into v_price from menu_sizes where id = p_size and active and shop_id = app_shop_id();
+  perform _menu_apply_due();     -- giá đã hẹn tới giờ thì áp dụng trước khi lấy giá
+  select ms.price into v_price
+    from menu_sizes ms join menu_items mi on mi.id = ms.item_id
+   where ms.id = p_size and ms.active and mi.active and not mi.is_draft and ms.shop_id = app_shop_id();
   if v_price is null then raise exception 'ITEM_UNAVAILABLE'; end if;
   insert into bill_lines (bill_id, size_id, qty, unit_price, created_by)
   values (p_bill, p_size, p_qty, v_price, v_me) returning id into v_id;
@@ -834,6 +843,7 @@ create or replace function pay_bill(p_bill uuid, p_method text default 'cash') r
 language plpgsql security definer set search_path = public as $$
 declare v_me uuid := _require_staff(); v_bill bills%rowtype; v_sub integer; v_total integer; v_n integer;
 begin
+  perform _menu_apply_due();     -- công thức/giá đã hẹn tới giờ thì áp dụng trước khi ghi sổ kho
   if p_method is null or p_method not in ('cash', 'transfer') then
     raise exception 'PAYMENT_METHOD_INVALID';
   end if;

@@ -1,15 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
+import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
 
-/// Tạo tài khoản nhân viên: số điện thoại HOẶC email, tên hiển thị, ngày sinh.
-class StaffRegisterController extends ChangeNotifier {
-  StaffRegisterController(this._repository);
+/// Tạo tài khoản nhân viên; chỉ hoàn tất khi người dùng xác minh OTP.
+class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
+  StaffRegisterController(
+    this._repository, {
+    this.resendDelay = const Duration(seconds: 60),
+  });
 
   final AuthRepository _repository;
+  final Duration resendDelay;
 
   ContactKind _kind = ContactKind.phone;
   ContactKind get kind => _kind;
@@ -17,21 +24,34 @@ class StaffRegisterController extends ChangeNotifier {
   bool _loading = false;
   bool get loading => _loading;
 
+  bool _otpRequested = false;
+  bool get otpRequested => _otpRequested;
+
+  int _resendSeconds = 0;
+  int get resendSeconds => _resendSeconds;
+  bool get canResend => _otpRequested && !_loading && _resendSeconds == 0;
+
   String? contactError;
   String? nameError;
   String? birthDateError;
-
-  /// Lỗi chung không gắn với ô nào (mất mạng, lỗi lạ).
+  String? otpError;
   String? formError;
+
+  StaffContact? _challengeContact;
+  String? _fullName;
+  DateTime? _birthDate;
+  Timer? _resendTimer;
 
   void setKind(ContactKind kind) {
     if (_loading || kind == _kind) return;
     _kind = kind;
-    contactError = formError = null;
+    _challengeContact = null;
+    _otpRequested = false;
+    _clearTimer();
+    contactError = otpError = formError = null;
     notifyListeners();
   }
 
-  /// Người dùng bắt đầu sửa một ô: xóa lỗi cũ của ô đó (không để dòng đỏ nằm lại khi đã nhập đúng).
   void clearContactError() {
     if (contactError == null && formError == null) return;
     contactError = formError = null;
@@ -50,7 +70,7 @@ class StaffRegisterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Tạo tài khoản. Trả về `true` nếu đã tạo xong và đăng nhập luôn.
+  /// Gửi OTP đăng ký. Trả về true chỉ khi mã được gửi, chưa phải tài khoản đã đăng nhập.
   Future<bool> submit({
     required String contactText,
     required String fullName,
@@ -69,9 +89,30 @@ class StaffRegisterController extends ChangeNotifier {
         : birthDate.isAfter(today)
             ? 'Ngày sinh không được ở tương lai.'
             : null;
-    formError = null;
+    otpError = formError = null;
 
     if (contact == null || nameError != null || birthDateError != null) {
+      notifyListeners();
+      return false;
+    }
+
+    _challengeContact = contact;
+    _fullName = name;
+    _birthDate = birthDate;
+    return _requestOtp(createUser: true);
+  }
+
+  Future<bool> verifyOtp(String rawToken) async {
+    final contact = _challengeContact;
+    final token = rawToken.trim();
+    otpError = formError = null;
+    if (contact == null) {
+      formError = 'Hãy yêu cầu mã xác nhận trước.';
+      notifyListeners();
+      return false;
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(token)) {
+      otpError = 'Nhập mã xác nhận gồm 6 chữ số.';
       notifyListeners();
       return false;
     }
@@ -79,21 +120,77 @@ class StaffRegisterController extends ChangeNotifier {
     _loading = true;
     notifyListeners();
     try {
-      await _repository.signUpStaff(
-        contact: contact,
-        fullName: name,
-        birthDate: birthDate!,
+      await _repository.verifyStaffOtp(contact, token);
+      _loading = false;
+      _clearTimer();
+      notifyListeners();
+      return true;
+    } on AppFailure catch (failure) {
+      otpError = failure.userMessage;
+      _loading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> resendOtp() async {
+    if (!canResend || _challengeContact == null) return;
+    await _requestOtp(createUser: true);
+  }
+
+  Future<bool> _requestOtp({required bool createUser}) async {
+    _loading = true;
+    notifyListeners();
+    try {
+      await _repository.requestStaffOtp(
+        _challengeContact!,
+        createUser: createUser,
+        fullName: _fullName,
+        birthDate: _birthDate,
       );
+      _otpRequested = true;
+      _startTimer();
       _loading = false;
       notifyListeners();
       return true;
-    } on StaffAlreadyExistsFailure catch (f) {
-      contactError = f.userMessage;
-    } on AppFailure catch (f) {
-      formError = f.userMessage;
+    } on StaffAlreadyExistsFailure catch (failure) {
+      contactError = failure.userMessage;
+      _loading = false;
+      notifyListeners();
+      return false;
+    } on AppFailure catch (failure) {
+      formError = failure.userMessage;
+      _loading = false;
+      notifyListeners();
+      return false;
     }
-    _loading = false;
-    notifyListeners();
-    return false;
+  }
+
+  void _startTimer() {
+    _clearTimer();
+    _resendSeconds = resendDelay.inSeconds;
+    if (_resendSeconds == 0) return;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendSeconds <= 1) {
+        _resendSeconds = 0;
+        timer.cancel();
+        _resendTimer = null;
+      } else {
+        _resendSeconds--;
+      }
+      notifyListeners();
+    });
+  }
+
+  void _clearTimer() {
+    _resendTimer?.cancel();
+    _resendTimer = null;
+    _resendSeconds = 0;
+  }
+
+  @override
+  void dispose() {
+    _clearTimer();
+    super.dispose();
   }
 }

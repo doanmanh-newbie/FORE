@@ -5,24 +5,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:fore/core/design/skeleton_box.dart';
 import 'package:fore/core/widgets/fore_action_icons.dart';
-import 'package:fore/core/widgets/status_chip.dart';
 import 'package:fore/features/auth/domain/auth_models.dart';
 import 'package:fore/features/inventory/domain/inventory_models.dart';
 import 'package:fore/features/inventory/domain/inventory_repository.dart';
 import 'package:fore/features/owner/domain/owner_dashboard_models.dart';
 import 'package:fore/features/owner/data/owner_dashboard_repository.dart';
+import 'package:fore/features/owner/menu/menu_repository.dart';
 import 'package:fore/features/owner/presentation/owner_home_screen.dart';
+
+import '../../support/fake_menu_repository.dart';
+import '../../support/fake_kho_repository.dart';
+import 'package:fore/features/inventory/domain/kho_repository.dart';
 
 void main() {
   final cases = <({String tab, String content})>[
     (tab: 'Tổng quan', content: 'Doanh thu hôm nay'),
-    (tab: 'Đối soát', content: 'Chưa có ca để đối soát'),
-    (tab: 'Thực đơn', content: 'QA-Trà · Vừa'),
+    (tab: 'Đối soát', content: 'Chưa có ca đã đóng'),
+    (tab: 'Thực đơn', content: 'QA-Trà'),
     (tab: 'Kho', content: 'Tồn dự kiến 150 g'),
-    (tab: 'Thêm', content: 'Quản lý quán'),
+    (tab: 'Thêm', content: 'Chăm quán, từ những điều nhỏ'),
   ];
 
-  testWidgets('không so doanh thu ca đang mở với cả ngày hôm trước',
+  testWidgets('so doanh thu với hôm qua tính đến cùng giờ',
       (tester) async {
     final inventory = _FakeInventoryRepository();
     await tester.pumpWidget(
@@ -33,19 +37,16 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Chưa so sánh: ngày kinh doanh chưa kết thúc.',
-      ),
-      findsOneWidget,
-    );
-    expect(find.textContaining('% so với ngày kinh doanh trước'), findsNothing);
+    expect(find.text('-71% so với hôm qua cùng giờ'), findsOneWidget);
+    expect(find.textContaining('Chưa so sánh'), findsNothing);
   });
 
   testWidgets('quán mới có checklist thao tác thiết lập', (tester) async {
@@ -58,6 +59,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -81,6 +84,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -94,7 +99,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Mời nhân viên'), findsOneWidget);
-    expect(find.text('Người đã tạo bill'), findsOneWidget);
+    expect(find.text('Nhân viên'), findsWidgets);
     final heroAction = find.text('Kiểm tra kho & hao hụt');
     await tester.scrollUntilVisible(
       heroAction,
@@ -103,13 +108,18 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(heroAction, findsOneWidget);
-    expect(find.text('+450 g'), findsWidgets);
-    expect(find.text('QA-Trân châu · chênh lệch cần kiểm tra'), findsOneWidget);
-    expect(find.textContaining('Tiền mặt · thiếu 120.000đ'), findsOneWidget);
-    expect(find.textContaining('Lý thuyết 1.000 g · Thực dùng 1.450 g'),
-        findsOneWidget);
+    expect(find.text('Ca của Nhân viên QA'), findsWidgets);
+    expect(find.text('≈420.682đ'), findsWidgets);
+    expect(find.text('QA-Trân châu · Hụt 450 g'), findsOneWidget);
+    expect(find.text('Tiền mặt · thiếu 120.000đ'), findsOneWidget);
+    expect(find.text('Lý thuyết 1.000 g · Thực dùng 1.450 g'), findsOneWidget);
     await tester.tap(heroAction);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Thao tác kho'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Thao tác kho'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
@@ -124,6 +134,38 @@ void main() {
     await tester.tap(detailAction);
     await tester.pumpAndSettle();
     expect(find.text('Chi tiết đối soát'), findsOneWidget);
+  });
+
+  testWidgets('ca cũ chưa xử lý vẫn hiện ở Tổng quan và mở danh sách lọc',
+      (tester) async {
+    final inventory = _FakeInventoryRepository();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<OwnerDashboardDataSource>.value(
+            value: _FakeOwnerDashboardDataSource(
+              reports: [_handledOkReport],
+              pendingOverride: 2,
+            ),
+          ),
+          Provider<InventoryRepository>.value(value: inventory),
+          Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
+        ],
+        child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = find.text('2 ca cần xử lý');
+    await tester.scrollUntilVisible(card, 250,
+        scrollable: find.byType(Scrollable).first);
+    expect(card, findsOneWidget);
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    expect(find.text('Đối soát ca'), findsOneWidget);
+    expect(find.text('Cần xử lý'), findsWidgets);
   });
 
   testWidgets('Tổng quan gom cảnh báo tồn theo mức độ thay vì lặp từng món',
@@ -141,6 +183,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -168,6 +212,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -194,6 +240,8 @@ void main() {
             ),
             Provider<InventoryRepository>.value(value: inventory),
             Provider<CashRepository>.value(value: inventory),
+            Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
           ],
           child: const MaterialApp(
             home: OwnerHomeScreen(profile: _ownerProfile),
@@ -207,6 +255,11 @@ void main() {
         await tester.pumpAndSettle();
       }
 
+      await tester.scrollUntilVisible(
+        find.text(item.content),
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text(item.content), findsOneWidget);
     });
   }
@@ -227,6 +280,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: MaterialApp(
           builder: (context, child) => MediaQuery(
@@ -245,7 +300,8 @@ void main() {
     for (final tab in ['Đối soát', 'Thực đơn', 'Kho', 'Thêm']) {
       await tester.tap(find.text(tab).last);
       await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: tab);
+      final exception = tester.takeException();
+      expect(exception, isNull, reason: tab);
     }
   });
 
@@ -259,6 +315,8 @@ void main() {
           Provider<OwnerDashboardDataSource>.value(value: dashboard),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -281,6 +339,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -288,6 +348,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kho').last);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('Tồn dự kiến âm 2.680 g'),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     expect(find.textContaining('Tồn dự kiến âm 2.680 g'), findsOneWidget);
     expect(
@@ -307,6 +372,8 @@ void main() {
           ),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -316,6 +383,11 @@ void main() {
     for (final tab in ['Kho', 'Thêm']) {
       await tester.tap(find.text(tab).last);
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byIcon(ForeActionIcons.waste),
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.byIcon(ForeActionIcons.waste), findsOneWidget);
       expect(find.byIcon(ForeActionIcons.cashMovement), findsOneWidget);
     }
@@ -323,6 +395,10 @@ void main() {
 
   testWidgets('đối soát mở chi tiết, lưu ghi chú và đổi trạng thái xử lý',
       (tester) async {
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final dashboard = _FakeOwnerDashboardDataSource(reports: [_sampleReport]);
     final inventory = _FakeInventoryRepository();
     await tester.pumpWidget(
@@ -331,6 +407,8 @@ void main() {
           Provider<OwnerDashboardDataSource>.value(value: dashboard),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -339,38 +417,34 @@ void main() {
 
     await tester.tap(find.text('Đối soát').last);
     await tester.pumpAndSettle();
-    expect(find.textContaining('ước tính ≈ 300.682đ'), findsOneWidget);
-    await tester.tap(find.text('Xem chi tiết').first);
+    // 300.682đ nguyên liệu + 120.000đ tiền mặt thiếu.
+    expect(find.text('≈420.682đ'), findsOneWidget);
+    await tester.tap(find.text('Ca của Nhân viên QA'));
     await tester.pumpAndSettle();
     expect(find.text('Chi tiết đối soát'), findsOneWidget);
-    expect(
-      tester
-          .widget<StatusChip>(find.widgetWithText(StatusChip, 'Thiếu'))
-          .severity,
-      StatusSeverity.critical,
-    );
+    expect(find.text('Chưa xử lý'), findsOneWidget);
 
+    await tester.tap(find.text('Ghi chú & xử lý'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'QA đã kiểm tra chứng từ');
     await tester.pump();
-    final markHandled = find.text('Đánh dấu đã xử lý');
-    await tester.scrollUntilVisible(
-      markHandled,
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(markHandled);
+    await tester.tap(find.text('Đánh dấu đã xử lý'));
     await tester.pumpAndSettle();
 
     expect(dashboard.reviewWrites, hasLength(1));
     expect(dashboard.reviewWrites.single.$1, 'shift-qa-1');
     expect(dashboard.reviewWrites.single.$2, isTrue);
     expect(dashboard.reviewWrites.single.$3, 'QA đã kiểm tra chứng từ');
-    expect(find.text('Đánh dấu chưa xử lý'), findsOneWidget);
+    expect(find.text('Đã xử lý'), findsOneWidget);
+    expect(find.text('Chưa xử lý'), findsNothing);
   });
 
   testWidgets('đối soát báo lỗi khi lưu thất bại và giữ trạng thái cũ',
       (tester) async {
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final dashboard = _FakeOwnerDashboardDataSource(
       reports: [_sampleReport],
       failReviewSave: true,
@@ -382,6 +456,8 @@ void main() {
           Provider<OwnerDashboardDataSource>.value(value: dashboard),
           Provider<InventoryRepository>.value(value: inventory),
           Provider<CashRepository>.value(value: inventory),
+          Provider<MenuRepository>.value(value: FakeMenuRepository()),
+          Provider<KhoRepository>.value(value: FakeKhoRepository()),
         ],
         child: const MaterialApp(home: OwnerHomeScreen(profile: _ownerProfile)),
       ),
@@ -389,20 +465,21 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Đối soát').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Xem chi tiết').first);
+    await tester.tap(find.text('Ca của Nhân viên QA'));
     await tester.pumpAndSettle();
 
-    final action = find.widgetWithText(FilledButton, 'Đánh dấu đã xử lý');
-    await tester.ensureVisible(action);
+    await tester.tap(find.text('Ghi chú & xử lý'));
     await tester.pumpAndSettle();
-    await tester.tap(action);
+    await tester.tap(find.text('Đánh dấu đã xử lý'));
     await tester.pumpAndSettle();
 
     expect(find.text('Không lưu được trạng thái đối soát. Vui lòng thử lại.'),
         findsOneWidget);
-    expect(find.text('Trạng thái xử lý'), findsOneWidget);
-    expect(find.text('Chưa xử lý'), findsOneWidget);
+    expect(find.text('Chưa lưu được. Hãy kiểm tra kết nối và thử lại.'),
+        findsOneWidget);
     expect(find.text('Đánh dấu đã xử lý'), findsOneWidget);
+    expect(find.text('Chưa xử lý'), findsOneWidget);
+    expect(dashboard.reviewWrites, isEmpty);
   });
 }
 
@@ -423,6 +500,7 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
     this.newShop = false,
     this.loadGate,
     this.lowStock = const [],
+    this.pendingOverride,
   });
 
   final List<OwnerShiftReport> reports;
@@ -430,6 +508,7 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
   final bool newShop;
   final Completer<OwnerDashboardData>? loadGate;
   final List<Map<String, dynamic>> lowStock;
+  final int? pendingOverride;
   int loadCalls = 0;
   final List<(String, bool, String?)> reviewWrites = [];
 
@@ -470,6 +549,12 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
               },
             ],
       lowStock: lowStock,
+      pendingReviewCount: pendingOverride ??
+          reports
+              .where((report) =>
+                  ['warn', 'alert'].contains(report.overall) &&
+                  !report.handled)
+              .length,
       missingRecipeCount: 0,
       notifications: const [],
       updatedAt: start,
@@ -486,6 +571,44 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
   }
 
   @override
+  Future<OwnerShiftPage> loadShiftPage({
+    required DateTime from,
+    required DateTime to,
+    String filter = 'all',
+    int limit = 10,
+    DateTime? before,
+  }) async =>
+      OwnerShiftPage(
+        items: reports
+            .where((report) => switch (filter) {
+                  'attention' => ['warn', 'alert'].contains(report.overall),
+                  'unhandled' => !report.handled,
+                  'pending' => ['warn', 'alert'].contains(report.overall) &&
+                      !report.handled,
+                  _ => true,
+                })
+            .toList(),
+        hasMore: false,
+      );
+
+  final List<(String, String, int, String)> corrections = [];
+
+  @override
+  Future<Map<String, dynamic>> loadShiftReport(String shiftId) async =>
+      reports.firstWhere((report) => '${report.shift['id']}' == shiftId).report;
+
+  @override
+  Future<void> correctWaste(String wasteId, int newQty, String reason) async {
+    corrections.add(('waste', wasteId, newQty, reason));
+  }
+
+  @override
+  Future<void> correctPurchase(
+      String purchaseId, int newQty, String reason) async {
+    corrections.add(('purchase', purchaseId, newQty, reason));
+  }
+
+  @override
   Future<void> markNotificationsRead(List<String> keys) async {}
 
   @override
@@ -497,6 +620,22 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
     reviewWrites.add((shiftId, handled, note));
   }
 }
+
+const _handledOkReport = OwnerShiftReport(
+  shift: {
+    'id': 'shift-qa-ok',
+    'status': 'closed',
+    'opened_at': '2026-10-28T08:00:00.000Z',
+    'closed_at': '2026-10-28T17:00:00.000Z',
+    'opened_by_name': 'Nhân viên QA',
+  },
+  report: {
+    'summary': {'overall': 'ok'},
+    'ingredients': [],
+    'cash': {'status': 'ok', 'expected_cash': 1, 'closing_cash': 1, 'variance': 0},
+  },
+  review: {'handled': true, 'note': ''},
+);
 
 const _sampleReport = OwnerShiftReport(
   shift: {

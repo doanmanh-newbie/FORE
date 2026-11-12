@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/validation/field_validator.dart';
@@ -7,7 +8,7 @@ import '../domain/auth_repository.dart';
 
 /// Logic màn Đăng nhập: kiểm tra ô nhập, gọi đăng nhập, giữ trạng thái.
 /// Màn hình chỉ vẽ và chuyển sự kiện vào đây.
-class LoginController extends ChangeNotifier {
+class LoginController extends ChangeNotifier with NotifyWhenAlive {
   LoginController(this._repository);
 
   final AuthRepository _repository;

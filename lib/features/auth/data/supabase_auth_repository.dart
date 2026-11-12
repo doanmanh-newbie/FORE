@@ -11,20 +11,31 @@ import '../../../core/errors/network_errors.dart';
 import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
-import '../domain/staff_credentials.dart';
+import 'staff_device_trust_store.dart';
 
 /// Cài đặt [AuthRepository] bằng Supabase. Là nơi duy nhất trong tính năng
 /// đăng nhập biết về Supabase và đổi lỗi của nó thành [AppFailure].
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client);
+  SupabaseAuthRepository(
+    this._client, {
+    StaffDeviceTrustStore? deviceTrustStore,
+  }) : _deviceTrustStore = deviceTrustStore ?? StaffDeviceTrustStore();
 
   final SupabaseClient _client;
+  final StaffDeviceTrustStore _deviceTrustStore;
+
+  static const _deviceHeader = 'x-fore-device-token';
 
   @override
   AuthUser? get currentUser {
     final user = _client.auth.currentUser;
     return user == null ? null : _toAuthUser(user);
   }
+
+  @override
+  Stream<String?> get userIdChanges => _client.auth.onAuthStateChange
+      .map((change) => change.session?.user.id)
+      .distinct();
 
   @override
   Future<AuthUser> signIn({
@@ -66,63 +77,125 @@ class SupabaseAuthRepository implements AuthRepository {
       });
 
   @override
-  Future<AuthUser> signInStaff(StaffContact contact) => _guard(() async {
-        try {
-          final res = await _client.auth.signInWithPassword(
-            email: StaffCredentials.emailFor(contact),
-            password: StaffCredentials.passwordFor(contact),
-          );
-          final user = res.user;
-          if (user == null) throw const StaffNotFoundFailure();
-          return _toAuthUser(user);
-        } on AuthException catch (e) {
-          // Mật khẩu sinh ra từ chính số/email, nên "sai thông tin đăng nhập" chỉ có thể
-          // nghĩa là số/email này chưa đăng ký.
-          if (_isInvalidLogin(e)) throw const StaffNotFoundFailure();
-          rethrow;
-        }
-      });
-
-  @override
-  Future<AuthUser> signUpStaff({
-    required StaffContact contact,
-    required String fullName,
-    required DateTime birthDate,
+  Future<void> requestStaffOtp(
+    StaffContact contact, {
+    required bool createUser,
+    String? fullName,
+    DateTime? birthDate,
   }) =>
       _guard(() async {
         try {
-          final res = await _client.auth.signUp(
-            email: StaffCredentials.emailFor(contact),
-            password: StaffCredentials.passwordFor(contact),
-            data: {
-              ...StaffCredentials.demoContactMetadata(contact),
-              'account_kind': 'staff',
-              'full_name': fullName,
-              'birth_date': _dateOnly(birthDate),
-            },
+          await _client.auth.signInWithOtp(
+            email: contact.email,
+            phone: contact.phone,
+            shouldCreateUser: createUser,
+            data: createUser
+                ? {
+                    'account_kind': 'staff',
+                    'full_name': fullName?.trim() ?? '',
+                    if (birthDate != null) 'birth_date': _dateOnly(birthDate),
+                  }
+                : null,
           );
-          // Bật "Confirm email": Supabase không báo lỗi khi đã có tài khoản mà trả về
-          // user không có `identities`.
-          if (res.user?.identities?.isEmpty ?? false) {
+        } on AuthException catch (e) {
+          if (createUser && _isAlreadyRegistered(e)) {
             throw const StaffAlreadyExistsFailure();
           }
-          final user = res.user;
-          if (user == null || res.session == null) {
-            throw const EmailConfirmRequiredFailure();
-          }
-          return _toAuthUser(user);
-        } on AuthException catch (e) {
-          if (_isAlreadyRegistered(e)) throw const StaffAlreadyExistsFailure();
-          // Số điện thoại dùng email giả: nếu Supabase chê email đó thì báo đúng nguyên nhân.
-          if (contact.kind == ContactKind.phone && _isEmailRejected(e)) {
-            throw const PhoneLoginDomainRejectedFailure();
+          if (!createUser &&
+              (_isInvalidLogin(e) || e.code == 'user_not_found')) {
+            // Supabase may distinguish missing accounts in its response; do not expose that fact.
+            throw const OtpSendFailure();
           }
           rethrow;
         }
       });
 
   @override
-  Future<void> signOut() => _guard(() => _client.auth.signOut());
+  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token) =>
+      _guard(() async {
+        final response = await _client.auth.verifyOTP(
+          email: contact.email,
+          phone: contact.phone,
+          token: token,
+          type: contact.kind == ContactKind.email ? OtpType.email : OtpType.sms,
+        );
+        final user = response.user;
+        if (user == null || response.session == null) {
+          throw const SessionExpiredFailure();
+        }
+        final appUser = _toAuthUser(user);
+        if (appUser.accountKind == AccountKind.owner) {
+          await _client.auth.signOut();
+          throw const InvalidCredentialsFailure();
+        }
+
+        try {
+          final secret = await _deviceTrustStore.createSecret(user.id);
+          _setDeviceHeader(secret);
+          try {
+            await _client.rpc(
+              'register_staff_device',
+              params: {'p_secret': secret},
+            );
+          } on PostgrestException catch (e) {
+            if (e.code == 'PGRST202') {
+              throw const MissingRpcFailure('register_staff_device');
+            }
+            rethrow;
+          }
+          return appUser;
+        } catch (_) {
+          _removeDeviceHeader();
+          try {
+            await _deviceTrustStore.clearSecret(user.id);
+          } finally {
+            await _client.auth.signOut();
+          }
+          rethrow;
+        }
+      });
+
+  @override
+  Future<bool> validateStaffDeviceTrust() => _guard(() async {
+        final user = _client.auth.currentUser;
+        if (user == null) return false;
+        final kind = _toAuthUser(user).accountKind;
+        if (kind == AccountKind.owner) return true;
+
+        final secret = await _deviceTrustStore.readSecret(user.id);
+        if (secret == null || secret.isEmpty) {
+          _removeDeviceHeader();
+          if (kind == AccountKind.staff) return false;
+        } else {
+          _setDeviceHeader(secret);
+        }
+        try {
+          final result = await _client.rpc('validate_staff_device');
+          return result == true;
+        } on PostgrestException catch (e) {
+          if (e.code == 'PGRST202') {
+            throw const MissingRpcFailure('validate_staff_device');
+          }
+          rethrow;
+        }
+      });
+
+  @override
+  Future<void> signOut() => _guard(() async {
+        final userId = _client.auth.currentUser?.id;
+        _removeDeviceHeader();
+        await _client.auth.signOut();
+        if (userId != null) await _deviceTrustStore.clearSecret(userId);
+      });
+
+  void _setDeviceHeader(String secret) {
+    _client.headers = {..._client.headers, _deviceHeader: secret};
+  }
+
+  void _removeDeviceHeader() {
+    final headers = {..._client.headers}..remove(_deviceHeader);
+    _client.headers = headers;
+  }
 
   @override
   Future<void> sendPasswordReset(String email) =>
@@ -183,18 +256,22 @@ class SupabaseAuthRepository implements AuthRepository {
   String _lastShopKey(String userId) => 'fore.last_active_shop.$userId';
 
   AuthUser _toAuthUser(User user) {
-    final email = user.email ?? '';
-    // Tài khoản nhân viên đăng ký bằng số điện thoại có email giả: hiện lại là số điện thoại.
-    final phoneFromEmail = StaffCredentials.phoneFromEmail(email);
     return AuthUser(
       id: user.id,
-      email: phoneFromEmail == null ? email : '',
-      phone: phoneFromEmail ?? user.phone ?? '',
+      email: user.email ?? '',
+      phone: (user.phone ?? '').replaceFirst(RegExp(r'^\+'), ''),
       displayName: (user.userMetadata?['full_name'] as String?) ?? '',
       birthDate: (user.userMetadata?['birth_date'] as String?) ?? '',
-      accountKind: AccountKind.parse(user.userMetadata?['account_kind']),
+      accountKind: accountKindOf(user),
     );
   }
+
+  /// Loại tài khoản lấy từ `app_metadata` (do trigger `stamp_account_kind` đóng dấu, người
+  /// dùng không sửa được). `user_metadata` tự sửa được nên không tin ở đây.
+  /// Cần đã chạy migration 04; tài khoản chưa có dấu là `unknown`.
+  @visibleForTesting
+  static AccountKind accountKindOf(User user) =>
+      AccountKind.parse(user.appMetadata['fore_account_kind']);
 
   static String _dateOnly(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
@@ -203,11 +280,6 @@ class SupabaseAuthRepository implements AuthRepository {
   static bool _isInvalidLogin(AuthException e) =>
       e.code == 'invalid_credentials' ||
       e.message.toLowerCase().contains('invalid login credentials');
-
-  static bool _isEmailRejected(AuthException e) =>
-      e.code == 'email_address_invalid' ||
-      e.message.toLowerCase().contains('email address') &&
-          e.message.toLowerCase().contains('invalid');
 
   static bool _isAlreadyRegistered(AuthException e) =>
       e.code == 'user_already_exists' ||

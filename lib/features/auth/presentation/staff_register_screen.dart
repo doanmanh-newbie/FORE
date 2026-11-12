@@ -30,6 +30,7 @@ class StaffRegisterScreen extends StatefulWidget {
 class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
   final _contact = TextEditingController();
   final _name = TextEditingController();
+  final _otp = TextEditingController();
   DateTime? _birthDate;
 
   /// Tài khoản đã tạo nhưng chưa tải được hồ sơ (mất mạng...): nút chính đổi thành "Thử lại".
@@ -40,17 +41,22 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
   void dispose() {
     _contact.dispose();
     _name.dispose();
+    _otp.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (_needsRetry) return _enterApp();
-    final ok = await context.read<StaffRegisterController>().submit(
-          contactText: _contact.text,
-          fullName: _name.text,
-          birthDate: _birthDate,
-        );
-    if (ok && mounted) await _enterApp();
+    final controller = context.read<StaffRegisterController>();
+    final verifying = controller.otpRequested;
+    final ok = verifying
+        ? await controller.verifyOtp(_otp.text)
+        : await controller.submit(
+            contactText: _contact.text,
+            fullName: _name.text,
+            birthDate: _birthDate,
+          );
+    if (ok && verifying && mounted) await _enterApp();
   }
 
   /// Đã có phiên: tải hồ sơ rồi đi tới màn của nhân viên.
@@ -118,62 +124,90 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Tạo tài khoản nhân viên hiện là luồng thử nghiệm, chưa an toàn để dùng thật: '
-                'không có mật khẩu hay mã xác nhận; ai biết số/email đều có thể vào tài khoản.',
-                style: AppTextStyles.caption,
-              ),
+              if (c.otpRequested)
+                const Text(
+                  'Mã xác nhận đã được gửi. Nhập mã 6 chữ số để hoàn tất tạo tài khoản.',
+                  style: AppTextStyles.body,
+                )
+              else
+                const Text(
+                  'Bạn cần xác minh email hoặc số điện thoại để bảo vệ tài khoản.',
+                  style: AppTextStyles.caption,
+                ),
               const SizedBox(height: 24),
-              ContactKindToggle(
-                kind: c.kind,
-                onChanged: c.setKind,
-                enabled: !busy,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: phone ? 'Số điện thoại' : 'Email',
-                controller: _contact,
-                hint: phone ? '0901 234 567' : 'Địa chỉ email của bạn',
-                errorText: c.contactError,
-                enabled: !busy,
-                onChanged: (_) => c.clearContactError(),
-                keyboardType:
-                    phone ? TextInputType.phone : TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                autofillHints: [
-                  phone ? AutofillHints.telephoneNumber : AutofillHints.email,
-                ],
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'Tên hiển thị',
-                controller: _name,
-                hint: 'Ví dụ: Lan',
-                errorText: c.nameError,
-                enabled: !busy,
-                onChanged: (_) => c.clearNameError(),
-                textInputAction: TextInputAction.done,
-                autofillHints: const [AutofillHints.name],
-              ),
-              const SizedBox(height: 16),
-              const Text('Ngày sinh', style: AppTextStyles.label),
-              const SizedBox(height: 6),
-              OutlinedButton.icon(
-                onPressed: busy ? null : _pickBirthDate,
-                icon: const Icon(Icons.calendar_month_outlined),
-                label: Text(_birthDate == null
-                    ? 'Chọn ngày sinh'
-                    : formatDmy(_birthDate!)),
-              ),
-              if (c.birthDateError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: Text(
-                    c.birthDateError!,
-                    style: const TextStyle(
-                        color: AppColors.statusOff, fontSize: AppFontSizes.s12),
+              if (!c.otpRequested) ...[
+                ContactKindToggle(
+                  kind: c.kind,
+                  onChanged: c.setKind,
+                  enabled: !busy,
+                ),
+                const SizedBox(height: 16),
+                AppTextField(
+                  label: phone ? 'Số điện thoại' : 'Email',
+                  controller: _contact,
+                  hint: phone ? '0901 234 567' : 'Địa chỉ email của bạn',
+                  errorText: c.contactError,
+                  enabled: !busy,
+                  onChanged: (_) => c.clearContactError(),
+                  keyboardType:
+                      phone ? TextInputType.phone : TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: [
+                    phone ? AutofillHints.telephoneNumber : AutofillHints.email,
+                  ],
+                ),
+                const SizedBox(height: 16),
+                AppTextField(
+                  label: 'Tên hiển thị',
+                  controller: _name,
+                  hint: 'Ví dụ: Lan',
+                  errorText: c.nameError,
+                  enabled: !busy,
+                  onChanged: (_) => c.clearNameError(),
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.name],
+                ),
+                const SizedBox(height: 16),
+                const Text('Ngày sinh', style: AppTextStyles.label),
+                const SizedBox(height: 6),
+                OutlinedButton.icon(
+                  onPressed: busy ? null : _pickBirthDate,
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  label: Text(_birthDate == null
+                      ? 'Chọn ngày sinh'
+                      : formatDmy(_birthDate!)),
+                ),
+                if (c.birthDateError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      c.birthDateError!,
+                      style: const TextStyle(
+                          color: AppColors.statusOff,
+                          fontSize: AppFontSizes.s12),
+                    ),
+                  ),
+              ] else ...[
+                AppTextField(
+                  label: 'Mã xác nhận',
+                  controller: _otp,
+                  hint: '000000',
+                  errorText: c.otpError,
+                  enabled: !busy,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: _submit,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: c.canResend ? c.resendOtp : null,
+                    child: Text(c.canResend
+                        ? 'Gửi lại mã'
+                        : 'Gửi lại mã sau ${c.resendSeconds} giây'),
                   ),
                 ),
+              ],
               if (c.formError != null || _sessionError != null) ...[
                 const SizedBox(height: 12),
                 Text(
@@ -184,8 +218,12 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
               ],
               const SizedBox(height: 24),
               LoadingButton(
-                label: _needsRetry ? 'Thử lại' : 'Tạo tài khoản',
-                loadingLabel: 'Đang tạo tài khoản',
+                label: _needsRetry
+                    ? 'Thử lại'
+                    : c.otpRequested
+                        ? 'Xác nhận và tạo tài khoản'
+                        : 'Gửi mã xác nhận',
+                loadingLabel: c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
                 loading: busy,
                 onPressed: _submit,
               ),

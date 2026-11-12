@@ -14,10 +14,15 @@ class FakeShiftRepository implements ShiftRepository {
 
   final openedWith = <int>[];
 
+  /// Làm `currentShift()` trả chậm (để dựng tình huống đổi tài khoản giữa chừng).
+  Duration delay = Duration.zero;
+
   @override
   Future<CurrentShift?> currentShift() async {
+    final result = shift; // chụp lại lúc gọi, như một request đã gửi đi
+    if (delay > Duration.zero) await Future<void>.delayed(delay);
     if (failure != null) throw failure!;
-    return shift;
+    return result;
   }
 
   @override

@@ -1,3 +1,0 @@
-[    2441ms] [INFO] DDC is about to load 1/2 scripts with pool size = 1000 @ http://localhost:59897/ddc_module_loader.js:1014
-[    3581ms] [INFO] DDC is about to load 1018/1018 scripts with pool size = 1000 @ http://localhost:59897/ddc_module_loader.js:1014
-[   12777ms] ore/features/shop/presentation/team_screen.dart was previously defined but DDC is not currently executing a hot  reload or a hot restart. Failed to define the library.

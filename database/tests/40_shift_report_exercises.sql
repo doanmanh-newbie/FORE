@@ -45,7 +45,7 @@ declare
   nv1     constant text := '00000000-0000-0000-0000-0000000000b1';
   milk uuid; cf uuid; t1 uuid; b uuid;
   sa uuid; sb uuid; sc uuid; sd uuid; s uuid;
-  i int; delta int; wst int; cash_close int; j jsonb; e jsonb; msg text; k text;
+  i int; delta int; wst int; cash_close int; oc int; j jsonb; e jsonb; msg text; k text;
 begin
   select id into milk from ingredients where name = 'Sữa';
   select id into cf from menu_sizes;
@@ -56,12 +56,13 @@ begin
   for i in 1..4 loop
     delta := case i when 4 then -5 else 5 end;
     wst   := case i when 3 then 2 else 0 end;
-    s := open_shift(0);
+    s := open_shift(case when i = 1 then 0 else cash_close end);   -- mở ca bằng đúng tiền cuối ca trước
+    oc := case when i = 1 then 0 else cash_close end;
     perform submit_stock_count(milk, 'open', 1000);
     b := open_bill(t1, 'dine_in', 1); perform add_bill_line(b, cf, 1); perform pay_bill(b, 'cash');
     if wst > 0 then perform add_waste(milk, wst, 'expired', null); end if;
-    cash_close := 29000;
-    if i = 3 then perform add_cash_movement('out', 20000, 'mua đá'); cash_close := 9000; end if;
+    cash_close := oc + 29000;
+    if i = 3 then perform add_cash_movement('out', 20000, 'mua đá'); cash_close := cash_close - 20000; end if;
     perform submit_stock_count(milk, 'close', 1000 - 30 - wst - delta);
     perform close_shift(cash_close);
     if i = 1 then sa := s; elsif i = 2 then sb := s; elsif i = 3 then sc := s; else sd := s; end if;

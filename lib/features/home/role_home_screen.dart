@@ -52,7 +52,7 @@ class _RoleHomeScreenState extends State<RoleHomeScreen> {
       if (route != null) return _RedirectTo(route: route);
     }
     if (state is! SessionSignedIn) {
-      if (state is SessionOffline) {
+      if (state is SessionOffline || state is SessionFailed) {
         return Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(
@@ -64,9 +64,13 @@ class _RoleHomeScreenState extends State<RoleHomeScreen> {
                   children: [
                     const Icon(Icons.cloud_off_outlined, size: 42),
                     const SizedBox(height: 12),
-                    const Text('Chưa kết nối được với Fore'),
+                    Text(state is SessionFailed
+                        ? 'Chưa tải được thông tin tài khoản'
+                        : 'Chưa kết nối được với Fore'),
                     const SizedBox(height: 8),
-                    const Text('Kiểm tra mạng rồi thử tải lại.'),
+                    Text(state is SessionFailed
+                        ? 'Bạn vẫn đang đăng nhập. Hãy thử tải lại.'
+                        : 'Kiểm tra mạng rồi thử tải lại.'),
                     const SizedBox(height: 16),
                     FilledButton.icon(
                       onPressed: () => context

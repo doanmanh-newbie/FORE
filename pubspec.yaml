@@ -10,14 +10,17 @@ dependencies:
   flutter:
     sdk: flutter
   supabase_flutter: ^2.5.0
+  image_picker: ^1.1.2
   provider: ^6.1.2
   flutter_svg: ^2.3.0
   shared_preferences: ^2.5.6
+  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_secure_storage_platform_interface: ^1.1.2
 
 flutter:
   uses-material-design: true
@@ -25,16 +28,6 @@ flutter:
   assets:
     - assets/splash/
     - assets/icons/
-    - assets/owner_dashboard/file1/
-    - assets/owner_dashboard/file2/
-    - assets/owner_dashboard/file3/
-    - assets/owner_dashboard/file4/
-    - assets/owner_dashboard/file5/
-    - assets/owner_dashboard/file6/
-    - assets/owner_dashboard/file7/
-    - assets/owner_dashboard/file8/
-    - assets/owner_dashboard/file9/
-    - assets/owner_dashboard/file10/
 
   fonts:
     - family: ForeInter

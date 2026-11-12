@@ -14,6 +14,18 @@ OpsCurrentShift _openShift() => OpsCurrentShift(
       openedByMe: true,
     );
 
+/// Cho phép test quyết định request nào xong trước.
+class _ManualShiftRepo extends FakeShiftRepository {
+  final pending = <Completer<OpsCurrentShift?>>[];
+
+  @override
+  Future<OpsCurrentShift?> currentShift() {
+    final c = Completer<OpsCurrentShift?>();
+    pending.add(c);
+    return c.future;
+  }
+}
+
 void main() {
   late FakeShiftRepository repo;
   late OpsShiftController c;
@@ -21,6 +33,24 @@ void main() {
   setUp(() {
     repo = FakeShiftRepository();
     c = OpsShiftController(repo);
+  });
+
+  test('hai lần tải chồng nhau: kết quả cũ về sau không ghi đè kết quả mới', () async {
+    final manual = _ManualShiftRepo();
+    final ctrl = OpsShiftController(manual);
+
+    final first = ctrl.load(); // gửi trước, sẽ về sau
+    await Future<void>.delayed(Duration.zero); // request ca của lần 1 đã bay đi
+    final second = ctrl.load(); // gửi sau, về trước
+    await Future<void>.delayed(Duration.zero);
+    expect(manual.pending, hasLength(2));
+
+    manual.pending[1].complete(null); // lần mới: hiện không có ca
+    await second;
+    manual.pending[0].complete(_openShift()); // lần cũ về muộn: còn ca
+    await first;
+
+    expect(ctrl.hasOpenShift, isFalse);
   });
 
   group('tải trạng thái', () {

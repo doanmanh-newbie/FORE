@@ -64,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _onSessionChanged() {
     if (_left || !mounted) return;
     final state = _session.state;
-    if (state is SessionOffline) {
+    if (state is SessionOffline || state is SessionFailed) {
       _timeline.pauseLoop();
     } else if (state is SessionChecking) {
       _timeline.resumeLoop();
@@ -84,7 +84,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final offline = context.watch<SessionController>().state is SessionOffline;
+    final sessionState = context.watch<SessionController>().state;
+    final offline =
+        sessionState is SessionOffline || sessionState is SessionFailed;
     return Scaffold(
       body: Stack(
         children: [

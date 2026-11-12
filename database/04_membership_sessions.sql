@@ -95,25 +95,12 @@ revoke all on function invite_staff(text, text, text) from public, anon;
 grant execute on function invite_staff(text, text, text) to authenticated;
 
 
--- >>> 015_simple_staff_login.sql
--- Fore · 015_simple_staff_login.sql · ĐĂNG NHẬP NHÂN VIÊN ĐƠN GIẢN (CHỈ ĐỂ THỬ)
--- Chạy sau 014_invite_phone_or_email.sql; không cần reset dữ liệu.
---
--- Nhân viên chỉ nhập số điện thoại HOẶC email, không có mã xác nhận (OTP) và không phải gõ mật khẩu.
--- App tự sinh mật khẩu từ chính số/email đó (xem `StaffCredentials` trong Flutter).
---
--- Supabase chỉ cho đăng ký bằng số điện thoại khi đã cấu hình nhà cung cấp SMS. Để khỏi cần SMS,
--- app đăng ký số điện thoại bằng một EMAIL GIẢ có dạng  p84901234567@phone.fore-staff.app
--- (chữ "p" + số quốc tế không dấu "+"). Database nhận ra dạng này và coi nó là SỐ ĐIỆN THOẠI,
--- nên lời mời gửi bằng số điện thoại vẫn tới đúng người.
---
--- Cài đặt Supabase cần có: Authentication -> Providers -> Email -> TẮT "Confirm email".
---
--- Khi làm đăng nhập thật (OTP) sau này: bỏ file này, dùng lại số điện thoại/email đã xác thực
--- như `_my_verified_contacts` trong 008 và `StaffCredentials` bị xóa khỏi app.
+-- >>> 015_legacy_staff_contact_helpers.sql
+-- Tương thích đọc danh sách tài khoản thử nghiệm cũ; không dùng email giả/metadata để xác thực,
+-- đăng nhập hoặc khớp lời mời. Nhân viên cần dùng OTP với contact thật đã xác minh.
 -- =====================================================================
 
--- Tên miền của email giả. PHẢI trùng `StaffCredentials.phoneEmailDomain` trong Flutter.
+-- Chỉ dùng để hiển thị số cũ trong team; không phải bằng chứng xác minh số điện thoại.
 create or replace function _phone_login_domain() returns text
 language sql immutable as $$ select 'phone.fore-staff.app'::text $$;
 
@@ -234,8 +221,8 @@ end $$;
 
 
 -- >>> 017_staff_invite_contact_fallback.sql
--- Fore · 017_staff_invite_contact_fallback.sql
--- Sửa hộp thư lời mời cho tài khoản nhân viên tạo trước khi app lưu demo contact metadata.
+-- Fore · 017_legacy_staff_contact_display.sql
+-- Legacy helper giữ lại để hiển thị team cũ; không xác minh hoặc nhận lời mời bằng alias.
 -- Chạy sau 015_simple_staff_login.sql và 016_audit_actor_same_shop.sql.
 -- Không thay đổi dữ liệu hiện có; lời mời pending sẽ khớp ngay sau khi chạy.
 -- TEST ONLY: không dùng cơ chế đăng nhập không xác minh này cho môi trường production.
@@ -306,7 +293,7 @@ begin
 end $$;
 revoke all on function _my_verified_contacts() from public, anon, authenticated;
 
--- Ngăn mời lại thành viên đã đăng ký trước khi demo contact metadata được lưu.
+-- Chỉ contact Auth đã xác minh mới ngăn chủ gửi lời mời trùng cho thành viên hiện có.
 create or replace function invite_staff(
   p_phone text,
   p_full_name text,
@@ -344,12 +331,12 @@ begin
      where s.shop_id = app_shop_id()
        and s.active
        and (
-         (v_phone is not null and _demo_staff_phone(
-           u.phone::text, u.phone_confirmed_at, u.email::text,
-           u.raw_user_meta_data) = v_phone)
+         (v_phone is not null and u.phone_confirmed_at is not null
+           and normalize_phone(u.phone::text) = v_phone)
          or
-         (v_email is not null and _demo_staff_email(
-           u.email::text, u.email_confirmed_at, u.raw_user_meta_data) = v_email)
+         (v_email is not null and u.email_confirmed_at is not null
+           and not _is_phone_login(u.email::text)
+           and lower(btrim(u.email::text)) = v_email)
        )
   ) then
     raise exception 'ALREADY_MEMBER';
@@ -390,6 +377,7 @@ declare
   v_pending_invites integer := 0;
 begin
   if v_uid is null then raise exception 'NOT_LOGGED_IN'; end if;
+  if not validate_staff_device() then raise exception 'STAFF_DEVICE_UNTRUSTED'; end if;
 
   -- Client có thể gửi lần chọn gần nhất, nhưng chỉ membership đang hoạt động mới được dùng.
   if p_preferred_shop is not null and exists (
@@ -401,8 +389,9 @@ begin
     on conflict (auth_user_id) do update set active_shop_id = excluded.active_shop_id;
   end if;
 
-  select case when u.raw_user_meta_data->>'account_kind' in ('owner', 'staff')
-              then u.raw_user_meta_data->>'account_kind'
+  -- app_metadata do _stamp_account_kind đóng dấu; user_metadata người dùng sửa được nên không tin.
+  select case when u.raw_app_meta_data->>'fore_account_kind' in ('owner', 'staff')
+              then u.raw_app_meta_data->>'fore_account_kind'
               else 'unknown' end
     into v_account_kind
     from auth.users u where u.id = v_uid;
@@ -579,4 +568,137 @@ end $$;
 
 revoke all on function owner_sales_trend(timestamptz, integer) from public, anon;
 grant execute on function owner_sales_trend(timestamptz, integer) to authenticated;
+
+
+-- >>> 021_staff_otp_device_trust.sql
+-- Nhân viên phải xác minh OTP trên từng thiết bị. Mỗi Auth session có một proof 60 ngày;
+-- Flutter chỉ giữ proof trong secure storage, database chỉ giữ SHA-256 digest.
+create table if not exists staff_trusted_devices (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  session_id uuid not null,
+  secret_hash bytea not null check (octet_length(secret_hash) = 32),
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  primary key (user_id, session_id)
+);
+alter table staff_trusted_devices enable row level security;
+revoke all on staff_trusted_devices from public, anon, authenticated;
+
+-- user_metadata do chính người dùng sửa được (auth.updateUser), app_metadata thì không.
+-- Chép account_kind sang app_metadata ngay lúc tạo tài khoản và chỉ tin bản chép đó,
+-- để không ai tự gỡ nhãn "staff" nhằm né kiểm tra thiết bị.
+create or replace function _stamp_account_kind() returns trigger
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if not (coalesce(new.raw_app_meta_data, '{}'::jsonb) ? 'fore_account_kind') then
+    new.raw_app_meta_data := coalesce(new.raw_app_meta_data, '{}'::jsonb)
+      || jsonb_build_object('fore_account_kind', new.raw_user_meta_data->>'account_kind');
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists stamp_account_kind on auth.users;
+create trigger stamp_account_kind before insert on auth.users
+  for each row execute function _stamp_account_kind();
+
+-- Tài khoản có sẵn: lấy theo metadata hiện tại (đã có thể bị sửa, nên rà lại nếu nghi ngờ).
+update auth.users
+   set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb)
+     || jsonb_build_object('fore_account_kind', raw_user_meta_data->>'account_kind')
+ where not (coalesce(raw_app_meta_data, '{}'::jsonb) ? 'fore_account_kind');
+
+-- Tài khoản mới chưa có hàng staff nên account_kind chỉ nhận dạng luồng đăng ký;
+-- khi có membership, role trong bảng staff vẫn là nguồn phân quyền quyết định.
+create or replace function _auth_user_is_staff(p_user uuid) returns boolean
+language sql stable security definer set search_path = public, auth as $$
+  select exists (
+    select 1 from staff s where s.auth_user_id = p_user and s.active and s.role = 'staff'
+  ) or exists (
+    select 1 from auth.users u
+     where u.id = p_user and u.raw_app_meta_data->>'fore_account_kind' = 'staff'
+  )
+$$;
+
+create or replace function staff_device_is_trusted() returns boolean
+language sql stable security definer set search_path = public, auth, extensions as $$
+  select case
+    when auth.uid() is null then false
+    when not _auth_user_is_staff(auth.uid()) then true
+    else exists (
+      select 1
+        from staff_trusted_devices d
+       where d.user_id = auth.uid()
+         and d.session_id = nullif(auth.jwt()->>'session_id', '')::uuid
+         and d.secret_hash = extensions.digest(
+           coalesce(nullif(current_setting('request.headers', true), '')::jsonb
+             ->> 'x-fore-device-token', ''), 'sha256')
+         and d.expires_at > now()
+    )
+  end
+$$;
+
+create or replace function validate_staff_device() returns boolean
+language sql stable security definer set search_path = public, auth as $$
+  select staff_device_is_trusted()
+$$;
+
+create or replace function register_staff_device(p_secret text) returns timestamptz
+language plpgsql security definer set search_path = public, auth, extensions as $$
+declare
+  v_uid uuid := auth.uid();
+  v_session uuid;
+  v_expires timestamptz := now() + interval '60 days';
+begin
+  if v_uid is null then raise exception 'NOT_LOGGED_IN'; end if;
+  if not _auth_user_is_staff(v_uid) then raise exception 'NOT_STAFF'; end if;
+  if p_secret is null or p_secret !~ '^[A-Za-z0-9_-]{40,100}$' then
+    raise exception 'DEVICE_TOKEN_INVALID';
+  end if;
+  if not exists (
+    select 1 from jsonb_array_elements(coalesce(auth.jwt()->'amr', '[]'::jsonb)) method
+     where method->>'method' in ('otp', 'signup')
+  ) then raise exception 'OTP_REQUIRED'; end if;
+  begin
+    v_session := nullif(auth.jwt()->>'session_id', '')::uuid;
+  exception when invalid_text_representation then
+    raise exception 'SESSION_INVALID';
+  end;
+  if v_session is null then raise exception 'SESSION_INVALID'; end if;
+
+  insert into staff_trusted_devices (user_id, session_id, secret_hash, expires_at)
+  values (v_uid, v_session, extensions.digest(p_secret, 'sha256'), v_expires)
+  on conflict (user_id, session_id) do update
+    set secret_hash = excluded.secret_hash,
+        created_at = now(),
+        expires_at = excluded.expires_at;
+  return v_expires;
+end $$;
+
+-- Chỉ email/số đã được Supabase Auth xác nhận mới được dùng để nhận lời mời.
+create or replace function _my_verified_contacts(out phone text, out email text)
+language plpgsql stable security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then raise exception 'NOT_LOGGED_IN'; end if;
+  if not staff_device_is_trusted() then raise exception 'STAFF_DEVICE_UNTRUSTED'; end if;
+  select case when u.phone_confirmed_at is not null then normalize_phone(u.phone) end,
+         case when u.email_confirmed_at is not null then lower(btrim(u.email)) end
+    into phone, email
+    from auth.users u
+   where u.id = auth.uid();
+end $$;
+
+-- RLS and all RPCs that use _require_staff resolve this replacement dynamically.
+create or replace function app_staff_id() returns uuid
+language sql stable security definer set search_path = public as $$
+  select s.id
+    from staff s
+   where s.auth_user_id = auth.uid()
+     and s.active
+     and s.shop_id = app_shop_id()
+     and (s.role = 'owner' or staff_device_is_trusted())
+$$;
+
+revoke all on function _auth_user_is_staff(uuid), staff_device_is_trusted() from public, anon, authenticated;
+revoke all on function validate_staff_device(), register_staff_device(text) from public, anon;
+grant execute on function validate_staff_device(), register_staff_device(text) to authenticated;
 

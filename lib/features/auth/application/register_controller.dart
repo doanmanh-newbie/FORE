@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/validation/field_validator.dart';
@@ -10,7 +11,7 @@ import '../domain/auth_repository.dart';
 enum RegisterStatus { editing, loading, success }
 
 /// Logic màn Đăng ký: kiểm tra từng ô, gọi tạo tài khoản, giữ trạng thái.
-class RegisterController extends ChangeNotifier {
+class RegisterController extends ChangeNotifier with NotifyWhenAlive {
   RegisterController(this._repository);
 
   final AuthRepository _repository;

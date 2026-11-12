@@ -14,6 +14,7 @@ class OwnerDashboardController extends ChangeNotifier {
   bool loading = true;
   bool refreshing = false;
   bool _disposed = false;
+  int _generation = 0;
 
   @override
   void dispose() {
@@ -29,14 +30,16 @@ class OwnerDashboardController extends ChangeNotifier {
       refreshing = true;
     }
     failure = null;
+    final generation = ++_generation;
     notifyListeners();
     try {
       final loaded = await _repository.load();
-      if (!_disposed) data = loaded;
+      if (!_disposed && generation == _generation) data = loaded;
     } catch (error) {
-      if (!_disposed) failure = error;
+      if (!_disposed && generation == _generation) failure = error;
     } finally {
-      if (!_disposed) {
+      // Lần tải cũ về sau lần mới thì bỏ qua, không ghi đè và không tắt loading của lần mới.
+      if (!_disposed && generation == _generation) {
         loading = false;
         refreshing = false;
         notifyListeners();
