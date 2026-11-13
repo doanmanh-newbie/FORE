@@ -16,9 +16,11 @@
 
 do $seed$
 declare
-  v_owner_email text := 'THAY_BANG_EMAIL_TAI_KHOAN_CHU';
+  v_owner_email text := 'manhkota1203@gmail.com';
   v_staff_email text := '';
-  v_owner_name  text := 'Minh Anh';
+  v_staff_phone text := '0855477430';   -- nhân viên đăng nhập bằng OTP số điện thoại
+  v_staff_name  text := 'Mạnh';
+  v_owner_name  text := 'Mạnh';
 
   v_tz constant text := 'Asia/Ho_Chi_Minh';
   v_uid uuid; v_staff_uid uuid; v_shop uuid;
@@ -46,6 +48,11 @@ begin
     if v_staff_uid is null then raise exception 'Không tìm thấy tài khoản Auth nhân viên có email %.', v_staff_email; end if;
     if v_staff_uid = v_uid then raise exception 'Email nhân viên phải khác email chủ.'; end if;
   end if;
+  -- Nhân viên theo số điện thoại: nếu đã đăng ký (OTP) thì vào quán ngay, chưa thì để lời mời chờ sẵn.
+  if v_staff_uid is null and btrim(v_staff_phone) <> '' then
+    select id into v_staff_uid from auth.users
+     where normalize_phone(phone) = normalize_phone(v_staff_phone) limit 1;
+  end if;
   if exists (select 1 from shops where created_by = v_uid and name = '[DEMO] Fore Nguyễn Du') then
     raise exception 'Quán demo đã tồn tại. Không chạy seed lần nữa để tránh nhân đôi dữ liệu.';
   end if;
@@ -67,7 +74,8 @@ begin
   values (v_shop, 'Thu Hà', 'staff', 'staff', false, now() - interval '20 days') returning id into v_thu;
   if v_staff_uid is not null then
     insert into staff (shop_id, auth_user_id, full_name, role, job_role)
-    values (v_shop, v_staff_uid, 'Nhân viên (tài khoản thử)', 'staff', 'staff') returning id into v_real;
+    values (v_shop, v_staff_uid, coalesce(nullif(btrim(v_staff_name), ''), 'Nhân viên (tài khoản thử)'), 'staff', 'staff')
+    returning id into v_real;
   end if;
   v_ops := array[v_lan, v_hai, v_tran];
   insert into user_settings (auth_user_id, active_shop_id) values (v_uid, v_shop)
@@ -80,6 +88,11 @@ begin
   insert into shop_invites (shop_id, phone, full_name, invited_by, job_role, expires_at)
   values (v_shop, '84905550123', 'Hoàng Long', v_owner, 'cashier', now() + interval '5 days'),
          (v_shop, '84905550456', 'Đức Anh', v_owner, 'staff', now() - interval '2 days');
+  if v_staff_uid is null and btrim(v_staff_phone) <> '' then
+    insert into shop_invites (shop_id, phone, full_name, invited_by, job_role, expires_at)
+    values (v_shop, normalize_phone(v_staff_phone), coalesce(nullif(btrim(v_staff_name), ''), 'Nhân viên'),
+            v_owner, 'staff', now() + interval '30 days');
+  end if;
 
   -- ================================================================== 2) KHU VỰC + BÀN
   for r in select * from (values
@@ -508,7 +521,7 @@ $seed$;
 -- ===================================================================================================
 do $seed2$
 declare
-  v_owner_email text := 'THAY_BANG_EMAIL_TAI_KHOAN_CHU';   -- dùng cùng email như khối trên
+  v_owner_email text := 'manhkota1203@gmail.com';   -- dùng cùng email như khối trên
   v_tz constant text := 'Asia/Ho_Chi_Minh';
   v_uid uuid; v_shop uuid; v_owner uuid; v_staff uuid; v_area uuid; v_table uuid; v_shift uuid; v_bill uuid;
   v_today date; v_start timestamptz; v_i integer; v_item uuid; v_size uuid; v_sizes uuid[] := array[]::uuid[];

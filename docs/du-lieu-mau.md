@@ -34,3 +34,9 @@ Quán nhỏ (5 bàn, 3 nguyên liệu, 2 món, 1 ca hôm qua) để thử Đổi
 ## Lưu ý
 - Tên nhân viên demo không có tài khoản đăng nhập (không số điện thoại, chưa đặt PIN). Muốn thử giao diện nhân viên hãy điền `v_staff_email`.
 - Số liệu "ngẫu nhiên nhưng cố định": cùng ngày chạy ra cùng kết quả. Mức vàng/đỏ của đối soát được dựng theo ngưỡng mặc định; nếu bạn đã đổi ngưỡng, màu có thể khác.
+
+## Tài khoản thử đã cài sẵn trong file
+- Chủ quán: `manhkota1203@gmail.com` (tự đăng ký trong app với mật khẩu của bạn trước khi chạy; mật khẩu **không** ghi vào file).
+- Nhân viên: số `0855477430`, tên Mạnh (`v_staff_phone`, `v_staff_name`). Nếu số này đã đăng ký bằng OTP thì vào quán ngay,
+  chưa thì seed để sẵn một lời mời, đăng ký OTP xong sẽ vào quán. Muốn có OTP khi thử, bật *Phone numbers for testing*
+  trong Supabase Auth để dùng mã cố định, không tốn SMS.
