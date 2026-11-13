@@ -12,6 +12,7 @@ import '../../../core/errors/failure_messages.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/adaptive_nav.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/fore_action_icons.dart';
 import '../../../core/widgets/page_scaffold.dart';
@@ -143,7 +144,8 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
     final dashboard = context.read<OwnerDashboardController>();
     final data = dashboard.data;
     if (data == null) return;
-    if (DateTime.now().difference(data.updatedAt) > const Duration(minutes: 2)) {
+    if (DateTime.now().difference(data.updatedAt) >
+        const Duration(minutes: 2)) {
       dashboard.load(refresh: true);
       _reconcile.reload(silent: true);
     }
@@ -170,8 +172,22 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
   @override
   Widget build(BuildContext context) {
     final dashboard = context.watch<OwnerDashboardController>();
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AdaptiveNavScaffold(
+      selected: _tab,
+      onSelect: (index) => setState(() {
+        _tab = index;
+        _selectedReport = null;
+      }),
+      items: const [
+        AdaptiveNavItem(
+            icon: Icon(Icons.dashboard_outlined), label: 'Tổng quan'),
+        AdaptiveNavItem(
+            icon: Icon(Icons.fact_check_outlined), label: 'Đối soát'),
+        AdaptiveNavItem(
+            icon: Icon(Icons.menu_book_outlined), label: 'Thực đơn'),
+        AdaptiveNavItem(icon: Icon(Icons.inventory_2_outlined), label: 'Kho'),
+        AdaptiveNavItem(icon: Icon(Icons.more_horiz), label: 'Thêm'),
+      ],
       body: Builder(
         builder: (context) {
           final data = dashboard.data;
@@ -185,7 +201,9 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
             );
           }
           final page = _page(data);
-          if (dashboard.failure == null && data.unavailable.isEmpty) return page;
+          if (dashboard.failure == null && data.unavailable.isEmpty) {
+            return page;
+          }
           if (dashboard.failure == null) {
             return Column(children: [
               MaterialBanner(
@@ -212,24 +230,6 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
             Expanded(child: page),
           ]);
         },
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (index) => setState(() {
-          _tab = index;
-          _selectedReport = null;
-        }),
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined), label: 'Tổng quan'),
-          NavigationDestination(
-              icon: Icon(Icons.fact_check_outlined), label: 'Đối soát'),
-          NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined), label: 'Thực đơn'),
-          NavigationDestination(
-              icon: Icon(Icons.inventory_2_outlined), label: 'Kho'),
-          NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Thêm'),
-        ],
       ),
     );
   }

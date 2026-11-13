@@ -28,7 +28,7 @@ class _LinesTab extends StatelessWidget {
         onAction: onGoMenu,
       );
     }
-    return ListView(
+    return LazyListView(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
       children: [
         ForeCard(
@@ -57,7 +57,7 @@ class _LinesTab extends StatelessWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                       child: Text('Giảm giá', style: AppTextStyles.body)),
                   if (bill.isOpen)
                     TextButton(
@@ -174,8 +174,8 @@ class _LineRow extends StatelessWidget {
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: onVoid,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Text(
                       'Bỏ',
                       style: TextStyle(

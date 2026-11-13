@@ -68,13 +68,13 @@ class TakeawayView extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Đơn chưa xong',
                                   style: AppTextStyles.headline),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text('Cũ nhất ở trên',
                                   style: AppTextStyles.caption),
                             ],
@@ -82,8 +82,8 @@ class TakeawayView extends StatelessWidget {
                         ),
                         FilledButton.icon(
                           onPressed: c.busy ? null : () => _create(context),
-                          icon: const ForeIcon(ForeIcons.plus,
-                              size: 18, color: Colors.white),
+                          icon: ForeIcon(ForeIcons.plus,
+                              size: 18, color: AppColors.onInk),
                           label: const Text('Tạo đơn'),
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 48),
@@ -161,7 +161,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Text(
                   formatClock(order.openedAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: AppFontSizes.s22,
                       fontWeight: FontWeight.w700,
                       color: AppColors.ink),
@@ -181,7 +181,7 @@ class _OrderCard extends StatelessWidget {
               order.items.isEmpty
                   ? 'Chưa có món'
                   : '${formatServings(order.portions, servingLabel)} · ${order.items}',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: AppFontSizes.s15,
                   color: AppColors.textPrimary,
                   height: 1.4),

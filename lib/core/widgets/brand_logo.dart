@@ -14,9 +14,9 @@ import '../theme/app_colors.dart';
 /// (0xFF3F9E92) đang là số ước lượng từ ảnh, còn teal của logo là 0xFF51A19B.
 /// Khi có bảng màu chính thức của thiết kế, cân nhắc thống nhất hai màu này.
 
-const _dark = AppColors.brand;
-const _teal = AppColors.brandAccent;
-const _star = AppColors.background;
+Color get _dark => AppColors.brand;
+Color get _teal => AppColors.brandAccent;
+Color get _star => AppColors.background;
 
 /// Số đo gốc (px thiết kế) dùng để tính tỉ lệ.
 abstract final class _Design {

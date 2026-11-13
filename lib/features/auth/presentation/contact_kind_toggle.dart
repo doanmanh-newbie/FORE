@@ -41,7 +41,7 @@ class ContactKindToggle extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: on ? Colors.white : AppColors.brand,
+                  color: on ? AppColors.onInk : AppColors.brand,
                 ),
               ),
             ),

@@ -45,17 +45,17 @@ class MoreView extends StatelessWidget {
   Widget build(BuildContext context) => PageScaffold(
         header: header,
         children: [
-          const Text('Thêm', style: AppTextStyles.display),
+          Text('Thêm', style: AppTextStyles.display),
           const SizedBox(height: 20),
           ActionTile(
-            icon: const Icon(Icons.storefront_outlined, color: AppColors.ink),
+            icon: Icon(Icons.storefront_outlined, color: AppColors.ink),
             title: shopName.isEmpty ? 'Quán' : shopName,
             subtitle: 'Đổi quán đang sử dụng',
             onTap: onSwitchShop,
           ),
           const SizedBox(height: 12),
           ActionTile(
-            icon: const Icon(ForeActionIcons.waste, color: AppColors.ink),
+            icon: Icon(ForeActionIcons.waste, color: AppColors.ink),
             title: 'Ghi hao hụt',
             subtitle: hasOpenShift
                 ? 'Đổ bỏ, làm sai, cho nhân viên, thử vị'
@@ -65,17 +65,17 @@ class MoreView extends StatelessWidget {
           const SizedBox(height: 12),
           ActionTile(
             icon:
-                const Icon(ForeActionIcons.cashMovement, color: AppColors.ink),
+                Icon(ForeActionIcons.cashMovement, color: AppColors.ink),
             title: 'Thu / chi tiền mặt',
             subtitle:
                 hasOpenShift ? 'Mua đá, chủ rút tiền...' : 'Mở ca để dùng',
             onTap: hasOpenShift ? onCash : null,
           ),
           const SizedBox(height: 24),
-          const Text('Quản lý quán', style: AppTextStyles.headline),
+          Text('Quản lý quán', style: AppTextStyles.headline),
           const SizedBox(height: 12),
           ActionTile(
-            icon: const Icon(Icons.mail_outline_rounded, color: AppColors.ink),
+            icon: Icon(Icons.mail_outline_rounded, color: AppColors.ink),
             title: 'Hộp thư',
             subtitle: 'Lời mời vào quán',
             onTap: onInbox,
@@ -83,14 +83,14 @@ class MoreView extends StatelessWidget {
           if (isOwner) ...[
             const SizedBox(height: 12),
             ActionTile(
-              icon: const Icon(Icons.groups_outlined, color: AppColors.ink),
+              icon: Icon(Icons.groups_outlined, color: AppColors.ink),
               title: 'Nhân viên',
               subtitle: 'Thêm và quản lý nhân viên',
               onTap: onTeam,
             ),
           ],
           const SizedBox(height: 24),
-          const Text('Tài khoản', style: AppTextStyles.headline),
+          Text('Tài khoản', style: AppTextStyles.headline),
           const SizedBox(height: 12),
           ForeCard(
             radius: 20,

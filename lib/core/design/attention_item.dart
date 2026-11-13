@@ -26,7 +26,7 @@ class AttentionItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusCard),
-          border: const Border.fromBorderSide(
+          border: Border.fromBorderSide(
               BorderSide(color: AppColors.cardBorder)),
         ),
         child: Row(

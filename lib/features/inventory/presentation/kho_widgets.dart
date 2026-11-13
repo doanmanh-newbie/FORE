@@ -13,6 +13,7 @@ import '../../../core/widgets/status_chip.dart';
 import '../application/async_data.dart';
 import '../application/kho_format.dart';
 import '../domain/kho_models.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Khung màn hình con của Kho: tiêu đề có nút quay lại, nội dung, thanh hành động dưới đáy.
 class KhoPage extends StatelessWidget {
@@ -43,13 +44,13 @@ class KhoPage extends StatelessWidget {
         bottomNavigationBar: bottom == null
             ? null
             : DecoratedBox(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.surface,
                   boxShadow: [
                     BoxShadow(
                         color: AppColors.shadowSoft,
                         blurRadius: 18,
-                        offset: Offset(0, -4)),
+                        offset: const Offset(0, -4)),
                   ],
                 ),
                 child: SafeArea(
@@ -87,9 +88,11 @@ class AsyncView<T> extends StatelessWidget {
             );
           }
           if (data == null) return const KhoSkeleton();
+          // Dựng từng dòng khi cuộn tới: danh sách kho/phiếu có thể dài.
+          final children = builder(context, data);
           return RefreshIndicator(
             onRefresh: () => source.load(silent: true),
-            child: ListView(
+            child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
                 AppSizes.pagePadding,
@@ -97,7 +100,8 @@ class AsyncView<T> extends StatelessWidget {
                 AppSizes.pagePadding,
                 AppSizes.pageBottomPadding,
               ),
-              children: builder(context, data),
+              itemCount: children.length,
+              itemBuilder: (_, i) => children[i],
             ),
           );
         },
@@ -108,9 +112,9 @@ class KhoSkeleton extends StatelessWidget {
   const KhoSkeleton({super.key});
 
   @override
-  Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.all(AppSizes.pagePadding),
-        children: const [
+  Widget build(BuildContext context) => const LazyListView(
+        padding: EdgeInsets.all(AppSizes.pagePadding),
+        children: [
           SkeletonBox(height: 120, radius: AppSizes.radiusCard),
           SizedBox(height: 12),
           SkeletonBox(height: 72, radius: AppSizes.radiusCard),
@@ -218,12 +222,13 @@ class BigFigure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fg = dark ? AppColors.white : AppColors.brand;
-    final soft = dark ? AppColors.onInkMuted : AppColors.textSecondary;
+    final soft = dark ? AppColors.onDarkMuted : AppColors.textSecondary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label.toUpperCase(),
-            style: AppTextStyles.micro.copyWith(color: soft, letterSpacing: 0.6)),
+            style:
+                AppTextStyles.micro.copyWith(color: soft, letterSpacing: 0.6)),
         const SizedBox(height: 6),
         Text(value, style: AppTextStyles.kpi.copyWith(color: fg)),
         if (caption != null) ...[
@@ -286,7 +291,10 @@ class KhoNote extends StatelessWidget {
 /// Ô tìm kiếm gọn.
 class KhoSearchField extends StatelessWidget {
   const KhoSearchField(
-      {super.key, required this.controller, required this.hint, this.onChanged});
+      {super.key,
+      required this.controller,
+      required this.hint,
+      this.onChanged});
 
   final TextEditingController controller;
   final String hint;
@@ -335,5 +343,7 @@ class KhoChipBar extends StatelessWidget {
 
 String stockLine(CatalogItem i) {
   final base = formatKhoQty(i.stock < 0 ? 0 : i.stock, i.unit);
-  return i.minStock > 0 ? '$base · nhắc nhập ở ${formatKhoQty(i.minStock, i.unit)}' : base;
+  return i.minStock > 0
+      ? '$base · nhắc nhập ở ${formatKhoQty(i.minStock, i.unit)}'
+      : base;
 }

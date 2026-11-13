@@ -130,10 +130,10 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
           return PageScaffold(
             header: widget.header,
             children: [
-              const Text('Chăm quán, từ những điều nhỏ',
+              Text('Chăm quán, từ những điều nhỏ',
                   style: AppTextStyles.display),
               const SizedBox(height: 6),
-              const Text('Mọi thiết lập, gọn trong một cuốn sổ.',
+              Text('Mọi thiết lập, gọn trong một cuốn sổ.',
                   style: AppTextStyles.caption),
               const SizedBox(height: 16),
               ForeCard(
@@ -145,7 +145,7 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
                     title: widget.personName,
                     subtitle: 'Chủ quán',
                   ),
-                  const Divider(height: 24, color: AppColors.cardBorder),
+                  Divider(height: 24, color: AppColors.cardBorder),
                   _ProfileRow(
                     icon: Icons.storefront_outlined,
                     title: widget.shopName.isEmpty ? 'Quán' : widget.shopName,
@@ -167,7 +167,7 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
               const SizedBox(height: 20),
               if (!searching && pinned.isNotEmpty) ...[
                 Row(children: [
-                  const Expanded(
+                  Expanded(
                       child: Text('Đã ghim', style: AppTextStyles.headline)),
                   TextButton(
                       onPressed: _editPins, child: const Text('Chỉnh sửa')),
@@ -187,8 +187,8 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
                       onPressed: _editPins, child: const Text('Ghim lối tắt')),
                 ),
               if (searching && groups.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Text('Không có chức năng nào khớp. Thử từ khác nhé.',
                       style: AppTextStyles.caption),
                 ),
@@ -201,7 +201,7 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
                   child: Column(children: [
                     for (var i = 0; i < g.value.length; i++) ...[
                       if (i > 0)
-                        const Divider(
+                        Divider(
                             height: 1,
                             indent: 60,
                             color: AppColors.cardBorder),
@@ -331,7 +331,7 @@ class _EntryRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
+              Icon(Icons.chevron_right_rounded,
                   color: AppColors.textSecondary),
             ]),
           ),

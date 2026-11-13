@@ -10,7 +10,7 @@ import '../../core/errors/app_failure.dart';
 import '../../core/errors/failure_messages.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/empty_state.dart';
-import '../../core/widgets/fore_bottom_nav.dart';
+import '../../core/widgets/adaptive_nav.dart';
 import '../../core/widgets/fore_header.dart';
 import '../../core/widgets/ops_icon.dart';
 import '../../core/format.dart';
@@ -180,8 +180,29 @@ class _HomeScreenState extends State<OpsHomeScreen>
         final hasShift = _shift.hasOpenShift;
         final ready = _shift.phase == OpsShiftPhase.ready;
         final tab = hasShift || _tab == 4 ? _tab : 0;
-        return Scaffold(
-          backgroundColor: AppColors.background,
+        Widget icon(String asset, bool enabled) => ForeIcon(asset,
+            size: 22,
+            color: enabled ? AppColors.brand : AppColors.textSecondary);
+        return AdaptiveNavScaffold(
+          selected: tab,
+          onSelect: _select,
+          items: [
+            AdaptiveNavItem(
+                label: 'Trang chủ', icon: icon(ForeIcons.home, true)),
+            AdaptiveNavItem(
+                label: 'Mang đi',
+                icon: icon(ForeIcons.bag, hasShift),
+                enabled: hasShift),
+            AdaptiveNavItem(
+                label: 'Kho',
+                icon: icon(ForeIcons.package, hasShift),
+                enabled: hasShift),
+            AdaptiveNavItem(
+                label: 'Đóng ca',
+                icon: icon(ForeIcons.lock, hasShift),
+                enabled: hasShift),
+            AdaptiveNavItem(label: 'Thêm', icon: icon(ForeIcons.plus, true)),
+          ],
           body: Column(
             children: [
               ForeHeader(
@@ -204,18 +225,6 @@ class _HomeScreenState extends State<OpsHomeScreen>
                     : null,
               ),
               Expanded(child: _content(tab, profile)),
-            ],
-          ),
-          bottomNavigationBar: ForeBottomNav(
-            selected: tab,
-            onSelect: _select,
-            items: [
-              const NavItem(label: 'Trang chủ', icon: ForeIcons.home),
-              NavItem(label: 'Mang đi', icon: ForeIcons.bag, enabled: hasShift),
-              NavItem(label: 'Kho', icon: ForeIcons.package, enabled: hasShift),
-              NavItem(
-                  label: 'Đóng ca', icon: ForeIcons.lock, enabled: hasShift),
-              const NavItem(label: 'Thêm', icon: ForeIcons.plus),
             ],
           ),
         );

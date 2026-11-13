@@ -22,6 +22,7 @@ import '../application/kho_format.dart';
 import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'kho_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 // ======================================================================
 // Đếm kho mù (nhân viên "Kiểm kê trong ca"; chủ cũng dùng được)
@@ -121,7 +122,7 @@ class _CountScreenState extends State<CountScreen> {
                     SecondaryButton(
                         label: 'Lưu nháp', onPressed: _c.busy ? null : _saveDraft),
                   ]),
-            body: ListView(
+            body: LazyListView(
               padding: const EdgeInsets.all(AppSizes.pagePadding),
               children: [
                 LinearProgressIndicator(
@@ -480,7 +481,7 @@ class _StocktakeReviewScreenState extends State<StocktakeReviewScreen> {
         child: Column(children: [
           LabelValueRow('Thiếu', formatSignedVnd(d.shortValue)),
           LabelValueRow('Thừa', formatSignedVnd(d.overValue)),
-          const Divider(color: AppColors.cardBorder),
+          Divider(color: AppColors.cardBorder),
           LabelValueRow('Chênh lệch ròng', formatSignedVnd(d.netValue),
               strong: true),
           Align(
@@ -619,7 +620,7 @@ class _AdjustDecisionScreenState extends State<AdjustDecisionScreen> {
         loading: _busy,
         onPressed: _confirm,
       ),
-      body: ListView(
+      body: LazyListView(
         padding: const EdgeInsets.all(AppSizes.pagePadding),
         children: [
           const KhoNote(

@@ -13,7 +13,7 @@ class InboxScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Hộp thư', style: AppTextStyles.heading),
+        title: Text('Hộp thư', style: AppTextStyles.heading),
       ),
       body: const InviteListView(
         emptyText:

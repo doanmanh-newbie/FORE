@@ -88,7 +88,7 @@ class _Title extends StatelessWidget {
   const _Title();
 
   @override
-  Widget build(BuildContext context) => const Row(
+  Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           DecoratedBox(
@@ -96,13 +96,13 @@ class _Title extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.brandAccent,
             ),
-            child: SizedBox.square(dimension: 6),
+            child: const SizedBox.square(dimension: 6),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             SplashStrings.stageTitle,
             style: TextStyle(
-              fontSize: AppFontSizes.s11,
+              fontSize: AppFontSizes.s12,
               fontWeight: FontWeight.w700,
               color: AppColors.brand,
             ),

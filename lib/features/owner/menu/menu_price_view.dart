@@ -163,8 +163,8 @@ class _PriceChangePageState extends State<PriceChangePage> {
                     style: AppTextStyles.caption,
                   ),
                 ] else if (s.cost == null)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
                     child: Text('Chưa có công thức nên chưa tính được lãi gộp.',
                         style: AppTextStyles.caption),
                   ),

@@ -11,6 +11,7 @@ import '../../../core/widgets/status_chip.dart';
 import '../../inventory/presentation/kho_widgets.dart';
 import '../domain/settings_models.dart';
 import '../domain/settings_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// "Vai trò và phân quyền" (chủ quán): bật/tắt từng quyền cho Quản lý, Thu ngân, Nhân viên,
 /// có thể áp dụng cho nhiều quán cùng lúc. Chỉ hiện quyền mà database đang áp dụng thật.
@@ -110,7 +111,7 @@ class _RolesScreenState extends State<RolesScreen> {
                 onPressed: _scope.isEmpty ? null : _save),
         body: _loading
             ? const KhoSkeleton()
-            : ListView(
+            : LazyListView(
                 padding: const EdgeInsets.all(AppSizes.pagePadding),
                 children: [
                   KhoChipBar(
@@ -130,11 +131,11 @@ class _RolesScreenState extends State<RolesScreen> {
                     style: AppTextStyles.caption,
                   ),
                   const KhoSectionTitle('Luôn được phép'),
-                  const KhoCard(
+                  KhoCard(
                     child: Row(children: [
                       Icon(Icons.lock_outline_rounded,
                           color: AppColors.textSecondary),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                             'Bán hàng, in hóa đơn, mở và chốt ca của mình. Không tắt được.',

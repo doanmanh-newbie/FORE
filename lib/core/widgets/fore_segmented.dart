@@ -53,7 +53,7 @@ class ForeSegmented extends StatelessWidget {
                               fontSize: AppFontSizes.s15,
                               fontWeight: FontWeight.w700,
                               color:
-                                  i == selected ? Colors.white : AppColors.ink,
+                                  i == selected ? AppColors.onInk : AppColors.ink,
                             ),
                           ),
                         ),

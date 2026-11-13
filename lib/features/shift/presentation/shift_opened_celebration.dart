@@ -106,7 +106,7 @@ class _CelebrationState extends State<_Celebration>
                         Text(
                           'Ca đã mở',
                           style: AppTextStyles.display.copyWith(
-                            color: Colors.white,
+                            color: AppColors.onInk,
                             fontSize: AppFontSizes.s38,
                           ),
                         ),
@@ -116,7 +116,7 @@ class _CelebrationState extends State<_Celebration>
                           child: Text(
                             greeting,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: AppFontSizes.s16,
                               height: 1.4,
                               color: AppColors.onSurfaceStrong,
@@ -191,7 +191,7 @@ class _TickPainter extends CustomPainter {
             ..strokeWidth = 6
             ..strokeCap = StrokeCap.round
             ..strokeJoin = StrokeJoin.round
-            ..color = Colors.white,
+            ..color = AppColors.onInk,
         );
       }
     }
@@ -210,7 +210,7 @@ class _TickPainter extends CustomPainter {
           dot,
           (i.isEven ? 4.0 : 2.6) * (1 - burst * 0.6),
           Paint()
-            ..color = (i % 3 == 0 ? Colors.white : AppColors.brandAccent)
+            ..color = (i % 3 == 0 ? AppColors.onInk : AppColors.brandAccent)
                 .withValues(alpha: 1 - burst),
         );
       }

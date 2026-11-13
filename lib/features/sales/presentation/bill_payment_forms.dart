@@ -20,7 +20,7 @@ class _PayFormState extends State<_PayForm> {
               child: Text(formatVnd(widget.amount),
                   style: AppTextStyles.numberXL)),
           const SizedBox(height: 4),
-          const Center(
+          Center(
               child: Text('Số tiền phải thu', style: AppTextStyles.caption)),
           const SizedBox(height: 20),
           Row(
@@ -45,7 +45,7 @@ class _PayFormState extends State<_PayForm> {
             child: Text('Thu ${formatVnd(widget.amount)}'),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Thanh toán xong không sửa được. Muốn hủy phải có chủ quán xác nhận.',
             textAlign: TextAlign.center,
             style: AppTextStyles.caption,
@@ -86,7 +86,7 @@ class _MethodTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: AppFontSizes.s16,
                   fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : AppColors.ink,
+                  color: selected ? AppColors.onInk : AppColors.ink,
                 ),
               ),
             ),

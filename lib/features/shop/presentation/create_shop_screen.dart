@@ -92,52 +92,56 @@ class _CreateShopScreenState extends State<CreateShopScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
           child: FadeSlideIn(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Tạo quán của bạn', style: AppTextStyles.display),
-                const SizedBox(height: 8),
-                const Text(
-                  'Bạn sẽ là chủ quán. Sau đó thêm nhân viên chỉ bằng số điện thoại, '
-                  'họ nhận thông báo trong ứng dụng và chấp nhận là vào quán.',
-                  style: AppTextStyles.body,
-                ),
-                const SizedBox(height: 28),
-                AppTextField(
-                  label: 'Tên quán',
-                  controller: _shop,
-                  hint: 'Ví dụ: Fore Coffee Nguyễn Huệ',
-                  errorText: _shopError,
-                  enabled: !_loading,
-                  textInputAction: TextInputAction.next,
-                ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  label: 'Tên hiển thị của bạn',
-                  controller: _owner,
-                  hint: 'Ví dụ: Anh Minh',
-                  errorText: _ownerError,
-                  enabled: !_loading,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: _submit,
-                ),
-                if (_formError != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _formError!,
-                    style: const TextStyle(
-                        color: AppColors.statusOff, fontSize: AppFontSizes.s13),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                LoadingButton(
-                  label: 'Tạo quán',
-                  loadingLabel: 'Đang tạo quán',
-                  loading: _loading,
-                  onPressed: _submit,
-                ),
-              ],
-            ),
+            child: Center(
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Tạo quán của bạn', style: AppTextStyles.display),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Bạn sẽ là chủ quán. Sau đó thêm nhân viên chỉ bằng số điện thoại, '
+                          'họ nhận thông báo trong ứng dụng và chấp nhận là vào quán.',
+                          style: AppTextStyles.body,
+                        ),
+                        const SizedBox(height: 28),
+                        AppTextField(
+                          label: 'Tên quán',
+                          controller: _shop,
+                          hint: 'Ví dụ: Fore Coffee Nguyễn Huệ',
+                          errorText: _shopError,
+                          enabled: !_loading,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: 16),
+                        AppTextField(
+                          label: 'Tên hiển thị của bạn',
+                          controller: _owner,
+                          hint: 'Ví dụ: Anh Minh',
+                          errorText: _ownerError,
+                          enabled: !_loading,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: _submit,
+                        ),
+                        if (_formError != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _formError!,
+                            style: TextStyle(
+                                color: AppColors.statusOff,
+                                fontSize: AppFontSizes.s13),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        LoadingButton(
+                          label: 'Tạo quán',
+                          loadingLabel: 'Đang tạo quán',
+                          loading: _loading,
+                          onPressed: _submit,
+                        ),
+                      ],
+                    ))),
           ),
         ),
       ),

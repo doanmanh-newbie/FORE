@@ -11,15 +11,15 @@ import 'package:fore/core/design/typography.dart';
 class SplashFooter extends StatelessWidget {
   const SplashFooter({super.key});
 
-  static const _style = TextStyle(
-    fontSize: AppFontSizes.s10,
+  static TextStyle get _style => TextStyle(
+    fontSize: AppFontSizes.s12,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.8,
     color: AppColors.textSecondary,
   );
 
   @override
-  Widget build(BuildContext context) => const Row(
+  Widget build(BuildContext context) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
@@ -29,15 +29,15 @@ class SplashFooter extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.brandAccent,
             ),
-            child: SizedBox.square(dimension: 4),
+            child: const SizedBox.square(dimension: 4),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Flexible(
             child: Text(
               SplashStrings.footerRight,

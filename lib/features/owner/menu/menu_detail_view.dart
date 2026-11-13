@@ -372,7 +372,7 @@ class _RecipeSummary extends StatelessWidget {
               style: AppTextStyles.caption,
             )
           else
-            const Text('Thêm công thức để biết giá vốn và lãi gộp.',
+            Text('Thêm công thức để biết giá vốn và lãi gộp.',
                 style: AppTextStyles.caption),
           for (final other in others)
             Padding(

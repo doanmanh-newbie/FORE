@@ -9,6 +9,7 @@ import '../../../core/widgets/screen_header.dart';
 import '../application/purchase_controller.dart';
 import '../domain/inventory_repository.dart';
 import 'inventory_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Phiếu nhập hàng. Không hiện lịch sử nhập hay số tồn (chỉ chủ xem). Nhập nhầm thì nhờ chủ sửa.
 class PurchaseScreen extends StatefulWidget {
@@ -68,7 +69,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
           message: _c.failure?.userMessage ?? 'Không tải được danh sách.',
           onRetry: _c.load);
     }
-    return ListView(
+    return LazyListView(
       padding: const EdgeInsets.all(16),
       children: [
         IngredientField(

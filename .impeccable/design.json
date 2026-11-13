@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-13T04:05:57.447306+00:00",
+  "generatedAt": "2026-11-13T05:26:01.596213+00:00",
   "title": "Design System: Fore",
   "extensions": {
     "colorMeta": {
@@ -452,6 +452,11 @@
     ],
     "rules": [
       {
+        "name": "The On-Ink Rule",
+        "body": "Chữ hoặc icon đặt trên nền mực luôn dùng `AppColors.onInk`, không dùng `Colors.white`; trắng cố định chỉ dành cho thẻ nền Night Shift.",
+        "section": "colors"
+      },
+      {
         "name": "The Signal-Only Rule",
         "body": "Xanh, vàng, đỏ trạng thái chỉ xuất hiện khi dữ liệu thật sự ở trạng thái đó. Không dùng chúng để trang trí, phân nhóm hay làm màu thương hiệu.",
         "section": "colors"
@@ -487,10 +492,12 @@
     "donts": [
       "**Don't** thêm bóng đổ cho thẻ, nút hoặc thanh điều hướng mới.",
       "**Don't** viết mã màu thô (`Color(0x...)`) hay `Colors.*` ngoài `lib/core/design/`.",
-      "**Don't** dùng Counter Teal (#51A19B), `inkMuted` hay `warning` (#ED6C02) cho chữ: đều dưới 4,5:1.",
+      "**Don't** dùng Counter Teal (#51A19B) hay `warning` (#ED6C02) cho chữ: đều dưới 4,5:1 ở chế độ sáng.",
+      "**Don't** dùng `Colors.white` trên nền mực; dùng `AppColors.onInk` để đúng ở cả hai chế độ.",
       "**Don't** dùng Lime Pour trên nền sáng hoặc cho hành động phụ.",
       "**Don't** dùng màu trạng thái cho mục đích trang trí.",
-      "**Don't** tạo thêm token \"legacy\" mới; token cũ (`legacyTeal`, `legacyDanger`, các biến thể shadow) chỉ để xóa dần."
+      "**Don't** tạo thêm token \"legacy\" mới; các biến thể shadow cũ chỉ để xóa dần.",
+      "**Don't** dùng `ListView(children: ...)` cho danh sách theo dữ liệu; dùng `LazyListView`."
     ]
   }
 }

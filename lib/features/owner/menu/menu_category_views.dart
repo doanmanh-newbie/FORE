@@ -75,7 +75,7 @@ class CategoryListPage extends StatelessWidget {
               ],
             ),
           ),
-        const Text(
+        Text(
           'Thứ tự ở đây cũng là thứ tự nhóm món trên màn bán hàng. Danh mục không bị xóa để giữ lịch sử.',
           style: AppTextStyles.caption,
         ),
@@ -170,8 +170,8 @@ class _CategoryEditPageState extends State<CategoryEditPage> {
           ),
         ),
         if (editing)
-          const Padding(
-            padding: EdgeInsets.only(top: 10),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
             child: Text(
               'Các món trong danh mục sẽ chuyển theo tên mới.',
               style: AppTextStyles.caption,

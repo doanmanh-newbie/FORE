@@ -51,7 +51,7 @@ class _Checking extends StatelessWidget {
         children: [
           SweepProgress(loop: loop),
           const SizedBox(height: 14),
-          const Text(SplashStrings.checking, style: AppTextStyles.body),
+          Text(SplashStrings.checking, style: AppTextStyles.body),
         ],
       );
 }
@@ -65,7 +65,7 @@ class _Offline extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.wifi_off_rounded, color: AppColors.textSecondary),
+          Icon(Icons.wifi_off_rounded, color: AppColors.textSecondary),
           const SizedBox(height: 8),
           Text(
             const NoNetworkFailure().userMessage,

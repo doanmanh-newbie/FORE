@@ -291,7 +291,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
           )
         else ...[
           if (targets.length > 1) ...[
-            const Text('Chọn quán nhận', style: AppTextStyles.cardTitle),
+            Text('Chọn quán nhận', style: AppTextStyles.cardTitle),
             const SizedBox(height: 8),
             for (final t in targets)
               MenuCard(
@@ -351,7 +351,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Thông tin đang giữ', style: AppTextStyles.cardTitle),
+                    Text('Thông tin đang giữ', style: AppTextStyles.cardTitle),
                     const SizedBox(height: 4),
                     Text(
                       [for (final s in preview.sizes) '${s.name} ${formatVnd(s.price)}'].join(' · '),
@@ -388,7 +388,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Sao chép thêm · Không bắt buộc', style: AppTextStyles.cardTitle),
+                    Text('Sao chép thêm · Không bắt buộc', style: AppTextStyles.cardTitle),
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       dense: true,
@@ -408,7 +408,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
                           ? null
                           : (v) => setState(() => _copyOptions = v ?? false),
                     ),
-                    const Text(
+                    Text(
                       'Mặc định không sao chép. Bản sao là bản nháp độc lập, chủ quán kiểm tra rồi mới bật bán.',
                       style: AppTextStyles.caption,
                     ),
@@ -442,7 +442,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(_name.text.trim(), style: AppTextStyles.cardTitle),
-              const Text('Bản nháp độc lập · Chưa bán', style: AppTextStyles.caption),
+              Text('Bản nháp độc lập · Chưa bán', style: AppTextStyles.caption),
               if (preview != null) ...[
                 const SizedBox(height: 6),
                 Text(
@@ -464,7 +464,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Nội dung bản nháp', style: AppTextStyles.cardTitle),
+              Text('Nội dung bản nháp', style: AppTextStyles.cardTitle),
               const SizedBox(height: 4),
               Text(
                 r.copiedLines > 0
@@ -489,7 +489,7 @@ class _CopyToShopPageState extends State<CopyToShopPage> {
             ],
           ),
         ),
-        const Text(
+        Text(
           'Không mang theo lịch hẹn, bill cũ hoặc lịch sử. Món gốc không thay đổi. Chủ quán phải kiểm tra đầy đủ rồi chủ động bật bán; chuyển sang quán nhận từ nút chọn quán để kiểm tra.',
           style: AppTextStyles.caption,
         ),
@@ -541,7 +541,7 @@ class _CopyMappingPageState extends State<CopyMappingPage> {
             style: AppTextStyles.caption),
         const SizedBox(height: 8),
         for (final l in p.lines) _lineCard(l),
-        const Text(
+        Text(
           'Chỉ chọn được nguyên liệu cùng đơn vị (g, ml, cái). Bản sao dùng nguyên liệu của quán nhận, không dùng lại ID quán nguồn; sửa công thức ở một quán không cập nhật quán còn lại.',
           style: AppTextStyles.caption,
         ),

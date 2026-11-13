@@ -49,7 +49,7 @@ class KpiCard extends StatelessWidget {
             ],
             if (footer != null) ...[
               const SizedBox(height: 8),
-              const Divider(height: 1, color: AppColors.cardBorder),
+              Divider(height: 1, color: AppColors.cardBorder),
               const SizedBox(height: 8),
               Text(footer!, style: AppTextStyles.caption),
             ],

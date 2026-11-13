@@ -5,12 +5,19 @@ import 'spacing.dart';
 import 'typography.dart';
 
 abstract final class AppTheme {
-  static ThemeData light() {
+  static ThemeData light() => build(AppPalette.light);
+
+  static ThemeData dark() => build(AppPalette.dark);
+
+  static ThemeData build(AppPalette p) {
     final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.brand,
-      primary: AppColors.brand,
-      surface: AppColors.surface,
-      error: AppColors.statusCritical,
+      brightness: p.brightness,
+      seedColor: p.brand,
+      primary: p.brand,
+      onPrimary: p.onInk,
+      surface: p.surface,
+      onSurface: p.textPrimary,
+      error: p.statusCritical,
     );
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppSizes.radius),
@@ -22,28 +29,32 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      brightness: p.brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: p.background,
       fontFamily: AppFonts.body,
-      textTheme: Typography.blackMountainView.apply(
+      textTheme: (p.brightness == Brightness.dark
+              ? Typography.whiteMountainView
+              : Typography.blackMountainView)
+          .apply(
         fontFamily: AppFonts.body,
-        bodyColor: AppColors.textPrimary,
-        displayColor: AppColors.textPrimary,
+        bodyColor: p.textPrimary,
+        displayColor: p.textPrimary,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: p.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 14,
         ),
-        enabledBorder: border(AppColors.border),
-        focusedBorder: border(AppColors.brand),
-        errorBorder: border(AppColors.statusCritical),
-        focusedErrorBorder: border(AppColors.statusCritical),
-        disabledBorder: border(AppColors.border),
-        errorStyle: const TextStyle(
-          color: AppColors.statusCritical,
+        enabledBorder: border(p.border),
+        focusedBorder: border(p.brand),
+        errorBorder: border(p.statusCritical),
+        focusedErrorBorder: border(p.statusCritical),
+        disabledBorder: border(p.border),
+        errorStyle: TextStyle(
+          color: p.statusCritical,
           fontSize: 12,
         ),
       ),
@@ -51,8 +62,8 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.controlHeight),
           shape: shape,
-          backgroundColor: AppColors.brand,
-          foregroundColor: Colors.white,
+          backgroundColor: p.brand,
+          foregroundColor: p.onInk,
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
@@ -60,21 +71,21 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.controlHeight),
           shape: shape,
-          foregroundColor: AppColors.brand,
-          side: const BorderSide(color: AppColors.brand),
+          foregroundColor: p.brand,
+          side: BorderSide(color: p.brand),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(48, AppSizes.controlHeight),
-          foregroundColor: AppColors.brand,
+          foregroundColor: p.brand,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 68,
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.navIndicator,
+        backgroundColor: p.surface,
+        indicatorColor: p.navIndicator,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontFamily: AppFonts.body,
@@ -82,17 +93,33 @@ abstract final class AppTheme {
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w700
                 : FontWeight.w500,
-            color: AppColors.brand,
+            color: p.brand,
           ),
         ),
       ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: p.surface,
+        indicatorColor: p.navIndicator,
+        selectedIconTheme: IconThemeData(color: p.brand),
+        unselectedIconTheme: IconThemeData(color: p.brand),
+        selectedLabelTextStyle: TextStyle(
+            fontFamily: AppFonts.body,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: p.brand),
+        unselectedLabelTextStyle: TextStyle(
+            fontFamily: AppFonts.body,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: p.brand),
+      ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: p.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusCard),
-          side: const BorderSide(color: AppColors.cardBorder),
+          side: BorderSide(color: p.cardBorder),
         ),
       ),
     );

@@ -47,10 +47,10 @@ class _ToppingEditPageState extends State<ToppingEditPage> {
   Future<void> _pickIngredient() async {
     final line = await openMenuPage<DraftRecipeLine>(
       context,
-      IngredientPickerPage(
+      const IngredientPickerPage(
         sizeName: '',
         purpose: 'Định lượng cho 1 phần topping',
-        existing: const [],
+        existing: [],
       ),
     );
     if (line != null && mounted) setState(() => _recipe = line);
@@ -125,7 +125,7 @@ class _ToppingEditPageState extends State<ToppingEditPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Định lượng (không bắt buộc)', style: AppTextStyles.cardTitle),
+              Text('Định lượng (không bắt buộc)', style: AppTextStyles.cardTitle),
               const SizedBox(height: 4),
               Text(
                 recipe == null
@@ -150,7 +150,7 @@ class _ToppingEditPageState extends State<ToppingEditPage> {
                 ],
               ),
               if (_recipeCleared && editing)
-                const Text('Bỏ định lượng thì topping không trừ kho và không tính vốn.',
+                Text('Bỏ định lượng thì topping không trừ kho và không tính vốn.',
                     style: AppTextStyles.caption),
             ],
           ),

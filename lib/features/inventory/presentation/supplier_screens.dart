@@ -16,6 +16,7 @@ import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'kho_widgets.dart';
 import 'purchase_screens.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 class SupplierListScreen extends StatefulWidget {
   const SupplierListScreen({super.key});
@@ -111,7 +112,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right_rounded,
+                        Icon(Icons.chevron_right_rounded,
                             color: AppColors.textSecondary),
                       ]),
                     ),
@@ -381,7 +382,7 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
             : PrimaryButton(label: 'Lưu', loading: _busy, onPressed: _save),
         body: _loading
             ? const KhoSkeleton()
-            : ListView(
+            : LazyListView(
                 padding: const EdgeInsets.all(AppSizes.pagePadding),
                 children: [
                   AppTextField(label: 'Tên nhà cung cấp *', controller: _name),

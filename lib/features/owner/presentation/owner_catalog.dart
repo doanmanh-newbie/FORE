@@ -13,11 +13,11 @@ extension _OwnerCatalog on _OwnerHomeContentState {
           children: [
               const _SectionTitle(title: 'Tồn dự kiến theo lần đếm gần nhất'),
               if (data.expectedStock.isEmpty)
-                const _InfoCard(
+                _InfoCard(
                   icon: Icons.inventory_2_outlined,
                   iconColor: AppColors.textSecondary,
                   title: 'Chưa có số liệu tồn kho',
-                  status: StatusChip(
+                  status: const StatusChip(
                     label: 'Chưa có dữ liệu',
                     severity: StatusSeverity.neutral,
                     compact: true,

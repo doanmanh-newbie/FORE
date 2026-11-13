@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/theme/app_theme.dart';
+import '../core/design/palette_sync.dart';
 import '../core/data/rpc_client.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/domain/auth_repository.dart';
@@ -95,6 +96,9 @@ class ForeApp extends StatelessWidget {
         title: 'Fore',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: ThemeMode.system,
+        builder: (context, child) => AppPaletteSync(child: child!),
         initialRoute: AppRoutes.splash,
         onGenerateRoute: AppRoutes.generate,
       ),

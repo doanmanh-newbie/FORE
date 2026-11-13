@@ -24,13 +24,13 @@ class ForeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowSoft,
               blurRadius: 18,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -73,7 +73,7 @@ class ForeHeader extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             subtitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: AppFontSizes.s13,
                               color: AppColors.textSecondary,
                               height: 1.3,
@@ -89,7 +89,6 @@ class ForeHeader extends StatelessWidget {
                       IconButton(
                         tooltip: 'Về màn quản lý',
                         onPressed: onBack,
-                        visualDensity: VisualDensity.compact,
                         icon: const Icon(Icons.arrow_back_rounded),
                       ),
                       const SizedBox(width: 4),
@@ -112,7 +111,7 @@ class _LogoBadge extends StatelessWidget {
   const _LogoBadge();
 
   @override
-  Widget build(BuildContext context) => const DecoratedBox(
+  Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: AppColors.surface,
@@ -120,11 +119,11 @@ class _LogoBadge extends StatelessWidget {
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 16,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Padding(
+        child: const Padding(
           padding: EdgeInsets.all(9),
           child: BrandMark(size: 34),
         ),

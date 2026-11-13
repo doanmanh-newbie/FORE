@@ -7,6 +7,7 @@ import '../../../core/widgets/notify.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../application/cash_controller.dart';
 import '../domain/inventory_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Thu / chi tiền mặt ngoài bán hàng (mua đá, chủ rút tiền...). Chi ra bắt buộc ghi chú. Không cần PIN.
 class CashScreen extends StatefulWidget {
@@ -52,7 +53,7 @@ class _CashScreenState extends State<CashScreen> {
                   subtitle:
                       'Khoản tiền bỏ thêm vào két hoặc lấy ra ngoài bán hàng.'),
               Expanded(
-                child: ListView(
+                child: LazyListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     ForeSegmented(

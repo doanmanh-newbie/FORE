@@ -16,6 +16,7 @@ import 'kho_widgets.dart';
 import 'purchase_screens.dart';
 import 'stocktake_screens.dart';
 import 'waste_screens.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Tab Kho của nhân viên trong ca: việc cần làm, KHÔNG có số tồn hay giá (đếm mù).
 /// Giữ nguyên hai lối đếm mở ca / đóng ca của luồng đối soát.
@@ -58,7 +59,7 @@ class _StaffKhoHomeState extends State<StaffKhoHome> {
           final k = d?.stocktake;
           return RefreshIndicator(
             onRefresh: () => _data.load(silent: true),
-            child: ListView(
+            child: LazyListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
                   AppSizes.pagePadding,
@@ -181,7 +182,7 @@ class _ActionTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 color: AppColors.textSecondary),
           ]),
         ),

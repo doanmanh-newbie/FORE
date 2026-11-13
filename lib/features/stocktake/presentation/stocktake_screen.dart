@@ -131,7 +131,7 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                             child: Text('Tiến độ',
                                 style: AppTextStyles.bodyStrong)),
                         Text('Đã đếm ${_c.dailyCounted}/${_c.dailyTotal}',
@@ -153,8 +153,8 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
               ),
             ),
           ),
-          const SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 18, 16, 0),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
             sliver: SliverToBoxAdapter(
                 child: Text('Cần đếm', style: AppTextStyles.headline)),
           ),
@@ -168,14 +168,14 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
             ),
           ),
           if (weeklyItems.isNotEmpty) ...[
-            const SliverPadding(
-              padding: EdgeInsets.fromLTRB(16, 18, 16, 0),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Kiểm theo tuần', style: AppTextStyles.headline),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text('Không bắt buộc đếm lúc cuối ca.',
                         style: AppTextStyles.caption),
                   ],
@@ -215,13 +215,13 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
   }
 
   Widget _saveBar() => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
                 color: AppColors.shadowSoft,
                 blurRadius: 20,
-                offset: Offset(0, -6))
+                offset: const Offset(0, -6))
           ],
         ),
         child: SafeArea(

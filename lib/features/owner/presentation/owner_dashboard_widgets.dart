@@ -25,7 +25,7 @@ class _InfoCard extends StatelessWidget {
     required this.title,
     required this.body,
     this.onTap,
-    this.iconColor = AppColors.brandAccent,
+    this.iconColor,
     this.status,
     this.showArrow = false,
   });
@@ -33,7 +33,7 @@ class _InfoCard extends StatelessWidget {
   final String title;
   final String body;
   final VoidCallback? onTap;
-  final Color iconColor;
+  final Color? iconColor;
   final Widget? status;
   final bool showArrow;
 
@@ -43,7 +43,7 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       onTap: onTap,
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: iconColor),
+        Icon(icon, color: iconColor ?? AppColors.brandAccent),
         const SizedBox(width: 12),
         Expanded(
           child:
@@ -59,7 +59,7 @@ class _InfoCard extends StatelessWidget {
         ),
         if (showArrow) ...[
           const SizedBox(width: 4),
-          const Icon(Icons.arrow_forward_rounded,
+          Icon(Icons.arrow_forward_rounded,
               size: 18, color: AppColors.brand),
         ],
       ]),
@@ -90,9 +90,9 @@ class _NewShopChecklist extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Chào mừng quán của bạn!', style: AppTextStyles.title),
+              Text('Chào mừng quán của bạn!', style: AppTextStyles.title),
               const SizedBox(height: 4),
-              const Text('Hoàn thành vài bước để bắt đầu vận hành.',
+              Text('Hoàn thành vài bước để bắt đầu vận hành.',
                   style: AppTextStyles.caption),
               const SizedBox(height: 8),
               _ChecklistAction(
@@ -227,10 +227,10 @@ class _ErrorPanel extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.cloud_off_outlined,
+            Icon(Icons.cloud_off_outlined,
                 size: 42, color: AppColors.warning),
             const SizedBox(height: 12),
-            const Text('Chưa thể cập nhật', style: AppTextStyles.headline),
+            Text('Chưa thể cập nhật', style: AppTextStyles.headline),
             const SizedBox(height: 6),
             Text(
               message ??

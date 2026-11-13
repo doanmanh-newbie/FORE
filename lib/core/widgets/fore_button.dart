@@ -25,11 +25,11 @@ class ForeButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSizes.radius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadowRaised,
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),

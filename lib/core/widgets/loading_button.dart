@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../design/colors.dart';
+
 /// Nút chính: khi `loading` hiện vòng quay và không bấm được nữa
 /// (chặn bấm hai lần gửi hai yêu cầu).
 class LoadingButton extends StatelessWidget {
@@ -24,11 +26,11 @@ class LoadingButton extends StatelessWidget {
           ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox.square(
+                SizedBox.square(
                   dimension: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.onInk,
                   ),
                 ),
                 const SizedBox(width: 10),

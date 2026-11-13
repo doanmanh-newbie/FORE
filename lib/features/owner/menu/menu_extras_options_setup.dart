@@ -176,7 +176,7 @@ class _OptionsSetupPageState extends State<OptionsSetupPage> {
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Ít đá / ít đường không tự giảm lượng trừ kho hoặc giá vốn lý thuyết. Công thức gốc vẫn được giữ nguyên. '
             'Chỉ lựa chọn có "định lượng riêng" mới trừ kho và tính vốn riêng.',
             style: AppTextStyles.caption,

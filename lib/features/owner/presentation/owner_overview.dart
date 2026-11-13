@@ -28,7 +28,7 @@ extension _OwnerOverview on _OwnerHomeContentState {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text('Tổng quan', style: AppTextStyles.display),
               ),
               IconButton(
@@ -161,11 +161,11 @@ extension _OwnerOverview on _OwnerHomeContentState {
             )
           else if (featured == null && reports.isNotEmpty)
             reports.any((report) => report.overall == ReconcileStatus.noData)
-                ? const _InfoCard(
+                ? _InfoCard(
                     icon: Icons.info_outline,
                     iconColor: AppColors.textSecondary,
                     title: 'Có ca chưa đủ dữ liệu',
-                    status: StatusChip(
+                    status: const StatusChip(
                       label: 'Chưa đối soát',
                       severity: StatusSeverity.neutral,
                       compact: true,
@@ -173,11 +173,11 @@ extension _OwnerOverview on _OwnerHomeContentState {
                     body:
                         'Ca thiếu kiểm kê đầu ca hoặc tiền đếm cuối ca nên chưa đối soát được.',
                   )
-                : const _InfoCard(
+                : _InfoCard(
                     icon: Icons.check_circle_outline,
                     iconColor: AppColors.statusOk,
                     title: 'Không có ca cần xử lý',
-                    status: StatusChip(
+                    status: const StatusChip(
                       label: 'Khớp',
                       severity: StatusSeverity.healthy,
                       compact: true,
@@ -185,11 +185,11 @@ extension _OwnerOverview on _OwnerHomeContentState {
                     body: 'Các ca gần đây đều khớp hoặc bạn đã xử lý.',
                   )
           else if (featured == null)
-            const _InfoCard(
+            _InfoCard(
               icon: Icons.fact_check_outlined,
               iconColor: AppColors.textSecondary,
               title: 'Chưa có dữ liệu đối soát',
-              status: StatusChip(
+              status: const StatusChip(
                 label: 'Chưa có dữ liệu',
                 severity: StatusSeverity.neutral,
                 compact: true,
@@ -249,11 +249,11 @@ extension _OwnerOverview on _OwnerHomeContentState {
               negativeStock.isEmpty &&
               belowThreshold.isEmpty &&
               data.pendingInvites == 0)
-            const _InfoCard(
+            _InfoCard(
               icon: Icons.check_circle_outline,
               iconColor: AppColors.statusOk,
               title: 'Không có nhắc việc mới',
-              status: StatusChip(
+              status: const StatusChip(
                 label: 'Ổn',
                 severity: StatusSeverity.healthy,
                 compact: true,

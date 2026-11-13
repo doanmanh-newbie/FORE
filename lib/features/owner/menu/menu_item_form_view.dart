@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/design/colors.dart';
@@ -269,8 +268,8 @@ class _MenuItemFormPageState extends State<MenuItemFormPage> {
         const SizedBox(height: 8),
         Row(
           children: [
-            const Expanded(child: Text('Size & giá bán', style: AppTextStyles.cardTitle)),
-            const Text('VNĐ / ly', style: AppTextStyles.caption),
+            Expanded(child: Text('Size & giá bán', style: AppTextStyles.cardTitle)),
+            Text('VNĐ / ly', style: AppTextStyles.caption),
           ],
         ),
         const SizedBox(height: 8),
@@ -320,7 +319,7 @@ class _MenuItemFormPageState extends State<MenuItemFormPage> {
           ),
         if (errors['sizes'] != null)
           Text(errors['sizes']!,
-              style: const TextStyle(color: AppColors.statusCritical, fontSize: 12)),
+              style: TextStyle(color: AppColors.statusCritical, fontSize: 12)),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
@@ -383,7 +382,7 @@ class _MenuItemFormPageState extends State<MenuItemFormPage> {
                           child: Text('${s.name} · ${formatVnd(s.price)}',
                               style: AppTextStyles.bodyStrong),
                         ),
-                        const Text('! Chưa có công thức · Vốn/lãi chưa xác định',
+                        Text('! Chưa có công thức · Vốn/lãi chưa xác định',
                             style: AppTextStyles.caption),
                       ],
                     ),

@@ -59,7 +59,7 @@ class ErrorRetry extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const ForeIcon(ForeIcons.warning,
+              ForeIcon(ForeIcons.warning,
                   size: 34, color: AppColors.statusWatchBright),
               const SizedBox(height: 14),
               Text(message,

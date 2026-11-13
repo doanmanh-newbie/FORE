@@ -15,6 +15,7 @@ import 'menu_item_form_view.dart';
 import 'menu_models.dart';
 import 'menu_store.dart';
 import 'menu_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Thân tab Thực đơn: tìm kiếm, lọc, danh sách món. [header] là thanh quán/chuông của trang chủ chủ quán.
 class MenuHomeView extends StatefulWidget {
@@ -82,9 +83,9 @@ class _MenuHomeViewState extends State<MenuHomeView> {
 
   Widget _body(MenuStore store, MenuOverview? data) {
     if (data == null && store.loading) {
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        children: const [MenuSkeleton(rows: 5)],
+      return const LazyListView(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+        children: [MenuSkeleton(rows: 5)],
       );
     }
     if (data == null) {
@@ -100,7 +101,7 @@ class _MenuHomeViewState extends State<MenuHomeView> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => store.load(silent: true),
-            child: ListView(
+            child: LazyListView(
               padding: const EdgeInsets.fromLTRB(
                   AppSizes.pagePadding, 0, AppSizes.pagePadding, 16),
               children: [
@@ -204,7 +205,7 @@ class _MenuHomeViewState extends State<MenuHomeView> {
                       },
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text('Xóa tìm kiếm, xem tất cả',
                                 style: AppTextStyles.bodyStrong),
                           ),
@@ -214,8 +215,8 @@ class _MenuHomeViewState extends State<MenuHomeView> {
                     ),
                 ],
                 if (offline)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       'Thêm / đóng món đang khóa. Không có thay đổi nào được lưu lên hệ thống. '
                       'Kết nối lại sẽ kiểm tra dữ liệu trước khi cho phép sửa.',
@@ -311,7 +312,7 @@ class _CategoryChips extends StatelessWidget {
     final selected = store.filters.category;
     return SizedBox(
       height: 48,
-      child: ListView(
+      child: LazyListView(
         scrollDirection: Axis.horizontal,
         children: [
           OptionChip(
@@ -364,10 +365,10 @@ class _AttentionCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.auto_awesome_rounded,
+                  Icon(Icons.auto_awesome_rounded,
                       size: 16, color: AppColors.statusAttention),
                   const SizedBox(width: 6),
-                  const Expanded(
+                  Expanded(
                     child: Text('Cần chăm sóc',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
@@ -409,7 +410,7 @@ class _AttentionCard extends StatelessWidget {
               ),
               if (missing > 0) ...[
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Thiếu công thức: báo cáo đối soát có thể thiếu chính xác.',
                   style: AppTextStyles.caption,
                 ),
@@ -490,13 +491,13 @@ class _ItemCard extends StatelessWidget {
         style: AppTextStyles.body));
 
     if (draft) {
-      lines.add(const Text('Bản nháp · chưa bán', style: AppTextStyles.caption));
+      lines.add(Text('Bản nháp · chưa bán', style: AppTextStyles.caption));
     } else if (item.missingRecipe) {
       lines.add(Text(
         item.sizesMissingRecipe == sizes.length
             ? '! Thiếu công thức · Vốn/lãi chưa xác định'
             : '! ${item.sizesMissingRecipe} size thiếu công thức',
-        style: const TextStyle(
+        style: TextStyle(
             color: AppColors.statusAttention,
             fontWeight: FontWeight.w600,
             fontSize: 12),
@@ -504,7 +505,7 @@ class _ItemCard extends StatelessWidget {
     } else if (worst != null && worst.marginPct! < lowMarginPct) {
       lines.add(Text(
         '! Lãi gộp ${formatVnd(worst.margin!)} · ${formatPct(worst.marginPct!)} · Lãi thấp',
-        style: const TextStyle(
+        style: TextStyle(
             color: AppColors.statusAttention,
             fontWeight: FontWeight.w600,
             fontSize: 12),
@@ -618,13 +619,13 @@ class _EmptyMenu extends StatelessWidget {
                 color: AppColors.backgroundTint,
                 borderRadius: BorderRadius.circular(AppSizes.radiusCard),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(20),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.edit_note_rounded, size: 36),
-                    SizedBox(height: 10),
+                    const Icon(Icons.edit_note_rounded, size: 36),
+                    const SizedBox(height: 10),
                     Text('Món đầu tiên, chỉ cần tên và giá.',
                         style: AppTextStyles.headline),
                   ],
@@ -632,22 +633,22 @@ class _EmptyMenu extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const MenuCard(
+            MenuCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Không cần hoàn thiện ngay', style: AppTextStyles.cardTitle),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text('1. Đặt tên và chọn nhóm món.', style: AppTextStyles.body),
                   Text('2. Thêm size cùng giá bán riêng.', style: AppTextStyles.body),
                   Text('3. Lưu bản nháp, thêm công thức sau.', style: AppTextStyles.body),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text('Món mới mặc định chưa bán. Chỉ bật bán khi bạn sẵn sàng.',
                       style: AppTextStyles.caption),
                 ],
               ),
             ),
-            const Text(
+            Text(
               'Khi thêm công thức, Fore giúp bạn nhìn rõ giá vốn và lãi gộp ước tính bên cạnh từng size.',
               style: AppTextStyles.caption,
             ),
@@ -669,7 +670,7 @@ class _NoResult extends StatelessWidget {
       padding: const EdgeInsets.only(top: 24),
       child: Column(
         children: [
-          const Icon(Icons.search_off_rounded, size: 40, color: AppColors.brandAccent),
+          Icon(Icons.search_off_rounded, size: 40, color: AppColors.brandAccent),
           const SizedBox(height: 10),
           Text(
             query.isEmpty ? 'Không có món nào khớp bộ lọc.' : 'Chưa gặp món bạn đang tìm.',
@@ -707,11 +708,11 @@ class _FailureView extends StatelessWidget {
   final MenuStore store;
 
   @override
-  Widget build(BuildContext context) => ListView(
+  Widget build(BuildContext context) => LazyListView(
         padding: const EdgeInsets.all(AppSizes.pagePadding),
         children: [
           const SizedBox(height: 40),
-          const Icon(Icons.cloud_off_outlined, size: 40, color: AppColors.brandAccent),
+          Icon(Icons.cloud_off_outlined, size: 40, color: AppColors.brandAccent),
           const SizedBox(height: 12),
           Text(
             store.networkFailure

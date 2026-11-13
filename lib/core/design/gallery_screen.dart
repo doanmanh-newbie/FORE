@@ -7,7 +7,7 @@ import 'app_form_field.dart';
 import 'app_header.dart';
 import 'app_sheet.dart';
 import 'attention_item.dart';
-import 'bottom_nav.dart';
+import '../widgets/ops_icon.dart';
 import 'colors.dart';
 import 'empty_state.dart';
 import 'error_state.dart';
@@ -36,13 +36,13 @@ class DesignGalleryScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         body: ListView(
           padding: EdgeInsets.zero,
-          children: const [
-            AppHeader(
+          children: [
+            const AppHeader(
               shopName: 'Fore · Tên quán mẫu rất dài để thử dấu ba chấm',
               unreadCount: 2,
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 AppSizes.pagePadding,
                 12,
                 AppSizes.pagePadding,
@@ -51,20 +51,20 @@ class DesignGalleryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  PageTitleBlock(
+                  const PageTitleBlock(
                     title: 'Thư viện giao diện',
                     today: 'Hôm nay, 28/10',
                     updatedAt: 'Cập nhật lúc 07:12',
                     businessDay: 'Ngày kinh doanh: 06:00 đến 05:59 hôm sau',
                   ),
-                  SizedBox(height: 12),
-                  SectionHeader(title: 'Màu và kiểu chữ'),
-                  SizedBox(height: 8),
-                  _ColorSamples(),
-                  SizedBox(height: 16),
-                  SectionHeader(title: 'Trạng thái'),
-                  SizedBox(height: 8),
-                  Wrap(
+                  const SizedBox(height: 12),
+                  const SectionHeader(title: 'Màu và kiểu chữ'),
+                  const SizedBox(height: 8),
+                  const _ColorSamples(),
+                  const SizedBox(height: 16),
+                  const SectionHeader(title: 'Trạng thái'),
+                  const SizedBox(height: 8),
+                  const Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
@@ -80,17 +80,17 @@ class DesignGalleryScreen extends StatelessWidget {
                           label: 'Đang chờ', severity: StatusSeverity.neutral),
                     ],
                   ),
-                  SizedBox(height: 16),
-                  SectionHeader(title: 'Chỉ số và hành động'),
-                  SizedBox(height: 8),
-                  KpiCard(
+                  const SizedBox(height: 16),
+                  const SectionHeader(title: 'Chỉ số và hành động'),
+                  const SizedBox(height: 8),
+                  const KpiCard(
                     label: 'Doanh thu hôm nay',
                     value: '8.518.000đ',
                     comparison: 'Đến 19:12 · cùng khung giờ',
                     footer: 'Tiền mặt 5.696.000đ · Chuyển khoản 2.822.000đ',
                   ),
-                  SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 8),
+                  const Row(
                     children: [
                       Expanded(
                           child: StatTile(
@@ -101,8 +101,8 @@ class DesignGalleryScreen extends StatelessWidget {
                               label: 'Doanh thu / bill', value: '44.134đ')),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  HeroCard(
+                  const SizedBox(height: 8),
+                  const HeroCard(
                     title: 'Ca 28/10 · Minh Anh · Ca sáng',
                     status: SeverityChip(
                       label: 'Lệch lớn',
@@ -120,24 +120,24 @@ class DesignGalleryScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 16),
-                  SectionHeader(title: 'Danh sách và cần chú ý'),
-                  SizedBox(height: 8),
-                  ActionTile(
+                  const SizedBox(height: 16),
+                  const SectionHeader(title: 'Danh sách và cần chú ý'),
+                  const SizedBox(height: 8),
+                  const ActionTile(
                     icon: Icon(Icons.people_outline),
                     title: 'Mời nhân viên',
                     subtitle: 'Thêm người vào quán',
                     onTap: null,
                   ),
-                  SizedBox(height: 8),
-                  AttentionItem(
+                  const SizedBox(height: 8),
+                  const AttentionItem(
                     icon: Icons.warning_amber_rounded,
                     title: '2 nguyên liệu dưới ngưỡng',
                     message: 'Kiểm tra tồn kho trước ca tiếp theo.',
                     actionLabel: 'Mở kho',
                   ),
-                  SizedBox(height: 8),
-                  ForeCard(
+                  const SizedBox(height: 8),
+                  const ForeCard(
                     padding: EdgeInsets.zero,
                     child: ListRow(
                       title: 'Ca 28/10 · Minh Anh · Ca sáng',
@@ -146,24 +146,24 @@ class DesignGalleryScreen extends StatelessWidget {
                       trailing: Icon(Icons.chevron_right_rounded),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  SectionHeader(title: 'Nút và trạng thái tải'),
-                  SizedBox(height: 8),
-                  PrimaryButton(label: 'Lưu thay đổi', onPressed: null),
-                  SizedBox(height: 8),
-                  SecondaryButton(label: 'Hủy', onPressed: null),
-                  SizedBox(height: 8),
-                  TertiaryButton(label: 'Xem tất cả', onPressed: _noop),
-                  SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 16),
+                  const SectionHeader(title: 'Nút và trạng thái tải'),
+                  const SizedBox(height: 8),
+                  const PrimaryButton(label: 'Lưu thay đổi', onPressed: null),
+                  const SizedBox(height: 8),
+                  const SecondaryButton(label: 'Hủy', onPressed: null),
+                  const SizedBox(height: 8),
+                  const TertiaryButton(label: 'Xem tất cả', onPressed: _noop),
+                  const SizedBox(height: 8),
+                  const Row(
                     children: [
                       Expanded(child: SkeletonBox(height: 72)),
                       SizedBox(width: 8),
                       Expanded(child: SkeletonBox(height: 72)),
                     ],
                   ),
-                  SizedBox(height: 12),
-                  ForeCard(
+                  const SizedBox(height: 12),
+                  const ForeCard(
                     child: EmptyState(
                       icon: Icons.inbox_outlined,
                       title: 'Chưa có dữ liệu',
@@ -171,29 +171,29 @@ class DesignGalleryScreen extends StatelessWidget {
                           'Nội dung sẽ xuất hiện sau khi quán có ca đầu tiên.',
                     ),
                   ),
-                  SizedBox(height: 12),
-                  ForeCard(
+                  const SizedBox(height: 12),
+                  const ForeCard(
                     child: ErrorState(
                       message: 'Kiểm tra kết nối rồi thử lại.',
                       onRetry: _noop,
                     ),
                   ),
-                  SizedBox(height: 12),
-                  AppFormFieldSample(),
-                  SizedBox(height: 12),
-                  ForeCard(
+                  const SizedBox(height: 12),
+                  const AppFormFieldSample(),
+                  const SizedBox(height: 12),
+                  const ForeCard(
                     padding: EdgeInsets.zero,
                     child: AppSheet(
                       title: 'Ghi chú ca',
                       child: Text('Nội dung sheet và khoảng đệm an toàn.'),
                     ),
                   ),
-                  SizedBox(height: 12),
-                  BottomNavSample(),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                  const BottomNavSample(),
+                  const SizedBox(height: 12),
                   Text('Số tiền dùng chữ số thẳng hàng',
                       style: AppTextStyles.caption),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text('−120.000đ · 4.670 ml · 2,16 kg',
                       style: AppTextStyles.metric),
                 ],
@@ -234,17 +234,17 @@ class BottomNavSample extends StatelessWidget {
   const BottomNavSample({super.key});
 
   @override
-  Widget build(BuildContext context) => const BottomNav(
-        items: [
-          NavItem(label: 'Tổng quan', icon: 'assets/icons/home.svg'),
-          NavItem(label: 'Đối soát', icon: 'assets/icons/package.svg'),
-          NavItem(label: 'Thêm', icon: 'assets/icons/plus.svg'),
+  Widget build(BuildContext context) => NavigationBar(
+        selectedIndex: 0,
+        destinations: const [
+          NavigationDestination(
+              label: 'Tổng quan', icon: ForeIcon('assets/icons/home.svg')),
+          NavigationDestination(
+              label: 'Đối soát', icon: ForeIcon('assets/icons/package.svg')),
+          NavigationDestination(
+              label: 'Thêm', icon: ForeIcon('assets/icons/plus.svg')),
         ],
-        selected: 0,
-        onSelect: _ignoreSelection,
       );
-
-  static void _ignoreSelection(int _) {}
 }
 
 class _ColorSamples extends StatelessWidget {
@@ -252,7 +252,7 @@ class _ColorSamples extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const samples = <(String, Color)>[
+    final samples = <(String, Color)>[
       ('Mực', AppColors.brand),
       ('Teal', AppColors.brandAccent),
       ('Nền', AppColors.background),
@@ -276,7 +276,11 @@ class _ColorSamples extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               label,
-              style: AppTextStyles.micro.copyWith(color: Colors.white),
+              style: AppTextStyles.micro.copyWith(
+                color: ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+                    ? Colors.white
+                    : AppPalette.light.brand,
+              ),
               textAlign: TextAlign.center,
             ),
           ),

@@ -94,7 +94,7 @@ class _SwitcherSheetState extends State<_SwitcherSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Quán của tôi', style: AppTextStyles.heading),
+            Text('Quán của tôi', style: AppTextStyles.heading),
             const SizedBox(height: 12),
             if (shops == null && _error == null)
               const Padding(
@@ -106,7 +106,7 @@ class _SwitcherSheetState extends State<_SwitcherSheet> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: DecoratedBox(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.tint,
                       shape: BoxShape.circle,
                     ),
@@ -134,9 +134,9 @@ class _SwitcherSheetState extends State<_SwitcherSheet> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : s.isCurrent
-                          ? const Icon(Icons.check_circle,
+                          ? Icon(Icons.check_circle,
                               color: AppColors.statusOk)
-                          : const Icon(Icons.chevron_right,
+                          : Icon(Icons.chevron_right,
                               color: AppColors.inkMuted),
                   onTap: () => _select(s),
                 ),
@@ -144,7 +144,7 @@ class _SwitcherSheetState extends State<_SwitcherSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(_error!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.statusOff,
                         fontSize: AppFontSizes.s13)),
               ),

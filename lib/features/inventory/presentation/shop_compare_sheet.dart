@@ -111,10 +111,10 @@ class _ShopCompareSheetState extends State<_ShopCompareSheet> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2))
                       else if (s.isCurrent)
-                        const Icon(Icons.check_circle_rounded,
+                        Icon(Icons.check_circle_rounded,
                             color: AppColors.statusHealthy)
                       else
-                        const Icon(Icons.chevron_right_rounded,
+                        Icon(Icons.chevron_right_rounded,
                             color: AppColors.textSecondary),
                     ]),
                   ),

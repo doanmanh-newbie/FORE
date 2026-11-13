@@ -15,6 +15,7 @@ import '../../inventory/application/async_data.dart';
 import '../../inventory/presentation/kho_widgets.dart';
 import '../domain/settings_models.dart';
 import '../domain/settings_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 class _TeamData {
   const _TeamData(this.team, this.me);
@@ -204,7 +205,7 @@ class _TeamHubScreenState extends State<TeamHubScreen> {
                         style: AppTextStyles.caption,
                       ),
                       if (!m.isOwner && m.active && !m.hasPin)
-                        const Text('Chưa đặt PIN', style: AppTextStyles.caption),
+                        Text('Chưa đặt PIN', style: AppTextStyles.caption),
                     ],
                   ),
                 ),
@@ -213,7 +214,7 @@ class _TeamHubScreenState extends State<TeamHubScreen> {
                       label: 'Đang giữ ca',
                       severity: StatusSeverity.healthy,
                       compact: true),
-                const Icon(Icons.chevron_right_rounded,
+                Icon(Icons.chevron_right_rounded,
                     color: AppColors.textSecondary),
               ]),
             ),
@@ -295,7 +296,7 @@ class _InviteMemberScreenState extends State<InviteMemberScreen> {
       title: 'Mời nhân viên',
       subtitle: 'Chọn vai trò trước, quyền chi tiết chỉnh ở "Vai trò và phân quyền"',
       bottom: PrimaryButton(label: 'Gửi lời mời', loading: _busy, onPressed: _send),
-      body: ListView(
+      body: LazyListView(
         padding: const EdgeInsets.all(AppSizes.pagePadding),
         children: [
           AppTextField(label: 'Tên người được mời *', controller: _name),
@@ -330,11 +331,11 @@ class _InviteMemberScreenState extends State<InviteMemberScreen> {
               children: [
                 const KhoEyebrow('Vai trò này được phép'),
                 const SizedBox(height: 8),
-                const Text('Bán hàng, in hóa đơn, mở và chốt ca của mình (luôn có).',
+                Text('Bán hàng, in hóa đơn, mở và chốt ca của mình (luôn có).',
                     style: AppTextStyles.caption),
                 if (cfg == null)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
                     child: Text('Đang tải quyền…', style: AppTextStyles.caption),
                   )
                 else
@@ -416,7 +417,7 @@ class _MemberProfileScreenState extends State<MemberProfileScreen> {
             onPressed: understood ? () => Navigator.pop(ctx, true) : null,
           ),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Text(
+            Text(
                 'Họ sẽ không đăng nhập vào quán này được nữa. Lịch sử bán hàng, ca và kho của họ vẫn được giữ nguyên.',
                 style: AppTextStyles.body),
             Material(
@@ -453,7 +454,7 @@ class _MemberProfileScreenState extends State<MemberProfileScreen> {
     return KhoPage(
       title: m.fullName,
       subtitle: '${m.isOwner ? 'Chủ quán' : _role.label}${_active ? '' : ' · Đã nghỉ'}',
-      body: ListView(
+      body: LazyListView(
         padding: const EdgeInsets.all(AppSizes.pagePadding),
         children: [
           KhoCard(
@@ -496,7 +497,7 @@ class _MemberProfileScreenState extends State<MemberProfileScreen> {
                 label: _busy ? 'Đang thu hồi…' : 'Thu hồi quyền truy cập',
                 onPressed: _busy ? null : _revoke),
             const SizedBox(height: 6),
-            const Text(
+            Text(
                 'Không xóa lịch sử. Người đang giữ ca cần chốt ca trước khi bị thu hồi.',
                 style: AppTextStyles.caption),
           ] else if (!m.isOwner && _active)

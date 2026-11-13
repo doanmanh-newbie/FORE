@@ -17,6 +17,7 @@ import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'kho_widgets.dart';
 import 'purchase_screens.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 // ======================================================================
 // Danh sách nguyên liệu
@@ -140,7 +141,7 @@ class _IngredientListScreenState extends State<IngredientListScreen> {
                             ),
                           ),
                           if (i.active) StockBadge(i.status),
-                          const Icon(Icons.chevron_right_rounded,
+                          Icon(Icons.chevron_right_rounded,
                               color: AppColors.textSecondary),
                         ]),
                       ),
@@ -233,7 +234,7 @@ class _IngredientProfileScreenState extends State<IngredientProfileScreen> {
                   'Sổ kho đang âm ${formatKhoQty(-p.stock, p.unit)}. Nên kiểm kê hoặc ghi phiếu nhập còn thiếu.',
                   icon: Icons.warning_amber_rounded),
             ],
-            const Divider(height: 24, color: AppColors.cardBorder),
+            Divider(height: 24, color: AppColors.cardBorder),
             LabelValueRow('Giá trị tồn',
                 p.value == null ? 'Chưa có giá' : formatVnd(p.value!),
                 strong: true),
@@ -410,7 +411,7 @@ class _IngredientHistoryScreenState extends State<IngredientHistoryScreen> {
           builder: (context, h) => [
             KhoChipBar(labels: _labels, selected: _filter, onSelected: _select),
             if (_filter == 0 || _filter == 1) ...[
-              KhoSectionTitle('Giá nhập gần đây'),
+              const KhoSectionTitle('Giá nhập gần đây'),
               if (h.priceEvents.isEmpty)
                 const KhoNote('Chưa có phiếu nhập nào có giá.')
               else
@@ -424,7 +425,7 @@ class _IngredientHistoryScreenState extends State<IngredientHistoryScreen> {
                   ]),
                 ),
             ],
-            KhoSectionTitle('Những lần thay đổi'),
+            const KhoSectionTitle('Những lần thay đổi'),
             if (h.movements.isEmpty)
               const KhoNote('Chưa có biến động nào ở mục này.'),
             for (final m in h.movements)
@@ -513,6 +514,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
 
   Future<void> _load() async {
     final groups = await guarded(context, _repo.groups);
+    if (!mounted) return;
     final suppliers = await guarded(context, _repo.suppliers);
     IngredientProfile? p;
     if (_editing) {
@@ -593,6 +595,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
   Future<void> _manageGroups() async {
     await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(builder: (_) => const GroupsScreen()));
+    if (!mounted) return;
     final groups = await guarded(context, _repo.groups);
     if (!mounted || groups == null) return;
     setState(() {
@@ -613,7 +616,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                 onPressed: _save),
         body: _loading
             ? const KhoSkeleton()
-            : ListView(
+            : LazyListView(
                 padding: const EdgeInsets.all(AppSizes.pagePadding),
                 children: [
                   AppTextField(
@@ -654,8 +657,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                         : (s) => setState(() => _unit = s.first),
                   ),
                   if (_unitLocked)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
                       child: Text(
                           'Đã có sổ kho hoặc công thức nên không đổi đơn vị.',
                           style: AppTextStyles.caption),
@@ -705,7 +708,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                       onPressed: _toggleActive,
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                         'Không xóa nguyên liệu: chỉ ngừng dùng khi kho hết và không còn trong công thức đang bán.',
                         style: AppTextStyles.caption),
                   ],

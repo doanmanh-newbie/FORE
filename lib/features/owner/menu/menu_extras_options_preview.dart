@@ -169,7 +169,7 @@ class _OptionsPreviewPageState extends State<OptionsPreviewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Lựa chọn mẫu', style: AppTextStyles.cardTitle),
+                Text('Lựa chọn mẫu', style: AppTextStyles.cardTitle),
                 const SizedBox(height: 6),
                 _row('${detail.name} · ${size.name}', formatVnd(size.price)),
                 for (final l in lines) _row(l.$1, formatVnd(l.$2)),
@@ -204,7 +204,7 @@ class _OptionsPreviewPageState extends State<OptionsPreviewPage> {
             style: AppTextStyles.caption,
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Ít đá / ít đường chỉ là chỉ dẫn pha chế. Lượng trừ kho và vốn công thức gốc không đổi khi chưa thiết lập định lượng riêng.',
             style: AppTextStyles.caption,
           ),

@@ -12,14 +12,14 @@ class ForeCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(20),
     this.radius = AppSizes.radiusCard,
-    this.color = AppColors.surface,
+    this.color,
     this.onTap,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double radius;
-  final Color color;
+  final Color? color;
   final VoidCallback? onTap;
 
   @override
@@ -27,13 +27,13 @@ class ForeCard extends StatelessWidget {
         onTap: onTap,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: color,
+            color: color ?? AppColors.surface,
             borderRadius: BorderRadius.circular(radius),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
                 color: AppColors.shadowSoft,
                 blurRadius: 18,
-                offset: Offset(0, 5),
+                offset: const Offset(0, 5),
               ),
             ],
           ),

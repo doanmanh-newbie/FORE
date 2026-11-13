@@ -87,7 +87,7 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> {
                     MaterialPageRoute<void>(
                         builder: (_) => const WasteOverviewScreen())),
                 child: Row(children: [
-                  const Expanded(
+                  Expanded(
                       child: Text('Xem chi tiết hao hụt',
                           style: AppTextStyles.cardTitle)),
                   const Icon(Icons.chevron_right_rounded),

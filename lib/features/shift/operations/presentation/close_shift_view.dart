@@ -8,6 +8,7 @@ import '../../../../core/widgets/ops_icon.dart';
 import '../../../../core/widgets/money_field.dart';
 import '../../../../core/widgets/notify.dart';
 import '../application/ops_shift_controller.dart';
+import '../../../../core/widgets/lazy_list_view.dart';
 
 /// Tab "Đóng ca" (thiết kế "Đóng ca"): nhập tiền đếm được trong két, xem các việc còn thiếu, xác nhận.
 ///
@@ -87,16 +88,16 @@ class _CloseShiftViewState extends State<CloseShiftView> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: widget.shift.loadCloseStatus,
-                  child: ListView(
+                  child: LazyListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                     children: [
-                      const Text('KẾT THÚC CA LÀM VIỆC',
+                      Text('KẾT THÚC CA LÀM VIỆC',
                           style: AppTextStyles.captionStrong),
                       const SizedBox(height: 6),
-                      const Text('Đóng ca', style: AppTextStyles.display),
+                      Text('Đóng ca', style: AppTextStyles.display),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Đếm tiền mặt thực tế trong két trước khi xác nhận.',
                         style: TextStyle(
                             fontSize: AppFontSizes.s15,
@@ -116,7 +117,7 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                         ),
                       ),
                       const SizedBox(height: 28),
-                      const Text('Trước khi đóng ca',
+                      Text('Trước khi đóng ca',
                           style: AppTextStyles.headline),
                       const SizedBox(height: 12),
                       _CheckCard(
@@ -149,13 +150,13 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                 ),
               ),
               DecoratedBox(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.surface,
                   boxShadow: [
                     BoxShadow(
                         color: AppColors.shadowSoft,
                         blurRadius: 20,
-                        offset: Offset(0, -6))
+                        offset: const Offset(0, -6))
                   ],
                 ),
                 child: Padding(

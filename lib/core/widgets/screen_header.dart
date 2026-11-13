@@ -14,13 +14,13 @@ class ScreenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
                 color: AppColors.shadowSoft,
                 blurRadius: 18,
-                offset: Offset(0, 6))
+                offset: const Offset(0, 6))
           ],
         ),
         child: SafeArea(
@@ -33,7 +33,7 @@ class ScreenHeader extends StatelessWidget {
                 IconButton(
                   tooltip: 'Quay lại',
                   onPressed: onBack ?? () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.arrow_back_rounded,
+                  icon: Icon(Icons.arrow_back_rounded,
                       color: AppColors.ink),
                 ),
                 Expanded(

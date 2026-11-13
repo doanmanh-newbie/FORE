@@ -98,59 +98,63 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
-              const Center(child: BrandLogo(markSize: 64)),
-              const SizedBox(height: 16),
-              const Text(
-                'Đăng nhập',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.screenTitle,
-              ),
-              const SizedBox(height: 20),
-              _RoleSwitch(mode: _mode, onChanged: _pick),
-              const SizedBox(height: 28),
-              AnimatedSwitcher(
-                duration: Motion.of(context, const Duration(milliseconds: 300)),
-                switchInCurve: Curves.easeOutCubic,
-                transitionBuilder: (child, anim) => FadeTransition(
-                  opacity: anim,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.04),
-                      end: Offset.zero,
-                    ).animate(anim),
-                    child: child,
-                  ),
-                ),
-                child: switch (_mode) {
-                  _Mode.owner => _PasswordForm(
-                      key: const ValueKey('owner'),
-                      isOwner: true,
-                      email: _email,
-                      password: _password,
-                      sessionError: _sessionError,
-                      onSubmit: _submitOwner,
-                    ),
-                  _Mode.staff => _StaffForm(
-                      key: const ValueKey('staff'),
-                      sessionError: _sessionError,
-                      onSignedIn: _afterSignIn,
-                    ),
-                },
-              ),
-              const SizedBox(height: 24),
-              if (kDebugMode)
-                TextButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.designGallery),
-                  icon: const Icon(Icons.palette_outlined),
-                  label: const Text('Xem thư viện giao diện'),
-                ),
-            ],
-          ),
+          child: Center(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 40),
+                      const Center(child: BrandLogo(markSize: 64)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Đăng nhập',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.screenTitle,
+                      ),
+                      const SizedBox(height: 20),
+                      _RoleSwitch(mode: _mode, onChanged: _pick),
+                      const SizedBox(height: 28),
+                      AnimatedSwitcher(
+                        duration: Motion.of(
+                            context, const Duration(milliseconds: 300)),
+                        switchInCurve: Curves.easeOutCubic,
+                        transitionBuilder: (child, anim) => FadeTransition(
+                          opacity: anim,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.04),
+                              end: Offset.zero,
+                            ).animate(anim),
+                            child: child,
+                          ),
+                        ),
+                        child: switch (_mode) {
+                          _Mode.owner => _PasswordForm(
+                              key: const ValueKey('owner'),
+                              isOwner: true,
+                              email: _email,
+                              password: _password,
+                              sessionError: _sessionError,
+                              onSubmit: _submitOwner,
+                            ),
+                          _Mode.staff => _StaffForm(
+                              key: const ValueKey('staff'),
+                              sessionError: _sessionError,
+                              onSignedIn: _afterSignIn,
+                            ),
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      if (kDebugMode)
+                        TextButton.icon(
+                          onPressed: () => Navigator.of(context)
+                              .pushNamed(AppRoutes.designGallery),
+                          icon: const Icon(Icons.palette_outlined),
+                          label: const Text('Xem thư viện giao diện'),
+                        ),
+                    ],
+                  ))),
         ),
       ),
     );
@@ -180,13 +184,13 @@ class _RoleSwitch extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(icon,
-                    size: 18, color: on ? Colors.white : AppColors.brand),
+                    size: 18, color: on ? AppColors.onInk : AppColors.brand),
                 const SizedBox(width: 8),
                 Text(
                   text,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: on ? Colors.white : AppColors.brand,
+                    color: on ? AppColors.onInk : AppColors.brand,
                   ),
                 ),
               ],
@@ -212,6 +216,7 @@ class _RoleSwitch extends StatelessWidget {
                 alignment: owner ? Alignment.centerLeft : Alignment.centerRight,
                 child: FractionallySizedBox(
                   widthFactor: 0.5,
+                  heightFactor: 1, // không có thì viên chọn cao 0 và không hiện
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: AppColors.brand,
@@ -284,7 +289,6 @@ class _PasswordForm extends StatelessWidget {
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 36),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: () => showForgotPasswordDialog(context),
             child: const Text('Quên mật khẩu?'),
@@ -294,7 +298,7 @@ class _PasswordForm extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             c.formError ?? sessionError!,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.statusOff, fontSize: AppFontSizes.s13),
           ),
         ],
@@ -337,7 +341,7 @@ class _StaffForm extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             sessionError!,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.statusOff, fontSize: AppFontSizes.s13),
           ),
         ],

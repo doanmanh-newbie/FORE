@@ -11,6 +11,7 @@ import '../../../core/format.dart';
 import '../../auth/application/session_controller.dart';
 import 'menu_format.dart';
 import 'menu_store.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 SessionState? _sessionState(BuildContext context) {
   try {
@@ -164,7 +165,7 @@ class MenuPage extends StatelessWidget {
             children: [
               MenuTopBar(onBack: showBack ? (onBack ?? () => Navigator.of(context).maybePop()) : null),
               Expanded(
-                child: ListView(
+                child: LazyListView(
                   padding: const EdgeInsets.fromLTRB(
                       AppSizes.pagePadding, 4, AppSizes.pagePadding, 24),
                   children: [
@@ -182,7 +183,7 @@ class MenuPage extends StatelessWidget {
               ),
               if (primary != null || secondary != null)
                 DecoratedBox(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.background,
                     border: Border(top: BorderSide(color: AppColors.cardBorder)),
                   ),
@@ -225,7 +226,7 @@ class MenuTopBar extends StatelessWidget {
               )
             else
               const SizedBox(width: 8),
-            const Text(
+            Text(
               'Fore',
               style: TextStyle(
                 fontFamily: AppFonts.display,
@@ -258,21 +259,21 @@ class MenuCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.padding = const EdgeInsets.all(14),
-    this.color = AppColors.surface,
-    this.borderColor = AppColors.cardBorder,
+    this.color,
+    this.borderColor,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
-  final Color color;
-  final Color borderColor;
+  final Color? color;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Material(
-          color: color,
+          color: color ?? AppColors.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusTile),
           child: InkWell(
             onTap: onTap,
@@ -280,7 +281,7 @@ class MenuCard extends StatelessWidget {
             child: Ink(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppSizes.radiusTile),
-                border: Border.all(color: borderColor),
+                border: Border.all(color: borderColor ?? AppColors.cardBorder),
               ),
               padding: padding,
               child: child,
@@ -389,7 +390,7 @@ class MenuMarginHero extends StatelessWidget {
               Text(label.toUpperCase(),
                   style: const TextStyle(
                       color: AppColors.actionLime,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.s12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.4)),
               const SizedBox(height: 8),
@@ -402,12 +403,12 @@ class MenuMarginHero extends StatelessWidget {
                 const SizedBox(height: 6),
                 const Text(
                   'Vốn và lãi chưa xác định: công thức còn thiếu hoặc nguyên liệu chưa có giá.',
-                  style: TextStyle(color: AppColors.onInkMuted, fontSize: 12),
+                  style: TextStyle(color: AppColors.onDarkMuted, fontSize: 12),
                 ),
               ] else ...[
                 Text('${formatThousands(price)} − ${formatThousands(cost!)} =',
                     style: const TextStyle(
-                        color: AppColors.onInkMuted,
+                        color: AppColors.onDarkMuted,
                         fontSize: 15,
                         fontFeatures: [FontFeature.tabularFigures()])),
                 const SizedBox(height: 2),
@@ -435,7 +436,7 @@ class MenuMarginHero extends StatelessWidget {
                 Text(
                   note ??
                       'Lãi gộp ước tính. Giá vốn gồm nguyên liệu + bao bì. Chưa trừ thuê mặt bằng, nhân công, phí nền tảng.',
-                  style: const TextStyle(color: AppColors.onInkMuted, fontSize: 12),
+                  style: const TextStyle(color: AppColors.onDarkMuted, fontSize: 12),
                 ),
               ],
             ],
@@ -489,7 +490,7 @@ class SizeTabs extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
-                            color: i == selected ? Colors.white : AppColors.brand,
+                            color: i == selected ? AppColors.onInk : AppColors.brand,
                           ),
                         ),
                       ),
@@ -537,7 +538,7 @@ class OptionChip extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
-                  color: selected ? Colors.white : AppColors.brand,
+                  color: selected ? AppColors.onInk : AppColors.brand,
                 ),
               ),
             ),
@@ -657,9 +658,9 @@ class MenuPrimaryButton extends StatelessWidget {
         child: FilledButton(
           onPressed: loading ? null : onPressed,
           child: loading
-              ? const SizedBox.square(
+              ? SizedBox.square(
                   dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onInk),
                 )
               : Text(label),
         ),
@@ -711,7 +712,7 @@ class MenuActionRow extends StatelessWidget {
               ),
             ),
             if (onTap != null)
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
           ],
         ),
       );

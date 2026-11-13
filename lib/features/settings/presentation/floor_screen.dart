@@ -93,8 +93,8 @@ class _FloorScreenState extends State<FloorScreen> {
                 onChanged: t.inUse ? null : (v) => setS(() => areaId = v ?? areaId),
               ),
               if (t.inUse)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text('Bàn đang có đơn nên chưa chuyển khu vực được.',
                       style: AppTextStyles.caption),
                 ),
@@ -164,7 +164,7 @@ class _FloorScreenState extends State<FloorScreen> {
                               : Icons.visibility_outlined),
                         ),
                       ]),
-                      const Divider(color: AppColors.cardBorder),
+                      Divider(color: AppColors.cardBorder),
                       for (final t in a.tables)
                         InkWell(
                           onTap: () => _editTable(a, t, areas),

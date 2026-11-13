@@ -207,7 +207,7 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
           ),
         ),
         DecoratedBox(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.background,
             border: Border(top: BorderSide(color: AppColors.border)),
           ),
@@ -227,12 +227,14 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
   List<Widget> _ticketContent(ReconcileReport report) {
     final item = _ticketItem;
     final meta = _TicketMeta(report: report, handled: _handled);
-    if (item != null) return ingredientTicket(
+    if (item != null) {
+      return ingredientTicket(
         report,
         item,
         meta: meta,
         onEditPurchase: widget.onCorrect == null ? null : _editPurchase,
       );
+    }
     return cashTicket(report, onShowBills: _openCancelledBills, meta: meta);
   }
 
@@ -310,7 +312,7 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
                     '${reconcileVarianceText(item.adjusted, item.unit)} · ${reconcilePercent(item.adjustedPct)} sau điều chỉnh',
                 onTap: () => _go(_Section.ingredients),
               ),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: AppColors.border),
             ],
             if (shortItems.isEmpty) ...[
               _SummaryRow(
@@ -329,7 +331,7 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
                     : '${report.ingredients.length} nguyên liệu trong ca',
                 onTap: () => _go(_Section.ingredients),
               ),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: AppColors.border),
             ],
             _SummaryRow(
               icon: Icons.payments_outlined,
@@ -343,7 +345,7 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
                   : 'Chưa có tiền đếm cuối ca',
               onTap: () => _go(_Section.cash),
             ),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: AppColors.border),
             _SummaryRow(
               icon: Icons.delete_outline_rounded,
               title: 'Hao hụt',
@@ -458,7 +460,7 @@ class _VerdictCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const Text('Ảnh hưởng ước tính', style: AppTextStyles.caption),
+          Text('Ảnh hưởng ước tính', style: AppTextStyles.caption),
           const SizedBox(height: 2),
           Align(
             alignment: Alignment.centerRight,
@@ -470,7 +472,7 @@ class _VerdictCard extends StatelessWidget {
               ),
             ),
           ),
-          const Divider(height: 24, color: AppColors.border),
+          Divider(height: 24, color: AppColors.border),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -499,7 +501,7 @@ class _VerdictCard extends StatelessWidget {
           ),
           if (report.ingredientLoss > 0) ...[
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Doanh thu hụt tính theo nguyên liệu hụt nhiều nhất, không cộng các nguyên liệu với nhau vì chúng có thể nằm trong cùng một ly.',
               style: AppTextStyles.caption,
             ),
@@ -558,7 +560,7 @@ class _CompactVerdict extends StatelessWidget {
                     compact: true,
                   ),
                   const SizedBox(height: 4),
-                  const Text('Tổng ảnh hưởng ước tính',
+                  Text('Tổng ảnh hưởng ước tính',
                       style: AppTextStyles.caption),
                 ],
               ),
@@ -684,7 +686,7 @@ class _SummaryRow extends StatelessWidget {
                   color: trailingColor ?? AppColors.brand,
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
+              Icon(Icons.chevron_right_rounded,
                   size: 20, color: AppColors.textSecondary),
             ],
           ),

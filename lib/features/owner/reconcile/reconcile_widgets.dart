@@ -51,7 +51,6 @@ class ReconcileBanner extends StatelessWidget {
                   foregroundColor: foreground,
                   minimumSize: const Size(0, 36),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
                   actionLabel!,
@@ -99,12 +98,12 @@ class ReconcileTag extends StatelessWidget {
 /// Số liệu có chữ số đều nét, dùng cho tiền và số lượng.
 TextStyle reconcileNumberStyle({
   double size = 15,
-  Color color = AppColors.brand,
+  Color? color,
   FontWeight weight = FontWeight.w700,
 }) =>
     AppTextStyles.metric.copyWith(
       fontSize: size,
-      color: color,
+      color: color ?? AppColors.brand,
       fontWeight: weight,
     );
 
@@ -142,7 +141,7 @@ class LedgerCard extends StatelessWidget {
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       if (i > 0 && line.kind != LedgerKind.normal) {
-        children.add(const Divider(height: 18, color: AppColors.border));
+        children.add(Divider(height: 18, color: AppColors.border));
       }
       children.add(_LedgerRow(line: line));
     }
@@ -287,12 +286,12 @@ class _ReviewSheetState extends State<ReviewSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            const Row(
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline,
                     size: 16, color: AppColors.textSecondary),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Đã xử lý chỉ là trạng thái công việc; không đổi số liệu hay kết quả chênh lệch.',
@@ -303,7 +302,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
             ),
             if (_failed) ...[
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Chưa lưu được. Hãy kiểm tra kết nối và thử lại.',
                 style: TextStyle(
                   color: AppColors.statusCritical,
@@ -470,12 +469,12 @@ class _CorrectionSheetState extends State<CorrectionSheet> {
               ),
             ),
             const SizedBox(height: 4),
-            const Row(
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.info_outline,
                     size: 16, color: AppColors.textSecondary),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Dòng gốc vẫn được giữ. Hệ thống ghi thêm một dòng điều chỉnh kèm lý do và tính lại báo cáo.',
@@ -488,7 +487,7 @@ class _CorrectionSheetState extends State<CorrectionSheet> {
               const SizedBox(height: 10),
               Text(
                 _error!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.statusCritical,
                   fontSize: AppFontSizes.s13,
                   fontWeight: FontWeight.w600,

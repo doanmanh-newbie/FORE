@@ -52,7 +52,7 @@ List<Widget> ingredientTicket(
       padding: const EdgeInsets.all(16),
       child: item.hasData
           ? LedgerCard(lines: ingredientLedger(item))
-          : const Text(
+          : Text(
               'Thiếu số kiểm kê đầu ca hoặc cuối ca nên chưa tính được nguyên liệu này.',
               style: AppTextStyles.body,
             ),
@@ -74,21 +74,21 @@ List<Widget> ingredientTicket(
     ],
     if (item.hasData && strong) ...[
       const SizedBox(height: 12),
-      const Text(
+      Text(
         'Phần hụt còn lại cần kiểm tra số kiểm kê và định lượng; chưa kết luận mất mát.',
         style: AppTextStyles.body,
       ),
     ],
     if (purchases.isNotEmpty) ...[
       const SizedBox(height: 16),
-      const Text('Phiếu nhập trong ca', style: AppTextStyles.sectionTitle),
+      Text('Phiếu nhập trong ca', style: AppTextStyles.sectionTitle),
       const SizedBox(height: 8),
       ForeCard(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             for (var i = 0; i < purchases.length; i++) ...[
-              if (i > 0) const Divider(height: 18, color: AppColors.border),
+              if (i > 0) Divider(height: 18, color: AppColors.border),
               _PurchaseRow(
                 entry: purchases[i],
                 onEdit: onEditPurchase == null
@@ -111,7 +111,7 @@ List<Widget> cashTicket(
 }) {
   final cash = report.cash;
   return [
-    const Text('Phiếu tiền mặt', style: AppTextStyles.display),
+    Text('Phiếu tiền mặt', style: AppTextStyles.display),
     const SizedBox(height: 4),
     Text(
       '${report.title} · ${reconcileShiftTime(report.openedAt, report.closedAt)}',
@@ -129,8 +129,8 @@ List<Widget> cashTicket(
     ),
     const SizedBox(height: 14),
     if (!cash.hasData)
-      const ForeCard(
-        padding: EdgeInsets.all(16),
+      ForeCard(
+        padding: const EdgeInsets.all(16),
         child: Text(
           'Ca này chưa có số tiền đếm cuối ca để đối chiếu với két.',
           style: AppTextStyles.body,
@@ -142,7 +142,7 @@ List<Widget> cashTicket(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Đối chiếu tiền trong két khi đóng ca',
+            Text('Đối chiếu tiền trong két khi đóng ca',
                 style: AppTextStyles.caption),
             const SizedBox(height: 8),
             LedgerCard(lines: cashLedger(cash)),
@@ -157,7 +157,7 @@ List<Widget> cashTicket(
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text('Chuyển khoản trong ca',
                       style: AppTextStyles.bodyStrong),
                 ),
@@ -165,7 +165,7 @@ List<Widget> cashTicket(
                     style: reconcileNumberStyle()),
               ],
             ),
-            const Text('Đối chiếu với app ngân hàng',
+            Text('Đối chiếu với app ngân hàng',
                 style: AppTextStyles.caption),
           ],
         ),
@@ -191,7 +191,7 @@ List<Widget> cashTicket(
           'Không gồm chuyển khoản. Chỉ doanh thu bán tiền mặt làm tăng số tiền phải có trong két.',
     ),
     const SizedBox(height: 10),
-    const Text(
+    Text(
       'Xem lại số đếm và chứng từ bỏ vào, lấy ra. Ghi chú xử lý không đổi số tiền chênh lệch.',
       style: AppTextStyles.caption,
     ),
@@ -219,9 +219,9 @@ Future<void> showCancelledBillsSheet(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Bill đã thu rồi hủy', style: AppTextStyles.headline),
+              Text('Bill đã thu rồi hủy', style: AppTextStyles.headline),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Hủy bill đã thu tiền cần chủ quán nhập PIN duyệt.',
                 style: AppTextStyles.caption,
               ),
@@ -304,7 +304,7 @@ class _PurchaseRow extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
                 child: Text('Nhập kho', style: AppTextStyles.bodyStrong)),
             Text(reconcileQty(entry.qty, entry.unit),
                 style: reconcileNumberStyle()),
@@ -324,7 +324,6 @@ class _PurchaseRow extends StatelessWidget {
                 foregroundColor: AppColors.brand,
                 minimumSize: const Size(0, 36),
                 padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Sửa số lượng nhập'),
             ),

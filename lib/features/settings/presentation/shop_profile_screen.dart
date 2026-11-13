@@ -15,6 +15,7 @@ import '../../inventory/presentation/kho_widgets.dart';
 import '../../shift/application/shift_controller.dart';
 import '../domain/settings_models.dart';
 import '../domain/settings_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// "Hồ sơ và thông tin quán": tên, liên hệ, giờ mở cửa, thông tin dùng cho hóa đơn.
 class ShopProfileScreen extends StatefulWidget {
@@ -133,7 +134,7 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
           : PrimaryButton(label: 'Lưu hồ sơ', loading: _busy, onPressed: _save),
       body: _loading
           ? const KhoSkeleton()
-          : ListView(
+          : LazyListView(
               padding: const EdgeInsets.all(AppSizes.pagePadding),
               children: [
                 if (!canEdit)
@@ -284,10 +285,10 @@ class _BranchesScreenState extends State<BranchesScreen> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2))
                     else if (b.isCurrent)
-                      const Icon(Icons.check_circle_rounded,
+                      Icon(Icons.check_circle_rounded,
                           color: AppColors.statusHealthy)
                     else
-                      const Icon(Icons.chevron_right_rounded,
+                      Icon(Icons.chevron_right_rounded,
                           color: AppColors.textSecondary),
                   ]),
                 ),

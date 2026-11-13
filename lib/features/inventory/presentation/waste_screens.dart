@@ -17,6 +17,7 @@ import '../domain/inventory_models.dart' show WasteTypeOption;
 import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'kho_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 // ======================================================================
 // Ghi hao hụt (nhân viên): chọn nguyên liệu, lô, số lượng, lý do
@@ -74,7 +75,7 @@ class _WasteEntryScreenState extends State<WasteEntryScreen> {
         title: 'Chọn nguyên liệu',
         child: SizedBox(
           height: MediaQuery.sizeOf(ctx).height * 0.5,
-          child: ListView(children: [
+          child: LazyListView(children: [
             for (final i in _items)
               ListTile(
                 title: Text(i.name),
@@ -165,7 +166,7 @@ class _WasteEntryScreenState extends State<WasteEntryScreen> {
         subtitle: '${done.code} · ${formatDateTimeFull(done.at)}',
         bottom: PrimaryButton(
             label: 'Xong', onPressed: () => Navigator.of(context).pop()),
-        body: ListView(
+        body: LazyListView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
           children: [
             const KhoNote(
@@ -184,7 +185,7 @@ class _WasteEntryScreenState extends State<WasteEntryScreen> {
       title: 'Ghi hao hụt',
       subtitle: 'Ghi thật, kho mới chính xác',
       bottom: PrimaryButton(label: 'Ghi hao hụt', loading: _busy, onPressed: _save),
-      body: ListView(
+      body: LazyListView(
         padding: const EdgeInsets.all(AppSizes.pagePadding),
         children: [
           Text('Nguyên liệu *', style: AppTextStyles.label),

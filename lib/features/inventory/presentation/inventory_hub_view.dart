@@ -28,9 +28,9 @@ class InventoryHubView extends StatelessWidget {
           final missing = shift.closeStatus?.missingCounts ?? 0;
           return PageScaffold(
             children: [
-              const Text('Kho', style: AppTextStyles.display),
+              Text('Kho', style: AppTextStyles.display),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'Ghi nguyên liệu nhập về và đếm kho đầu ca, cuối ca.',
                 style: TextStyle(
                     fontSize: AppFontSizes.s15,
@@ -39,21 +39,21 @@ class InventoryHubView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               ActionTile(
-                icon: const ForeIcon(ForeIcons.package, color: AppColors.ink),
+                icon: ForeIcon(ForeIcons.package, color: AppColors.ink),
                 title: 'Nhập hàng',
                 subtitle: 'Ghi nguyên liệu vừa nhập về trong ca',
                 onTap: onPurchase,
               ),
               const SizedBox(height: 12),
               ActionTile(
-                icon: const ForeIcon(ForeIcons.calendar, color: AppColors.ink),
+                icon: ForeIcon(ForeIcons.calendar, color: AppColors.ink),
                 title: 'Kiểm kê đầu ca',
                 subtitle: 'Đếm nguyên liệu trước khi bán',
                 onTap: () => onCount(CountKind.open),
               ),
               const SizedBox(height: 12),
               ActionTile(
-                icon: const ForeIcon(ForeIcons.lock, color: AppColors.ink),
+                icon: ForeIcon(ForeIcons.lock, color: AppColors.ink),
                 title: 'Kiểm kê cuối ca',
                 subtitle: 'Đếm đủ rồi mới đóng ca được',
                 badge: missing > 0 ? 'Còn $missing' : null,

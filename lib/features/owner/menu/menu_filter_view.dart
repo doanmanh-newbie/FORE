@@ -115,7 +115,7 @@ class _MenuFilterPageState extends State<MenuFilterPage> {
             chip(label, _draft.sort == value,
                 () => setState(() => _draft = _draft.copyWith(sort: value))),
         ]),
-        const Text(
+        Text(
           'Giá được so theo size nhỏ nhất của mỗi món. Món thiếu công thức không được coi là lãi cao.',
           style: AppTextStyles.caption,
         ),

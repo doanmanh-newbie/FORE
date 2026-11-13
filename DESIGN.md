@@ -186,7 +186,17 @@ Bảng màu hẹp, lạnh và trầm, xoay quanh một màu mực xanh đậm, �
 - **Ổn** (#18794E trên #E2F4EA), **Cần xem** (#8A5A00 trên #FFF1CC), **Nghiêm trọng** (#B42318 trên #FBE4E2): chip trạng thái và mức đối soát của ca. Mỗi cặp chữ/nền đều đạt từ 5:1 trở lên.
 - **Chữ cảnh báo / Warning Text** (#B54708): chữ cảnh báo trên nền sáng. Màu `warning` (#ED6C02) chỉ cho icon hoặc dải màu, không cho chữ.
 
+### Dark Theme
+Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho ca đêm ở quầy thiếu sáng. Nguồn giá trị là `AppPalette.dark` trong `lib/core/design/colors.dart`; frontmatter ở trên là bộ sáng.
+- **Mực đảo chiều:** `brand` thành bạc hà sáng (#CFE9E4) cho cả chữ và nền nút chính; chữ trên nền mực dùng `onInk` (#0C2D32).
+- **Bề mặt:** nền #0C1617, thẻ #142224, khối phụ #1C2C2E, viền thẻ #22383A.
+- **Chữ:** chính #E4EFEC, phụ #A7BCB8 (8,2:1 trên thẻ).
+- **Trạng thái:** Ổn #5DD39B trên #12301F, Cần xem #F2BE55 trên #33280C, Nghiêm trọng #FF8E82 trên #3B1915.
+- **Không đổi theo chế độ:** Night Shift, Lime Pour và chữ trắng trên thẻ nổi bật (`onDarkMuted`, `onDarkBorder`).
+
 ### Named Rules
+**The On-Ink Rule.** Chữ hoặc icon đặt trên nền mực luôn dùng `AppColors.onInk`, không dùng `Colors.white`; trắng cố định chỉ dành cho thẻ nền Night Shift.
+
 **The Signal-Only Rule.** Xanh, vàng, đỏ trạng thái chỉ xuất hiện khi dữ liệu thật sự ở trạng thái đó. Không dùng chúng để trang trí, phân nhóm hay làm màu thương hiệu.
 
 **The One Ink Rule.** Mỗi màn chỉ có một hành động chính tô màu mực xanh đậm; các hành động khác dùng viền hoặc chữ.
@@ -206,7 +216,7 @@ Bảng màu hẹp, lạnh và trầm, xoay quanh một màu mực xanh đậm, �
 - **Card title** (Inter 600, 15px, 1.33): tiêu đề thẻ và dòng danh sách.
 - **Body** (400, 14px, 1.43): mô tả, nội dung; `body-strong` (600) cho giá trị cần nhấn.
 - **Label** (600, 13px): nhãn ô nhập, nhãn nút phụ, chip.
-- **Caption** (400, 12px, 1.33): chú thích, thời gian, đơn vị. Không nhỏ hơn 12 px cho chữ có nghĩa.
+- **Caption** (400, 12px, 1.33): chú thích, thời gian, đơn vị. `micro` (600, 12px) cho nhãn nhỏ. Không chữ nào nhỏ hơn 12 px.
 
 ### Named Rules
 **The Serif-for-Numbers Rule.** Con số quyết định (tiền ca, chênh lệch, KPI) dùng Newsreader với số đều độ rộng; con số trong danh sách và bảng dùng Inter số đều độ rộng.
@@ -217,7 +227,7 @@ Bảng màu hẹp, lạnh và trầm, xoay quanh một màu mực xanh đậm, �
 
 Bố cục một cột cho điện thoại, lề trang 16 px, khoảng cách giữa thẻ 12 px, giữa các phần 24 px, đáy trang 32 px; mọi khoảng cách là bội số của 4 px. Màn danh sách dùng dòng xếp chặt; màn tổng quan dùng thẻ có khoảng thở. Thanh điều hướng dưới cùng cho điện thoại.
 
-Máy tính bảng ở quầy là thiết bị đích nhưng chưa có bố cục riêng; quy tắc dự kiến là chuyển sang `NavigationRail` và bố cục hai cột khi màn rộng (chưa triển khai).
+Máy tính bảng ở quầy: từ 600 dp trở lên, `AdaptiveNavScaffold` (`lib/core/widgets/adaptive_nav.dart`) đổi thanh dưới thành `NavigationRail` bên trái và giới hạn nội dung ở 960 px. Màn đăng nhập, đăng ký và tạo quán giới hạn form ở 480 px, căn giữa. Danh sách theo dữ liệu dùng `LazyListView` hoặc `ListView.builder` để chỉ dựng dòng đang hiện.
 
 ## Elevation & Depth
 
@@ -227,7 +237,6 @@ Hệ thống phẳng. Chiều sâu đến từ sắc độ: nền Mint Mist, th�
 Chỉ còn trong bộ cũ `Fore*`, không dùng cho thành phần mới:
 - **Bóng mềm thẻ cũ** (blur 18, y 5, #0C2D32 7%): `ForeCard`.
 - **Bóng nút cũ** (blur 20, y 8, #0C2D32 25%): `ForeButton`.
-- **Bóng tab nổi** (blur 14, y 6, #0C2D32 12%): tab đang chọn trong `ForeBottomNav`.
 
 ### Named Rules
 **The Wiped-Counter Rule.** Bề mặt phẳng khi đứng yên. Không thêm bóng đổ cho thẻ, nút hay thanh điều hướng mới; dùng viền mảnh hoặc đổi sắc độ nền.
@@ -246,6 +255,7 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Tertiary:** chữ Ink Teal không nền, vùng chạm 48×48 (`TertiaryButton`, `TextButton`).
 - **Hero action:** nền Lime Pour, chữ Ink Teal, chỉ trên `HeroCard` nền Night Shift.
 - **Disabled:** nền Disabled Fill, chữ Text Secondary.
+- **Destructive:** nền `AppColors.danger` (#B42318), chữ trắng, ở cả hai chế độ.
 
 ### Chips
 - **Style:** viên bo tròn, nền tint trạng thái, chữ màu trạng thái 12px đậm (`StatusChip`, `SeverityChip`, `StatusPill`).
@@ -264,8 +274,8 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Error / Disabled:** viền và chữ lỗi Status Critical 12px dưới ô; viền vô hiệu giữ Hairline.
 
 ### Navigation
-- **Chuẩn:** Material `NavigationBar` cao 68 dp, nền trắng, viên chỉ báo Nav Indicator, nhãn Inter 12px (700 khi chọn, 500 khi không). Dùng ở luồng chủ quán.
-- **Bản cũ:** `ForeBottomNav` của luồng nhân viên (tab chọn nổi lên nền Ink Teal, có bóng). Chuyển sang `NavigationBar` theo The Wiped-Counter Rule.
+- **Chuẩn:** `AdaptiveNavScaffold` cho cả luồng chủ quán và nhân viên. Điện thoại: Material `NavigationBar` cao 68 dp, nền trắng, viên chỉ báo Nav Indicator, nhãn Inter 12px (700 khi chọn, 500 khi không). Máy tính bảng: `NavigationRail` cùng màu và nhãn.
+- **Tab bị khóa** (cần mở ca): mờ, không chọn được, vẫn được trình đọc màn hình đọc.
 
 ### Segmented Control
 Khung Pale Tint bo 16px, đệm 4px; đoạn chọn cao 44 dp nền Ink Teal chữ trắng Inter 700 15px, đoạn còn lại chữ Ink Teal. Dùng cho chuyển nhanh giữa hai đến ba chế độ (ví dụ số điện thoại / email).
@@ -285,7 +295,9 @@ Nút tròn trừ/cộng hiển thị 36–40px nhưng vùng chạm 48×48; nút 
 ### Don't:
 - **Don't** thêm bóng đổ cho thẻ, nút hoặc thanh điều hướng mới.
 - **Don't** viết mã màu thô (`Color(0x...)`) hay `Colors.*` ngoài `lib/core/design/`.
-- **Don't** dùng Counter Teal (#51A19B), `inkMuted` hay `warning` (#ED6C02) cho chữ: đều dưới 4,5:1.
+- **Don't** dùng Counter Teal (#51A19B) hay `warning` (#ED6C02) cho chữ: đều dưới 4,5:1 ở chế độ sáng.
+- **Don't** dùng `Colors.white` trên nền mực; dùng `AppColors.onInk` để đúng ở cả hai chế độ.
 - **Don't** dùng Lime Pour trên nền sáng hoặc cho hành động phụ.
 - **Don't** dùng màu trạng thái cho mục đích trang trí.
-- **Don't** tạo thêm token "legacy" mới; token cũ (`legacyTeal`, `legacyDanger`, các biến thể shadow) chỉ để xóa dần.
+- **Don't** tạo thêm token "legacy" mới; các biến thể shadow cũ chỉ để xóa dần.
+- **Don't** dùng `ListView(children: ...)` cho danh sách theo dữ liệu; dùng `LazyListView`.

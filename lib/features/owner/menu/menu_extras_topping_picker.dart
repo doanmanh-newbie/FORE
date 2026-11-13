@@ -176,8 +176,8 @@ class _ToppingPickerPageState extends State<ToppingPickerPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Nhóm không bắt buộc', style: AppTextStyles.cardTitle),
-                const Text('Khách mặc định không chọn topping.',
+                Text('Nhóm không bắt buộc', style: AppTextStyles.cardTitle),
+                Text('Khách mặc định không chọn topping.',
                     style: AppTextStyles.caption),
                 const SizedBox(height: 6),
                 _stepper('Tối đa loại', _maxKinds, 1,

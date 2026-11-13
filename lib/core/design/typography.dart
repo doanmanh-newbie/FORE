@@ -34,88 +34,88 @@ abstract final class AppTextStyles {
   static const serifFamily = AppFonts.display;
   static const sansFamily = AppFonts.body;
 
-  static const display = TextStyle(
+  static TextStyle get display => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 26,
     fontWeight: FontWeight.w500,
     color: AppColors.brand,
     height: 32 / 26,
   );
-  static const headline = TextStyle(
+  static TextStyle get headline => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 22,
     fontWeight: FontWeight.w600,
     color: AppColors.brand,
     height: 1.2,
   );
-  static const pageTitle = TextStyle(
+  static TextStyle get pageTitle => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 26,
     fontWeight: FontWeight.w500,
     color: AppColors.brand,
     height: 32 / 26,
   );
-  static const kpi = TextStyle(
+  static TextStyle get kpi => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 32,
     fontWeight: FontWeight.w500,
     color: AppColors.brand,
     height: 36 / 32,
-    fontFeatures: [FontFeature.tabularFigures()],
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
-  static const sectionTitle = TextStyle(
+  static TextStyle get sectionTitle => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.brand,
     height: 24 / 18,
   );
-  static const cardTitle = TextStyle(
+  static TextStyle get cardTitle => TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 20 / 15,
   );
-  static const bodyLarge = TextStyle(
+  static TextStyle get bodyLarge => TextStyle(
     fontSize: 16,
     color: AppColors.brand,
     height: 1.4,
   );
-  static const body = TextStyle(
+  static TextStyle get body => TextStyle(
     fontSize: 14,
     color: AppColors.textSecondary,
     height: 20 / 14,
   );
-  static const bodyStrong = TextStyle(
+  static TextStyle get bodyStrong => TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 20 / 14,
   );
-  static const label = TextStyle(
+  static TextStyle get label => TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
-  static const caption = TextStyle(
+  static TextStyle get caption => TextStyle(
     fontSize: 12,
     color: AppColors.textSecondary,
     height: 16 / 12,
   );
-  static const captionStrong = TextStyle(
+  static TextStyle get captionStrong => TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
     height: 16 / 12,
   );
-  static const micro = TextStyle(
-    fontSize: 11,
+  static TextStyle get micro => TextStyle(
+    fontSize: 12,
     fontWeight: FontWeight.w600,
     color: AppColors.textSecondary,
-    height: 14 / 11,
+    height: 16 / 12,
   );
   static const button = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
-  static const wordmark = TextStyle(
+  static TextStyle get wordmark => TextStyle(
     fontFamily: AppFonts.display,
     fontSize: 28,
     fontWeight: FontWeight.w600,
@@ -124,24 +124,24 @@ abstract final class AppTextStyles {
   );
 
   // Existing call sites retained while the rest of the app migrates by screen.
-  static const screenTitle = pageTitle;
-  static const heading = headline;
-  static const title = sectionTitle;
-  static const numberXL = kpi;
-  static const metricXL = kpi;
-  static const number = TextStyle(
+  static TextStyle get screenTitle => pageTitle;
+  static TextStyle get heading => headline;
+  static TextStyle get title => sectionTitle;
+  static TextStyle get numberXL => kpi;
+  static TextStyle get metricXL => kpi;
+  static TextStyle get number => TextStyle(
     fontFamily: AppFonts.body,
     fontSize: 20,
     fontWeight: FontWeight.w700,
     color: AppColors.brand,
-    fontFeatures: [FontFeature.tabularFigures()],
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
-  static const metric = TextStyle(
+  static TextStyle get metric => TextStyle(
     fontFamily: AppFonts.body,
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: AppColors.brand,
     height: 1.15,
-    fontFeatures: [FontFeature.tabularFigures()],
+    fontFeatures: const [FontFeature.tabularFigures()],
   );
 }

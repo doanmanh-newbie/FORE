@@ -20,6 +20,7 @@ import 'stocktake_screens.dart';
 import 'supplier_screens.dart';
 import 'waste_screens.dart';
 import 'week_review_screen.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Tab Kho của chủ quán: "Một vòng quanh kho" — tiền nằm trong kho, việc cần ưu tiên, lối vào
 /// nguyên liệu / nhà cung cấp / phiếu nhập / kiểm kê / hao hụt / tuần nhìn lại.
@@ -58,7 +59,7 @@ class _OwnerKhoHomeState extends State<OwnerKhoHome> {
           final o = _data.data;
           return RefreshIndicator(
             onRefresh: () => _data.load(silent: true),
-            child: ListView(
+            child: LazyListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
                   AppSizes.pagePadding,
@@ -295,7 +296,7 @@ class _PriorityTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 color: AppColors.textSecondary),
           ]),
         ),
@@ -341,7 +342,7 @@ class _MenuTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 color: AppColors.textSecondary),
           ]),
         ),

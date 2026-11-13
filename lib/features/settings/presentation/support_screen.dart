@@ -11,6 +11,7 @@ import '../../inventory/application/kho_format.dart';
 import '../../inventory/presentation/kho_widgets.dart';
 import '../domain/settings_models.dart';
 import '../domain/settings_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// "Hỗ trợ và cập nhật": gửi yêu cầu kèm (hoặc không kèm) thông tin chẩn đoán, xem các yêu cầu đã gửi.
 /// Yêu cầu được lưu lại với mã SP-xxxx; ứng dụng không hứa thời gian phản hồi.
@@ -85,7 +86,7 @@ class _SupportScreenState extends State<SupportScreen> {
         subtitle: 'Phiên bản ứng dụng: $_appVersion',
         bottom: PrimaryButton(
             label: 'Gửi yêu cầu', loading: _busy, onPressed: _send),
-        body: ListView(
+        body: LazyListView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
           children: [
             Text('Chủ đề', style: AppTextStyles.label),

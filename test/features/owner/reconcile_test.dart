@@ -380,7 +380,7 @@ void main() {
       expect(find.byType(SkeletonBox), findsWidgets);
       expect(find.text('Chưa có ca đã đóng'), findsNothing);
 
-      gate.complete(OwnerShiftPage(items: [_okReport], hasMore: false));
+      gate.complete(const OwnerShiftPage(items: [_okReport], hasMore: false));
       await tester.pumpAndSettle();
       expect(find.text('Ca của Minh'), findsOneWidget);
     });
@@ -453,7 +453,7 @@ void main() {
         loader: ({required from, required to, required filter, before}) async {
           attempts++;
           if (attempts == 1) throw StateError('offline');
-          return OwnerShiftPage(items: [_okReport], hasMore: false);
+          return const OwnerShiftPage(items: [_okReport], hasMore: false);
         },
       );
       await tester.pumpWidget(list(controller));
@@ -473,7 +473,7 @@ void main() {
         loader: ({required from, required to, required filter, before}) async {
           sentFrom = from;
           sentTo = to;
-          return OwnerShiftPage(items: const [], hasMore: false);
+          return const OwnerShiftPage(items: [], hasMore: false);
         },
       );
       controller.setDate(DateTime(2026, 10, 28, 15));
@@ -495,7 +495,7 @@ void main() {
                   hasMore: true,
                   nextBefore: DateTime.utc(2026, 10, 28, 1),
                 )
-              : OwnerShiftPage(items: [_okReport], hasMore: false);
+              : const OwnerShiftPage(items: [_okReport], hasMore: false);
         },
       );
       await controller.reload();
@@ -515,7 +515,7 @@ void main() {
         loader: ({required from, required to, required filter, before}) {
           call++;
           if (call == 1) return first.future;
-          return Future.value(OwnerShiftPage(items: [_okReport], hasMore: false));
+          return Future.value(const OwnerShiftPage(items: [_okReport], hasMore: false));
         },
       );
       final slow = controller.reload();

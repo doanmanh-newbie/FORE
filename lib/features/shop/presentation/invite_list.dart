@@ -14,6 +14,7 @@ import '../../auth/application/session_controller.dart';
 import '../../shift/application/shift_controller.dart';
 import '../application/inbox_controller.dart';
 import '../domain/shop_models.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// "5 phút trước", "hôm qua"...
 String timeAgo(DateTime at, [DateTime? now]) {
@@ -91,12 +92,12 @@ class _JoinedDialogState extends State<_JoinedDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const DecoratedBox(
+              DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.brandAccent,
                   shape: BoxShape.circle,
                 ),
-                child: SizedBox.square(
+                child: const SizedBox.square(
                   dimension: 88,
                   child:
                       Icon(Icons.check_rounded, color: Colors.white, size: 52),
@@ -178,7 +179,7 @@ class _InviteListViewState extends State<InviteListView> {
     return RefreshIndicator(
       color: AppColors.brand,
       onRefresh: () => c.load(quiet: true),
-      child: ListView(
+      child: LazyListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
@@ -247,7 +248,7 @@ class _InviteCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const DecoratedBox(
+              DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.tint,
                   shape: BoxShape.circle,

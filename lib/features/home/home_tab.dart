@@ -17,6 +17,7 @@ import '../../core/widgets/pulse_dot.dart';
 import '../auth/application/session_controller.dart';
 import '../shift/application/shift_controller.dart';
 import '../shift/domain/shift_models.dart';
+import '../../core/widgets/lazy_list_view.dart';
 
 /// Tab Trang chủ của nhân viên: tình trạng ca và lối vào các việc chính.
 class HomeTab extends StatelessWidget {
@@ -37,7 +38,7 @@ class HomeTab extends StatelessWidget {
           child: RefreshIndicator(
             color: AppColors.brand,
             onRefresh: () => context.read<ShiftController>().load(quiet: true),
-            child: ListView(
+            child: LazyListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
               children: [
@@ -103,13 +104,13 @@ class _Header extends StatelessWidget {
     final top = MediaQuery.paddingOf(context).top;
     final open = shift is ShiftOpen;
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowSubtle,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -232,7 +233,7 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: AppFontSizes.s14,
               fontWeight: FontWeight.w600,
               color: AppColors.brand,
@@ -248,7 +249,7 @@ class _LoadingCard extends StatelessWidget {
   const _LoadingCard({super.key});
 
   @override
-  Widget build(BuildContext context) => const ForeCard(
+  Widget build(BuildContext context) => ForeCard(
         child: SizedBox(
           height: 240,
           child: Center(
@@ -274,7 +275,7 @@ class _NoShiftCard extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 12),
-          const FadeSlideIn(
+          FadeSlideIn(
             child: _BreathingIcon(
               child: ForeIconView(
                 ForeIcon.calendar,
@@ -284,8 +285,8 @@ class _NoShiftCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 22),
-          const FadeSlideIn(
-            delay: Duration(milliseconds: 120),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 120),
             child: Text(
               'Chưa có ca đang mở',
               textAlign: TextAlign.center,
@@ -293,8 +294,8 @@ class _NoShiftCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const FadeSlideIn(
-            delay: Duration(milliseconds: 220),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 220),
             child: Text(
               'Mở ca để nhận order và dùng các chức năng bán hàng.',
               textAlign: TextAlign.center,
@@ -389,7 +390,7 @@ class _OpenShiftCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Ca đang mở', style: AppTextStyles.heading),
+          Text('Ca đang mở', style: AppTextStyles.heading),
           const SizedBox(height: 6),
           MinuteTicker(
             builder: (context, now) => TweenAnimationBuilder<double>(
@@ -450,7 +451,7 @@ class _BillsChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (has) ...[
-              const ForeIconView(
+              ForeIconView(
                 ForeIcon.warning,
                 size: 18,
                 color: AppColors.warning,
@@ -482,7 +483,7 @@ class _FailedCard extends StatelessWidget {
     return ForeCard(
       child: Column(
         children: [
-          const ForeIconView(
+          ForeIconView(
             ForeIcon.warning,
             size: 36,
             color: AppColors.warning,

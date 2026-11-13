@@ -72,10 +72,10 @@ class _MembershipRevokedScreenState extends State<MembershipRevokedScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.storefront_outlined,
+                  Icon(Icons.storefront_outlined,
                       size: 48, color: AppColors.statusAttention),
                   const SizedBox(height: 16),
-                  const Text('Quyền vào quán đã thay đổi',
+                  Text('Quyền vào quán đã thay đổi',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.screenTitle),
                   const SizedBox(height: 8),
@@ -89,7 +89,7 @@ class _MembershipRevokedScreenState extends State<MembershipRevokedScreen> {
                     const SizedBox(height: 16),
                     Text(_error!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.statusOff)),
+                        style: TextStyle(color: AppColors.statusOff)),
                   ],
                   const SizedBox(height: 24),
                   SizedBox(

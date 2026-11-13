@@ -18,18 +18,23 @@ class PageScaffold extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   @override
-  Widget build(BuildContext context) => ListView(
-        physics: physics,
-        padding: padding ??
-            const EdgeInsets.fromLTRB(
-              AppSizes.pagePadding,
-              AppSizes.pageTopPadding,
-              AppSizes.pagePadding,
-              AppSizes.pageBottomPadding,
-            ),
-        children: [
-          if (header != null) ...[header!, const SizedBox(height: 12)],
-          ...children,
-        ],
-      );
+  Widget build(BuildContext context) {
+    final items = [
+      if (header != null) ...[header!, const SizedBox(height: 12)],
+      ...children,
+    ];
+    // Dựng từng dòng khi cuộn tới thay vì dựng hết một lượt.
+    return ListView.builder(
+      physics: physics,
+      padding: padding ??
+          const EdgeInsets.fromLTRB(
+            AppSizes.pagePadding,
+            AppSizes.pageTopPadding,
+            AppSizes.pagePadding,
+            AppSizes.pageBottomPadding,
+          ),
+      itemCount: items.length,
+      itemBuilder: (_, i) => items[i],
+    );
+  }
 }

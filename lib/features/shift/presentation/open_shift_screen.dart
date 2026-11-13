@@ -288,8 +288,8 @@ class _FormView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        const FadeSlideIn(
-          delay: Duration(milliseconds: 100),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 100),
           child: Text('Tiền đầu ca', style: AppTextStyles.label),
         ),
         const SizedBox(height: 8),
@@ -325,13 +325,13 @@ class _FormView extends StatelessWidget {
                   onChanged: (_) => onChanged(),
                   onSubmitted: (_) => onSubmit(),
                   cursorColor: AppColors.brand,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: AppFontSizes.s36,
                     fontWeight: FontWeight.w700,
                     color: AppColors.brand,
                     height: 1.3,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: '0',
                     hintStyle: TextStyle(
                       fontSize: AppFontSizes.s36,
@@ -349,7 +349,7 @@ class _FormView extends StatelessWidget {
                     focusedBorder: InputBorder.none,
                     disabledBorder: InputBorder.none,
                     filled: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -390,10 +390,10 @@ class _WordsLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         vndInWords(amount),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: AppFontSizes.s15,
           fontWeight: FontWeight.w600,
-          color: AppColors.brandAccent,
+          color: AppColors.textSecondary,
         ),
       );
 }
@@ -406,7 +406,7 @@ class _ErrorLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          const ForeIconView(
+          ForeIconView(
             ForeIcon.warning,
             size: 16,
             color: AppColors.warning,
@@ -415,7 +415,7 @@ class _ErrorLine extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: AppFontSizes.s14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.warningText,
@@ -460,7 +460,7 @@ class _JoinView extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const ForeIconView(
+                  ForeIconView(
                     ForeIcon.warning,
                     size: 24,
                     color: AppColors.warning,
@@ -472,14 +472,14 @@ class _JoinView extends StatelessWidget {
                       children: [
                         Text(
                           '$who đang mở',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: AppFontSizes.s16,
                             fontWeight: FontWeight.w700,
                             color: AppColors.brand,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Đang có một ca mở rồi. Hãy vào ca đó để tiếp tục.',
                           style: TextStyle(
                             fontSize: AppFontSizes.s14,

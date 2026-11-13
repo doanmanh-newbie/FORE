@@ -4,9 +4,9 @@ class _OwnerDashboardLoading extends StatelessWidget {
   const _OwnerDashboardLoading();
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.background,
-        body: PageScaffold(
+        body: const PageScaffold(
           children: [
             Row(
               children: [

@@ -83,7 +83,7 @@ class _PickerListState extends State<_PickerList> {
         SizedBox(
           height: MediaQuery.sizeOf(context).height * 0.45,
           child: shown.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('Không có nguyên liệu nào khớp.',
                       style: AppTextStyles.body))
               : ListView.separated(
@@ -171,7 +171,7 @@ class QuantityField extends StatelessWidget {
                   labelStyle: TextStyle(
                     fontWeight: FontWeight.w700,
                     color:
-                        unit?.label == c.label ? Colors.white : AppColors.ink,
+                        unit?.label == c.label ? AppColors.onInk : AppColors.ink,
                   ),
                   showCheckmark: false,
                 ),

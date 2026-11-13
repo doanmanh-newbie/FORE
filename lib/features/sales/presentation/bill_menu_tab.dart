@@ -4,9 +4,9 @@ class _BillLoadingState extends StatelessWidget {
   const _BillLoadingState();
 
   @override
-  Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
+  Widget build(BuildContext context) => const LazyListView(
+        padding: EdgeInsets.all(16),
+        children: [
           SkeletonBox(height: 44),
           SizedBox(height: 18),
           SkeletonBox(height: 20, width: 130),
@@ -35,13 +35,13 @@ class _BillHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
                 color: AppColors.shadowSoft,
                 blurRadius: 18,
-                offset: Offset(0, 6))
+                offset: const Offset(0, 6))
           ],
         ),
         child: SafeArea(
@@ -53,7 +53,7 @@ class _BillHeader extends StatelessWidget {
                 IconButton(
                   tooltip: 'Quay lại',
                   onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back_rounded,
+                  icon: Icon(Icons.arrow_back_rounded,
                       color: AppColors.ink),
                 ),
                 Expanded(
@@ -75,7 +75,7 @@ class _BillHeader extends StatelessWidget {
                 if (onCancel != null)
                   PopupMenuButton<String>(
                     tooltip: 'Thêm',
-                    icon: const Icon(Icons.more_horiz_rounded,
+                    icon: Icon(Icons.more_horiz_rounded,
                         color: AppColors.ink),
                     onSelected: (_) => onCancel!(),
                     itemBuilder: (_) => const [
@@ -133,7 +133,7 @@ class _Segmented extends StatelessWidget {
                               fontSize: AppFontSizes.s15,
                               fontWeight: FontWeight.w700,
                               color:
-                                  i == selected ? Colors.white : AppColors.ink,
+                                  i == selected ? AppColors.onInk : AppColors.ink,
                             ),
                           ),
                         ),
@@ -164,12 +164,12 @@ class _MenuTab extends StatelessWidget {
       );
     }
     final items = c.visibleMenu;
-    return ListView(
+    return LazyListView(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
       children: [
         TextField(
           onChanged: c.setQuery,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Tìm món',
             prefixIcon:
                 Icon(Icons.search_rounded, color: AppColors.textSecondary),
@@ -179,7 +179,7 @@ class _MenuTab extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 40,
-            child: ListView(
+            child: LazyListView(
               scrollDirection: Axis.horizontal,
               children: [
                 _GroupChip(
@@ -197,8 +197,8 @@ class _MenuTab extends StatelessWidget {
         ],
         const SizedBox(height: 14),
         if (c.menu.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(32),
+          Padding(
+            padding: const EdgeInsets.all(32),
             child: Text(
               'Thực đơn đang trống. Chủ quán cần thêm món trước.',
               textAlign: TextAlign.center,
@@ -206,8 +206,8 @@ class _MenuTab extends StatelessWidget {
             ),
           )
         else if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(32),
+          Padding(
+            padding: const EdgeInsets.all(32),
             child: Text('Không có món nào khớp.',
                 textAlign: TextAlign.center, style: AppTextStyles.body),
           )
@@ -250,7 +250,7 @@ class _GroupChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppFontSizes.s14,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : AppColors.ink,
+                color: selected ? AppColors.onInk : AppColors.ink,
               ),
             ),
           ),

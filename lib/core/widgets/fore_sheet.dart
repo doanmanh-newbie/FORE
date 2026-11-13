@@ -109,7 +109,8 @@ class _ReasonFormState extends State<_ReasonForm> {
           FilledButton(
             style: widget.destructive
                 ? FilledButton.styleFrom(
-                    backgroundColor: AppColors.legacyDanger,
+                    backgroundColor: AppColors.danger,
+                    foregroundColor: AppColors.white,
                   )
                 : null,
             onPressed: _valid

@@ -38,6 +38,8 @@ class MenuThumb extends StatelessWidget {
       ),
     );
     final url = bytes == null ? _url(context) : null;
+    // Giải mã đúng cỡ ô hiển thị thay vì nguyên ảnh gốc.
+    final decodePx = (size * MediaQuery.devicePixelRatioOf(context)).round();
     return Semantics(
       label: 'Ảnh món',
       image: true,
@@ -46,12 +48,13 @@ class MenuThumb extends StatelessWidget {
         child: SizedBox.square(
           dimension: size,
           child: bytes != null
-              ? Image.memory(bytes!, fit: BoxFit.cover)
+              ? Image.memory(bytes!, fit: BoxFit.cover, cacheWidth: decodePx)
               : url == null
                   ? placeholder
                   : Image.network(
                       url,
                       fit: BoxFit.cover,
+                      cacheWidth: decodePx,
                       errorBuilder: (_, __, ___) => placeholder,
                       loadingBuilder: (_, child, progress) =>
                           progress == null ? child : placeholder,
@@ -234,7 +237,7 @@ class _MenuImagePageState extends State<MenuImagePage> {
         onPressed: () => Navigator.of(context).pop(false),
       ),
       children: [
-        const Text('Ảnh hiện tại', style: AppTextStyles.cardTitle),
+        Text('Ảnh hiện tại', style: AppTextStyles.cardTitle),
         const SizedBox(height: 8),
         Center(child: MenuThumb(path: detail.imagePath, size: 180)),
         const SizedBox(height: 6),

@@ -90,7 +90,7 @@ class _MenuHistoryPageState extends State<MenuHistoryPage> {
           const MenuSkeleton(rows: 4)
         else ...[
           if (h.upcoming.isNotEmpty) ...[
-            const Text('Đã hẹn, chưa áp dụng', style: AppTextStyles.cardTitle),
+            Text('Đã hẹn, chưa áp dụng', style: AppTextStyles.cardTitle),
             const SizedBox(height: 8),
             for (final u in h.upcoming)
               MenuCard(
@@ -124,11 +124,11 @@ class _MenuHistoryPageState extends State<MenuHistoryPage> {
               ),
             const SizedBox(height: 6),
           ],
-          const Text('Đã diễn ra', style: AppTextStyles.cardTitle),
+          Text('Đã diễn ra', style: AppTextStyles.cardTitle),
           const SizedBox(height: 8),
           if (h.events.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text('Chưa có thay đổi nào được ghi lại.', style: AppTextStyles.body),
             ),
           for (final e in h.events)

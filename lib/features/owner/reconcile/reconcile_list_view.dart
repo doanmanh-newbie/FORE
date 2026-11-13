@@ -67,7 +67,7 @@ class _ReconcileListViewState extends State<ReconcileListView> {
               header: widget.header,
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                const Text('Đối soát ca', style: AppTextStyles.display),
+                Text('Đối soát ca', style: AppTextStyles.display),
                 const SizedBox(height: 12),
                 _Filters(controller: controller, onPickDate: _pickDate),
                 const SizedBox(height: 14),
@@ -136,7 +136,7 @@ class _ReconcileListViewState extends State<ReconcileListView> {
               style: AppTextStyles.bodyStrong,
             ),
           ),
-          const Text('Ước tính ảnh hưởng', style: AppTextStyles.caption),
+          Text('Ước tính ảnh hưởng', style: AppTextStyles.caption),
         ],
       ),
       const SizedBox(height: 10),
@@ -149,8 +149,8 @@ class _ReconcileListViewState extends State<ReconcileListView> {
             ),
         ),
       if (controller.moreFailure != null)
-        const Padding(
-          padding: EdgeInsets.only(bottom: 8),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'Chưa tải thêm được. Hãy thử lại.',
             textAlign: TextAlign.center,
@@ -167,8 +167,8 @@ class _ReconcileListViewState extends State<ReconcileListView> {
                 )
               : const Text('Xem thêm ca cũ'),
         ),
-      const Padding(
-        padding: EdgeInsets.only(top: 12),
+      Padding(
+        padding: const EdgeInsets.only(top: 12),
         child: Text(
           'Số "≈" là ước tính theo giá bán trung bình, không phải kết luận mất mát.',
           textAlign: TextAlign.center,
@@ -425,7 +425,7 @@ class ReconcileShiftCard extends StatelessWidget {
                   style: AppTextStyles.caption,
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
+              Icon(Icons.chevron_right_rounded,
                   size: 22, color: AppColors.textSecondary),
             ],
           ),

@@ -94,7 +94,7 @@ class IngredientsTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text('Sau điều chỉnh hao hụt',
                   style: AppTextStyles.bodyStrong),
             ),
@@ -117,7 +117,7 @@ class IngredientsTab extends StatelessWidget {
             child: Column(
               children: [
                 for (var i = 0; i < others.length; i++) ...[
-                  if (i > 0) const Divider(height: 1, color: AppColors.border),
+                  if (i > 0) Divider(height: 1, color: AppColors.border),
                   _CompactIngredientRow(
                     item: others[i],
                     onTap: () => onLedger(others[i]),
@@ -127,7 +127,7 @@ class IngredientsTab extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           'Đã trừ hao hụt có lý do khỏi phần hụt. Đối chiếu từng nguyên liệu; không cộng g với ml.',
           style: AppTextStyles.caption,
         ),
@@ -152,7 +152,7 @@ class _ShortIngredientCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Flexible(
+              Expanded(
                 child: Text(
                   item.name,
                   maxLines: 1,
@@ -164,11 +164,15 @@ class _ShortIngredientCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 const ReconcileTag(label: 'Quan trọng'),
               ],
-              const Spacer(),
-              StatusChip(
-                label: reconcileStatusLabel(item.status),
-                severity: reconcileSeverity(item.status),
-                compact: true,
+              const SizedBox(width: 8),
+              // Màn hẹp hoặc chữ to: chip co lại và cắt chữ thay vì tràn hàng.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 132),
+                child: StatusChip(
+                  label: reconcileStatusLabel(item.status),
+                  severity: reconcileSeverity(item.status),
+                  compact: true,
+                ),
               ),
             ],
           ),
@@ -196,7 +200,7 @@ class _ShortIngredientCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text('Doanh thu ước tính bị hụt',
                       style: AppTextStyles.caption),
                 ),
@@ -223,14 +227,14 @@ class _ShortIngredientCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Xem cách tính ${item.name}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.brand,
                         fontSize: AppFontSizes.s14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_rounded,
+                  Icon(Icons.arrow_forward_rounded,
                       size: 18, color: AppColors.brand),
                 ],
               ),
@@ -339,7 +343,7 @@ class CashTab extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text('Đối chiếu két ca', style: AppTextStyles.title),
                   ),
                   StatusChip(
@@ -361,7 +365,7 @@ class CashTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: AppColors.border),
               const SizedBox(height: 6),
               _KeyValueRow('Đáng ra có', formatVnd(cash.expected ?? 0)),
               _KeyValueRow('Đếm thực tế', formatVnd(cash.closing ?? 0)),
@@ -382,7 +386,7 @@ class CashTab extends StatelessWidget {
             children: [
               _KeyValueRow('Chuyển khoản trong ca', formatVnd(cash.transferSales),
                   strong: true),
-              const Text('Đối chiếu với app ngân hàng',
+              Text('Đối chiếu với app ngân hàng',
                   style: AppTextStyles.caption),
             ],
           ),
@@ -407,7 +411,7 @@ class CashTab extends StatelessWidget {
             children: [
               _KeyValueRow('Tiền đầu ca', formatVnd(cash.opening ?? 0),
                   strong: true),
-              const Text('Theo phiếu tiền mặt', style: AppTextStyles.caption),
+              Text('Theo phiếu tiền mặt', style: AppTextStyles.caption),
               if ((cash.openingDiff ?? 0) != 0) ...[
                 const SizedBox(height: 8),
                 ReconcileBanner(
@@ -443,13 +447,13 @@ class MovementsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Thu chi trong ca', style: AppTextStyles.sectionTitle),
+            Text('Thu chi trong ca', style: AppTextStyles.sectionTitle),
             const SizedBox(height: 8),
             if (movements.isEmpty)
-              const Text('Ca này không có thu chi.', style: AppTextStyles.body)
+              Text('Ca này không có thu chi.', style: AppTextStyles.body)
             else
               for (var i = 0; i < movements.length; i++) ...[
-                if (i > 0) const Divider(height: 18, color: AppColors.border),
+                if (i > 0) Divider(height: 18, color: AppColors.border),
                 _MovementRow(movement: movements[i]),
               ],
           ],
@@ -542,7 +546,7 @@ class WasteTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Hao hụt đã ghi nhận', style: AppTextStyles.sectionTitle),
+        Text('Hao hụt đã ghi nhận', style: AppTextStyles.sectionTitle),
         const SizedBox(height: 2),
         Text(
           '${report.waste.length} dòng ghi nhận trong ca · Chủ quán xem lại',
@@ -555,14 +559,14 @@ class WasteTab extends StatelessWidget {
             child: _WasteCard(waste: waste),
           ),
         if (report.wasteEntries.isNotEmpty) ...[
-          const Text('Từng lần ghi', style: AppTextStyles.sectionTitle),
+          Text('Từng lần ghi', style: AppTextStyles.sectionTitle),
           const SizedBox(height: 8),
           ForeCard(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 for (var i = 0; i < report.wasteEntries.length; i++) ...[
-                  if (i > 0) const Divider(height: 18, color: AppColors.border),
+                  if (i > 0) Divider(height: 18, color: AppColors.border),
                   _WasteEntryRow(
                     entry: report.wasteEntries[i],
                     onEdit: onEditEntry == null
@@ -588,7 +592,7 @@ class WasteTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text('Không trừ hao hụt hai lần',
+                    Text('Không trừ hao hụt hai lần',
                         style: AppTextStyles.bodyStrong),
                     const SizedBox(height: 4),
                     Text(wasteExplanation(item), style: AppTextStyles.body),
@@ -698,7 +702,6 @@ class _WasteEntryRow extends StatelessWidget {
                 foregroundColor: AppColors.brand,
                 minimumSize: const Size(0, 36),
                 padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text('Sửa số lượng'),
             ),

@@ -221,8 +221,8 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
               ),
             )
           else if (current == null)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
               child: Text('Chưa có công thức. Thêm nguyên liệu đầu tiên bên dưới.',
                   style: AppTextStyles.caption),
             ),
@@ -250,7 +250,7 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
                       child: Text('Nguyên liệu / 1 ly ${size.name}',
                           style: AppTextStyles.cardTitle),
                     ),
-                    const Text('Lượng · Thành tiền', style: AppTextStyles.caption),
+                    Text('Lượng · Thành tiền', style: AppTextStyles.caption),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -295,7 +295,7 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
             lowMarginPct: widget.detail.lowMarginPct,
           ),
           if (current != null)
-            const Text(
+            Text(
               'Đây mới là bản xem trước. Công thức đang dùng không đổi cho đến khi bạn lưu.',
               style: AppTextStyles.caption,
             ),
@@ -563,14 +563,14 @@ class _IngredientPickerPageState extends State<IngredientPickerPage> {
         else ...[
           Row(
             children: [
-              const Expanded(child: Text('Đang có trong kho', style: AppTextStyles.cardTitle)),
-              const Text('Giá vốn theo đơn vị', style: AppTextStyles.caption),
+              Expanded(child: Text('Đang có trong kho', style: AppTextStyles.cardTitle)),
+              Text('Giá vốn theo đơn vị', style: AppTextStyles.caption),
             ],
           ),
           const SizedBox(height: 8),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text('Không có nguyên liệu nào khớp. Thêm nguyên liệu mới ở tab Kho.',
                   style: AppTextStyles.body),
             ),
@@ -658,7 +658,7 @@ class _IngredientPickerPageState extends State<IngredientPickerPage> {
                 ],
               ),
             ),
-          const Text(
+          Text(
             'Chọn từ kho có sẵn, không tạo nguyên liệu mới ở đây. Nếu đã có trong công thức, cập nhật lượng thay vì tạo dòng trùng.',
             style: AppTextStyles.caption,
           ),
@@ -921,7 +921,7 @@ class _RecipeConfirmPageState extends State<RecipeConfirmPage> {
                         color: Colors.white, fontSize: 26, fontFamily: AppFonts.display)),
                 const SizedBox(height: 8),
                 const Text('Tự áp dụng từ giờ đã hẹn, theo giờ Việt Nam.',
-                    style: TextStyle(color: AppColors.onInkMuted, fontSize: 12)),
+                    style: TextStyle(color: AppColors.onDarkMuted, fontSize: 12)),
               ],
             ),
           ),

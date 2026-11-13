@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../domain/owner_dashboard_models.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Hộp thông báo chủ quán: lời mời và cảnh báo đối soát, có trạng thái đã đọc.
 class OwnerNotificationsScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
-        title: const Text('Thông báo', style: AppTextStyles.headline),
+        title: Text('Thông báo', style: AppTextStyles.headline),
         actions: [
           if (unread.isNotEmpty)
             TextButton(
@@ -65,7 +66,7 @@ class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
             ),
         ],
       ),
-      body: ListView(
+      body: LazyListView(
         padding: const EdgeInsets.all(16),
         children: [
           if (notices.isEmpty)

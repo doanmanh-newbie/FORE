@@ -18,6 +18,7 @@ import '../../../core/widgets/qty_stepper.dart';
 import '../application/bill_controller.dart';
 import '../domain/sales_models.dart';
 import '../domain/sales_repository.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 part 'bill_menu_tab.dart';
 part 'bill_lines_tab.dart';
@@ -250,13 +251,13 @@ class _BillScreenState extends State<BillScreen> {
       );
     }
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
               color: AppColors.shadowSoft,
               blurRadius: 20,
-              offset: Offset(0, -6))
+              offset: const Offset(0, -6))
         ],
       ),
       child: SafeArea(

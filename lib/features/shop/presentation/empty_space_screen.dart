@@ -104,11 +104,11 @@ class _Hero extends StatelessWidget {
               style: AppTextStyles.body,
             ),
             const SizedBox(height: 14),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 PulseDot(color: AppColors.brandAccent, pulsing: true),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text('Đang chờ lời mời', style: AppTextStyles.caption),
               ],
             ),
@@ -158,7 +158,7 @@ class _BreathingMailState extends State<_BreathingMail>
         offset: Offset(0, -6 * Curves.easeInOut.transform(_c.value)),
         child: child,
       ),
-      child: const DecoratedBox(
+      child: DecoratedBox(
         decoration:
             BoxDecoration(color: AppColors.tint, shape: BoxShape.circle),
         child: SizedBox.square(

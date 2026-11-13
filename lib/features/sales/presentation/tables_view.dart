@@ -105,9 +105,9 @@ class _TablesViewState extends State<TablesView> {
               slivers: [
                 SliverToBoxAdapter(child: _filters(c)),
                 if (c.failure != null)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: Text(
                         'Đang hiện dữ liệu cũ vì mất kết nối. Kéo xuống để thử lại.',
                         style: TextStyle(
@@ -128,9 +128,9 @@ class _TablesViewState extends State<TablesView> {
                   ),
                 ),
                 if (visible.isEmpty)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(32),
                       child: Text(
                         'Không có bàn nào khớp.',
                         textAlign: TextAlign.center,
@@ -198,7 +198,7 @@ class _TablesViewState extends State<TablesView> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Tìm bàn',
-                prefixIcon: const Icon(Icons.search_rounded,
+                prefixIcon: Icon(Icons.search_rounded,
                     color: AppColors.textSecondary),
                 suffixIcon: c.query.isEmpty
                     ? null
@@ -248,7 +248,7 @@ class _AreaChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: AppFontSizes.s15,
                   fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : AppColors.ink,
+                  color: selected ? AppColors.onInk : AppColors.ink,
                 ),
               ),
             ),
@@ -273,7 +273,7 @@ class _TableCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final busy = slot.isBusy;
-    final Color fg = busy ? Colors.white : AppColors.ink;
+    final Color fg = busy ? AppColors.onInk : AppColors.ink;
     final Color sub = busy ? AppColors.onInkMuted : AppColors.textSecondary;
     final status = busy ? 'Đang dùng' : 'Trống';
     final detail = busy
@@ -293,11 +293,11 @@ class _TableCard extends StatelessWidget {
               color: busy ? AppColors.ink : AppColors.surface,
               borderRadius: BorderRadius.circular(20),
               border: busy ? null : Border.all(color: AppColors.hairline),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
                     color: AppColors.shadowSoft,
                     blurRadius: 16,
-                    offset: Offset(0, 6)),
+                    offset: const Offset(0, 6)),
               ],
             ),
             child: Column(
@@ -364,7 +364,7 @@ class _GuestsFormState extends State<_GuestsForm> {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                   child: Text('Số khách', style: AppTextStyles.title)),
               _RoundIcon(
                 icon: Icons.remove_rounded,

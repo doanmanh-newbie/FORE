@@ -71,12 +71,12 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
             onSubmitted: _submit,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Fore sẽ gửi mã xác nhận để bảo vệ tài khoản nhân viên.',
             style: AppTextStyles.caption,
           ),
         ] else ...[
-          const Text(
+          Text(
             'Nếu thông tin có tài khoản, mã xác nhận đã được gửi. Nhập mã 6 chữ số để tiếp tục.',
             style: AppTextStyles.body,
           ),
@@ -105,7 +105,7 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
           const SizedBox(height: 12),
           Text(
             c.formError!,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.statusOff, fontSize: AppFontSizes.s13),
           ),
         ],

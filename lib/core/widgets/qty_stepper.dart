@@ -44,7 +44,7 @@ class QtyStepper extends StatelessWidget {
                       child: Text(
                         '$value',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: AppFontSizes.s16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.ink,
@@ -110,7 +110,7 @@ class _RoundButton extends StatelessWidget {
                   color: onTap == null
                       ? AppColors.textMuted
                       : filled
-                          ? Colors.white
+                          ? AppColors.onInk
                           : AppColors.ink,
                 ),
               ),

@@ -48,8 +48,8 @@ class StatusPill extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: AppFontSizes.s11,
+                style: TextStyle(
+                  fontSize: AppFontSizes.s12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                   color: AppColors.textSecondary,

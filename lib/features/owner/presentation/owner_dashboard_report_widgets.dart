@@ -27,10 +27,10 @@ class _RevenueCard extends StatelessWidget {
           style: AppTextStyles.caption,
         ),
         const SizedBox(height: 12),
-        const Text('Doanh thu 7 ngày', style: AppTextStyles.captionStrong),
+        Text('Doanh thu 7 ngày', style: AppTextStyles.captionStrong),
         const SizedBox(height: 6),
         if (data.unavailable.contains('trend'))
-          const Text('Chưa tải được biểu đồ 7 ngày. Kéo xuống để thử lại.',
+          Text('Chưa tải được biểu đồ 7 ngày. Kéo xuống để thử lại.',
               style: AppTextStyles.caption)
         else
           _SalesTrendBars(points: data.recentSales),
@@ -49,7 +49,7 @@ class _SalesTrendBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
-      return const Text('Chưa có dữ liệu 7 ngày.',
+      return Text('Chưa có dữ liệu 7 ngày.',
           style: AppTextStyles.caption);
     }
     final maxSales = points.fold<int>(1, (max, point) {

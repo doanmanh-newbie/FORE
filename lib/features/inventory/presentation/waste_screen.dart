@@ -10,6 +10,7 @@ import '../../../core/widgets/screen_header.dart';
 import '../application/waste_controller.dart';
 import '../domain/inventory_repository.dart';
 import 'inventory_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Ghi hao hụt có lý do (đổ bỏ, làm sai, cho nhân viên, thử vị...) để đối soát không tính nhầm.
 /// Loại hao hụt lấy từ database, không gõ tự do.
@@ -69,7 +70,7 @@ class _WasteScreenState extends State<WasteScreen> {
           message: _c.failure?.userMessage ?? 'Không tải được danh sách.',
           onRetry: _c.load);
     }
-    return ListView(
+    return LazyListView(
       padding: const EdgeInsets.all(16),
       children: [
         IngredientField(
@@ -85,7 +86,7 @@ class _WasteScreenState extends State<WasteScreen> {
           onChanged: _c.setQuantityText,
         ),
         const SizedBox(height: 18),
-        const Text('Lý do', style: AppTextStyles.bodyStrong),
+        Text('Lý do', style: AppTextStyles.bodyStrong),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -100,7 +101,7 @@ class _WasteScreenState extends State<WasteScreen> {
                 showCheckmark: false,
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: _c.type?.code == t.code ? Colors.white : AppColors.ink,
+                  color: _c.type?.code == t.code ? AppColors.onInk : AppColors.ink,
                 ),
               ),
           ],

@@ -10,6 +10,7 @@ import '../../../../core/widgets/fore_sheet.dart';
 import '../../../../core/widgets/notify.dart';
 import '../../../../core/format.dart';
 import '../application/ops_shift_controller.dart';
+import '../../../../core/widgets/lazy_list_view.dart';
 
 /// Màn "Chưa mở ca" (thiết kế "Home / No-shift"): thẻ giữa màn kèm nút Mở ca.
 /// Bấm Mở ca thì hỏi số tiền có trong két lúc bắt đầu.
@@ -26,7 +27,7 @@ class NoShiftView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RefreshIndicator(
         onRefresh: shift.load,
-        child: ListView(
+        child: LazyListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
           children: [
@@ -34,16 +35,16 @@ class NoShiftView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
               child: Column(
                 children: [
-                  const ForeIcon(ForeIcons.calendar,
+                  ForeIcon(ForeIcons.calendar,
                       size: 34, color: AppColors.ink),
                   const SizedBox(height: 28),
-                  const Text(
+                  Text(
                     'Chưa có ca đang mở',
                     style: AppTextStyles.headline,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'Mở ca để nhận order và dùng các chức năng bán hàng.',
                     style: TextStyle(
                         fontSize: AppFontSizes.s16,
@@ -61,7 +62,7 @@ class NoShiftView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Bàn, Mang đi và Kho dùng được sau khi mở ca.',
               style: TextStyle(
                   fontSize: AppFontSizes.s14, color: AppColors.textPrimary),

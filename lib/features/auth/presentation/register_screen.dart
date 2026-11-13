@@ -86,80 +86,83 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  _asOwner
-                      ? 'Tạo tài khoản chủ quán'
-                      : 'Tạo tài khoản nhân viên',
-                  style: AppTextStyles.screenTitle),
-              const SizedBox(height: 6),
-              Text(
-                _asOwner
-                    ? 'Dùng email của bạn để đăng ký. Sau đó bạn tạo quán và thêm nhân viên.'
-                    : 'Dùng email của bạn để đăng ký. Chủ quán sẽ mời bạn, lời mời hiện trong hộp thư.',
-                style: AppTextStyles.body,
-              ),
-              const SizedBox(height: 24),
-              AppTextField(
-                label: 'Họ tên',
-                controller: _name,
-                hint: 'Họ tên của bạn',
-                errorText: c.nameError,
-                enabled: !c.loading,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'Email',
-                controller: _email,
-                hint: 'Địa chỉ email cá nhân',
-                errorText: c.emailError,
-                enabled: !c.loading,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'Mật khẩu',
-                controller: _password,
-                hint: 'Ít nhất ${AppConfig.minPasswordLength} ký tự',
-                errorText: c.passwordError,
-                enabled: !c.loading,
-                obscure: true,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'Nhập lại mật khẩu',
-                controller: _confirm,
-                hint: 'Nhập lại mật khẩu của bạn',
-                errorText: c.confirmError,
-                enabled: !c.loading,
-                obscure: true,
-                textInputAction: TextInputAction.done,
-                onSubmitted: _submit,
-              ),
-              if (c.formError != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  c.formError!,
-                  style: const TextStyle(
-                    color: AppColors.statusOff,
-                    fontSize: AppFontSizes.s13,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              LoadingButton(
-                label: 'Tạo tài khoản',
-                loadingLabel: 'Đang tạo tài khoản',
-                loading: c.loading,
-                onPressed: _submit,
-              ),
-            ],
-          ),
+          child: Center(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          _asOwner
+                              ? 'Tạo tài khoản chủ quán'
+                              : 'Tạo tài khoản nhân viên',
+                          style: AppTextStyles.screenTitle),
+                      const SizedBox(height: 6),
+                      Text(
+                        _asOwner
+                            ? 'Dùng email của bạn để đăng ký. Sau đó bạn tạo quán và thêm nhân viên.'
+                            : 'Dùng email của bạn để đăng ký. Chủ quán sẽ mời bạn, lời mời hiện trong hộp thư.',
+                        style: AppTextStyles.body,
+                      ),
+                      const SizedBox(height: 24),
+                      AppTextField(
+                        label: 'Họ tên',
+                        controller: _name,
+                        hint: 'Họ tên của bạn',
+                        errorText: c.nameError,
+                        enabled: !c.loading,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Email',
+                        controller: _email,
+                        hint: 'Địa chỉ email cá nhân',
+                        errorText: c.emailError,
+                        enabled: !c.loading,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Mật khẩu',
+                        controller: _password,
+                        hint: 'Ít nhất ${AppConfig.minPasswordLength} ký tự',
+                        errorText: c.passwordError,
+                        enabled: !c.loading,
+                        obscure: true,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Nhập lại mật khẩu',
+                        controller: _confirm,
+                        hint: 'Nhập lại mật khẩu của bạn',
+                        errorText: c.confirmError,
+                        enabled: !c.loading,
+                        obscure: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: _submit,
+                      ),
+                      if (c.formError != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          c.formError!,
+                          style: TextStyle(
+                            color: AppColors.statusOff,
+                            fontSize: AppFontSizes.s13,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      LoadingButton(
+                        label: 'Tạo tài khoản',
+                        loadingLabel: 'Đang tạo tài khoản',
+                        loading: c.loading,
+                        onPressed: _submit,
+                      ),
+                    ],
+                  ))),
         ),
       ),
     );
@@ -196,16 +199,15 @@ class _RegisterSuccessViewState extends State<_RegisterSuccessView> {
           child: Column(
             children: [
               const Spacer(),
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 36,
                 backgroundColor: AppColors.backgroundTint,
                 child: Icon(Icons.check, size: 40, color: AppColors.statusOk),
               ),
               const SizedBox(height: 20),
-              const Text('Kiểm tra email của bạn',
-                  style: AppTextStyles.screenTitle),
+              Text('Kiểm tra email của bạn', style: AppTextStyles.screenTitle),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Bấm vào đường dẫn trong email gửi tới địa chỉ này để xác nhận tài khoản, rồi đăng nhập bằng vai trò Chủ quán.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.body,

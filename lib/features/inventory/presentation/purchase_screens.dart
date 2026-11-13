@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/design/app_sheet.dart';
@@ -19,6 +18,7 @@ import '../application/po_form_controller.dart';
 import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'kho_widgets.dart';
+import '../../../core/widgets/lazy_list_view.dart';
 
 // ======================================================================
 // Phiếu nhập nhiều dòng (chủ) / Nhập hàng nhanh (nhân viên)
@@ -191,7 +191,7 @@ class _PoFormScreenState extends State<PoFormScreen> {
                 label: 'Lưu nháp', onPressed: c.canSaveDraft ? _saveDraft : null),
           ],
         ),
-        body: ListView(
+        body: LazyListView(
           padding: const EdgeInsets.all(AppSizes.pagePadding),
           children: [
             if (!owner)
@@ -251,7 +251,7 @@ class _PoFormScreenState extends State<PoFormScreen> {
                       'Thành tiền dự kiến',
                       c.linesTotal == null ? 'Chưa đủ giá' : formatVnd(c.linesTotal!)),
                   LabelValueRow('Giao hàng', formatVnd(c.shippingFee)),
-                  const Divider(color: AppColors.cardBorder),
+                  Divider(color: AppColors.cardBorder),
                   LabelValueRow('Tổng cộng',
                       c.grandTotal == null ? '—' : formatVnd(c.grandTotal!),
                       strong: true),
@@ -309,7 +309,7 @@ class _IngredientPickerSheetState extends State<_IngredientPickerSheet> {
                   child: list.isEmpty
                       ? const Center(
                           child: Text('Không có nguyên liệu nào khớp.'))
-                      : ListView(children: [
+                      : LazyListView(children: [
                           for (final i in list)
                             ListTile(
                               title: Text(i.name),
@@ -520,7 +520,7 @@ class PoImpactScreen extends StatelessWidget {
                 label: 'Quay lại sửa phiếu',
                 onPressed: () => Navigator.of(context).pop(false)),
           ]),
-          body: ListView(
+          body: LazyListView(
             padding: const EdgeInsets.all(AppSizes.pagePadding),
             children: [
               const KhoNote(
@@ -565,7 +565,7 @@ class PoImpactScreen extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(height: 6),
-                const Text('Biên lợi nhuận tính nếu giữ nguyên giá bán hiện tại.',
+                Text('Biên lợi nhuận tính nếu giữ nguyên giá bán hiện tại.',
                     style: AppTextStyles.caption),
               ],
             ],
@@ -720,7 +720,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                                     'Còn ${formatKhoQty(i.stock, i.unit)} · ${formatDaysLeft(i.daysLeft)}',
                                     style: AppTextStyles.caption,
                                   ),
-                                  const Text('Lượng gợi ý · Có thể sửa',
+                                  Text('Lượng gợi ý · Có thể sửa',
                                       style: AppTextStyles.caption),
                                 ],
                               ),

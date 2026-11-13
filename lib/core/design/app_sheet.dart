@@ -29,9 +29,9 @@ class AppSheet extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(
+            borderRadius: const BorderRadius.vertical(
               top: Radius.circular(AppSizes.radiusCard),
             ),
           ),

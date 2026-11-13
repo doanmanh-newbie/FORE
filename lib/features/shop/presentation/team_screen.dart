@@ -15,6 +15,7 @@ import '../../auth/application/session_controller.dart';
 import '../application/team_controller.dart';
 import '../domain/shop_models.dart';
 import 'invite_list.dart' show timeAgo;
+import '../../../core/widgets/lazy_list_view.dart';
 
 /// Chủ quán: nhân viên của quán và nút "Thêm nhân viên" bằng số điện thoại.
 class TeamScreen extends StatefulWidget {
@@ -146,7 +147,7 @@ class _TeamScreenState extends State<TeamScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text('Nhân viên', style: AppTextStyles.heading),
+          title: Text('Nhân viên', style: AppTextStyles.heading),
         ),
         body: ErrorRetry(
           message: _accessError!,
@@ -164,11 +165,11 @@ class _TeamScreenState extends State<TeamScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Nhân viên', style: AppTextStyles.heading),
+        title: Text('Nhân viên', style: AppTextStyles.heading),
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.brand,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onInk,
         onPressed: () => _openInvite(context),
         icon: const Icon(Icons.person_add_alt_1_outlined),
         label: const Text('Thêm nhân viên'),
@@ -176,7 +177,7 @@ class _TeamScreenState extends State<TeamScreen> {
       body: RefreshIndicator(
         color: AppColors.brand,
         onRefresh: () => c.load(quiet: true),
-        child: ListView(
+        child: LazyListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
           children: [
@@ -464,9 +465,9 @@ class _InviteSheetState extends State<_InviteSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Thêm nhân viên', style: AppTextStyles.heading),
+            Text('Thêm nhân viên', style: AppTextStyles.heading),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Điền số điện thoại, email hoặc cả hai. Nhân viên cần xác minh thông tin tương ứng để nhận lời mời trong hộp thư.',
               style: AppTextStyles.body,
             ),
@@ -503,7 +504,7 @@ class _InviteSheetState extends State<_InviteSheet> {
             if (c.formError != null) ...[
               const SizedBox(height: 8),
               Text(c.formError!,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.statusOff, fontSize: AppFontSizes.s13)),
             ],
             const SizedBox(height: 16),
