@@ -424,7 +424,7 @@ class MenuMarginHero extends StatelessWidget {
               if (cost == null) ...[
                 Text(formatVnd(price),
                     style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 22,
                         fontFamily: AppFonts.display)),
                 const SizedBox(height: 6),
@@ -445,7 +445,7 @@ class MenuMarginHero extends StatelessWidget {
                     Expanded(
                       child: Text(formatVnd(margin!),
                           style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 32,
                               fontFamily: AppFonts.display,
                               fontFeatures: [FontFeature.tabularFigures()])),

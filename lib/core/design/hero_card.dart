@@ -41,7 +41,7 @@ class HeroCard extends StatelessWidget {
                     child: Text(
                       title,
                       style:
-                          AppTextStyles.cardTitle.copyWith(color: Colors.white),
+                          AppTextStyles.cardTitle.copyWith(color: AppColors.white),
                     ),
                   ),
                   if (status != null) status!,
@@ -49,7 +49,7 @@ class HeroCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               DefaultTextStyle(
-                style: AppTextStyles.body.copyWith(color: Colors.white),
+                style: AppTextStyles.body.copyWith(color: AppColors.white),
                 child: child,
               ),
               if (primaryLabel != null) ...[
@@ -76,7 +76,7 @@ class HeroCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       minimumSize:
                           const Size.fromHeight(AppSizes.controlHeight),
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.white,
                       side: const BorderSide(color: AppColors.onDarkBorder),
                     ),
                     onPressed: onSecondary,

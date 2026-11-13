@@ -189,6 +189,8 @@ Bảng màu hẹp, lạnh và trầm, xoay quanh một màu mực xanh đậm, �
 ### Dark Theme
 Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho ca đêm ở quầy thiếu sáng. Nguồn giá trị là `AppPalette.dark` trong `lib/core/design/colors.dart`; frontmatter ở trên là bộ sáng.
 - **Mực đảo chiều:** `brand` thành bạc hà sáng (#CFE9E4) cho cả chữ và nền nút chính; chữ trên nền mực dùng `onInk` (#0C2D32).
+- **Không dùng Dynamic Color (Android 12+):** bảng màu cố định theo thương hiệu, vì màu trạng thái Ổn/Cần xem/Nghiêm trọng phải giữ nguyên nghĩa và độ tương phản trên mọi máy.
+- **Nền tối cố định** (`surfaceDark`, thẻ hero): chữ dùng `AppColors.white` và `onDarkMuted`, không dùng `Colors.white` thô.
 - **Bề mặt:** nền #0C1617, thẻ #142224, khối phụ #1C2C2E, viền thẻ #22383A.
 - **Chữ:** chính #E4EFEC, phụ #A7BCB8 (8,2:1 trên thẻ).
 - **Trạng thái:** Ổn #5DD39B trên #12301F, Cần xem #F2BE55 trên #33280C, Nghiêm trọng #FF8E82 trên #3B1915.

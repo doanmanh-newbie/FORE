@@ -166,36 +166,36 @@ class _FeaturedReportCard extends StatelessWidget {
           children: [
             Text(
               reconcileShiftTime(report.openedAt, report.closedAt),
-              style: AppTextStyles.caption.copyWith(color: Colors.white70),
+              style: AppTextStyles.caption.copyWith(color: AppColors.onDarkMuted),
             ),
             const SizedBox(height: 8),
             // Chưa có số ước tính thì không in một tiêu đề lớn "Chưa ước tính": nói thẳng vấn đề.
             if (report.totalImpact > 0) ...[
               Text('Ảnh hưởng ước tính',
-                  style: AppTextStyles.caption.copyWith(color: Colors.white70)),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.onDarkMuted)),
               Text(
                 reconcileImpactText(report),
-                style: AppTextStyles.headline.copyWith(color: Colors.white),
+                style: AppTextStyles.headline.copyWith(color: AppColors.white),
               ),
             ],
             const SizedBox(height: 6),
             Text(reconcileProblemSummary(report),
-                style: AppTextStyles.body.copyWith(color: Colors.white)),
+                style: AppTextStyles.body.copyWith(color: AppColors.white)),
             if (top != null) ...[
               const SizedBox(height: 4),
               Text(
                 '${top.name} · ${reconcileVarianceText(top.adjusted, top.unit)}',
-                style: AppTextStyles.body.copyWith(color: Colors.white),
+                style: AppTextStyles.body.copyWith(color: AppColors.white),
               ),
               Text(
                 'Lý thuyết ${reconcileQty(top.theoretical, top.unit)} · Thực dùng ${reconcileQty(top.actualUsed, top.unit)}',
-                style: AppTextStyles.caption.copyWith(color: Colors.white70),
+                style: AppTextStyles.caption.copyWith(color: AppColors.onDarkMuted),
               ),
             ],
             if (cashLine != null) ...[
               const SizedBox(height: 4),
               Text(cashLine,
-                  style: AppTextStyles.body.copyWith(color: Colors.white)),
+                  style: AppTextStyles.body.copyWith(color: AppColors.white)),
             ],
             const SizedBox(height: 10),
             StatusChip(

@@ -916,10 +916,10 @@ class _RecipeConfirmPageState extends State<RecipeConfirmPage> {
                 const SizedBox(height: 10),
                 Text(formatDmy(at),
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 30, fontFamily: AppFonts.display)),
+                        color: AppColors.white, fontSize: 30, fontFamily: AppFonts.display)),
                 Text('Lúc ${formatHm(at)}',
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 26, fontFamily: AppFonts.display)),
+                        color: AppColors.white, fontSize: 26, fontFamily: AppFonts.display)),
                 const SizedBox(height: 8),
                 const Text('Tự áp dụng từ giờ đã hẹn, theo giờ Việt Nam.',
                     style: TextStyle(color: AppColors.onDarkMuted, fontSize: 12)),

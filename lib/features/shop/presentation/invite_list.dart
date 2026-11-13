@@ -100,13 +100,13 @@ class _JoinedDialogState extends State<_JoinedDialog> {
                 child: const SizedBox.square(
                   dimension: 88,
                   child:
-                      Icon(Icons.check_rounded, color: Colors.white, size: 52),
+                      Icon(Icons.check_rounded, color: AppColors.onLime, size: 52),
                 ),
               ),
               const SizedBox(height: 20),
               Text(
                 'Chào mừng đến',
-                style: AppTextStyles.body.copyWith(color: Colors.white70),
+                style: AppTextStyles.body.copyWith(color: AppColors.onDarkMuted),
               ),
               const SizedBox(height: 4),
               Padding(
@@ -115,13 +115,13 @@ class _JoinedDialogState extends State<_JoinedDialog> {
                   widget.shopName,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.display.copyWith(
-                      color: Colors.white, fontSize: AppFontSizes.s34),
+                      color: AppColors.white, fontSize: AppFontSizes.s34),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Đang tải dữ liệu quán…',
-                style: AppTextStyles.caption.copyWith(color: Colors.white70),
+                style: AppTextStyles.caption.copyWith(color: AppColors.onDarkMuted),
               ),
             ],
           ),
