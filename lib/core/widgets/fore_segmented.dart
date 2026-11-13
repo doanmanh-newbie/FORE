@@ -39,7 +39,9 @@ class ForeSegmented extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: Motion.of(
                               context, const Duration(milliseconds: 200)),
-                          height: 44,
+                          constraints: const BoxConstraints(minHeight: 44),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 6),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: i == selected
@@ -49,11 +51,13 @@ class ForeSegmented extends StatelessWidget {
                           ),
                           child: Text(
                             labels[i],
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: AppFontSizes.s15,
                               fontWeight: FontWeight.w700,
-                              color:
-                                  i == selected ? AppColors.onInk : AppColors.ink,
+                              color: i == selected
+                                  ? AppColors.onInk
+                                  : AppColors.ink,
                             ),
                           ),
                         ),

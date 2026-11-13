@@ -16,12 +16,7 @@ class ScreenHeader extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-                color: AppColors.shadowSoft,
-                blurRadius: 18,
-                offset: const Offset(0, 6))
-          ],
+          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
         ),
         child: SafeArea(
           bottom: false,
@@ -33,8 +28,7 @@ class ScreenHeader extends StatelessWidget {
                 IconButton(
                   tooltip: 'Quay lại',
                   onPressed: onBack ?? () => Navigator.of(context).maybePop(),
-                  icon: Icon(Icons.arrow_back_rounded,
-                      color: AppColors.ink),
+                  icon: Icon(Icons.arrow_back_rounded, color: AppColors.ink),
                 ),
                 Expanded(
                   child: Padding(

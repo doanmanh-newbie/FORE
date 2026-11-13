@@ -253,12 +253,7 @@ class _BillScreenState extends State<BillScreen> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-              color: AppColors.shadowSoft,
-              blurRadius: 20,
-              offset: const Offset(0, -6))
-        ],
+        border: Border(top: BorderSide(color: AppColors.cardBorder)),
       ),
       child: SafeArea(
         top: false,

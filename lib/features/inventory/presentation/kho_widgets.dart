@@ -13,6 +13,7 @@ import '../../../core/widgets/status_chip.dart';
 import '../application/async_data.dart';
 import '../application/kho_format.dart';
 import '../domain/kho_models.dart';
+import '../../../core/widgets/content_width.dart';
 import '../../../core/widgets/lazy_list_view.dart';
 
 /// Khung màn hình con của Kho: tiêu đề có nút quay lại, nội dung, thanh hành động dưới đáy.
@@ -38,7 +39,7 @@ class KhoPage extends StatelessWidget {
         body: Column(
           children: [
             ScreenHeader(title: title, subtitle: subtitle, onBack: onBack),
-            Expanded(child: body),
+            Expanded(child: ContentWidth(child: body)),
           ],
         ),
         bottomNavigationBar: bottom == null
@@ -46,12 +47,7 @@ class KhoPage extends StatelessWidget {
             : DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  boxShadow: [
-                    BoxShadow(
-                        color: AppColors.shadowSoft,
-                        blurRadius: 18,
-                        offset: const Offset(0, -4)),
-                  ],
+                  border: Border(top: BorderSide(color: AppColors.cardBorder)),
                 ),
                 child: SafeArea(
                   top: false,
@@ -62,7 +58,7 @@ class KhoPage extends StatelessWidget {
                       AppSizes.pagePadding,
                       12 + MediaQuery.viewInsetsOf(context).bottom,
                     ),
-                    child: bottom,
+                    child: ContentWidth(child: bottom!),
                   ),
                 ),
               ),

@@ -84,7 +84,8 @@ class _FloorScreenState extends State<FloorScreen> {
             if (t != null) ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: areaId,
+                key: ValueKey(areaId),
+                initialValue: areaId,
                 isExpanded: true,
                 items: [
                   for (final a in allAreas.where((a) => a.active))

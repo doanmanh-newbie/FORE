@@ -627,7 +627,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                   Text('Nhóm nguyên liệu *', style: AppTextStyles.label),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: _groupId,
+                    key: ValueKey(_groupId),
+                    initialValue: _groupId,
                     isExpanded: true,
                     hint: const Text('Chọn nhóm'),
                     items: [
@@ -675,7 +676,8 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
                   Text('Nhà cung cấp mặc định', style: AppTextStyles.label),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String?>(
-                    value: _supplierId,
+                    key: ValueKey(_supplierId),
+                    initialValue: _supplierId,
                     isExpanded: true,
                     hint: const Text('Chưa chọn'),
                     items: [

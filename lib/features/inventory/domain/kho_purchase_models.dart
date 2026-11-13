@@ -113,9 +113,7 @@ class PoLine {
         'qty': qty,
         if (withPrice) 'unit_price': unitPrice,
         'lot_code': lotCode,
-        'expiry_date': expiry == null
-            ? null
-            : expiry!.toIso8601String().substring(0, 10),
+        'expiry_date': expiry?.toIso8601String().substring(0, 10),
       };
 }
 

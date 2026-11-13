@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-13T05:26:01.596213+00:00",
+  "generatedAt": "2026-11-13T05:42:15.398916+00:00",
   "title": "Design System: Fore",
   "extensions": {
     "colorMeta": {
@@ -343,23 +343,7 @@
         "purpose": "Chú thích, thời gian, đơn vị."
       }
     },
-    "shadows": [
-      {
-        "name": "legacy-card",
-        "value": "0 5px 18px rgba(12,45,50,0.07)",
-        "purpose": "Chỉ trong ForeCard cũ; không dùng mới."
-      },
-      {
-        "name": "legacy-button",
-        "value": "0 8px 20px rgba(12,45,50,0.25)",
-        "purpose": "Chỉ trong ForeButton cũ; không dùng mới."
-      },
-      {
-        "name": "legacy-nav-tab",
-        "value": "0 6px 14px rgba(12,45,50,0.12)",
-        "purpose": "Tab chọn của ForeBottomNav cũ; không dùng mới."
-      }
-    ],
+    "shadows": [],
     "motion": [
       {
         "name": "state-change",
@@ -367,12 +351,17 @@
         "purpose": "Đổi trạng thái thanh phân đoạn, nút; về 0 khi bật giảm chuyển động."
       },
       {
-        "name": "nav-tab",
-        "value": "280ms cubic-bezier(0.33, 1, 0.68, 1)",
-        "purpose": "Chuyển tab ForeBottomNav (easeOutCubic)."
+        "name": "nav-indicator",
+        "value": "400ms",
+        "purpose": "Viên chỉ báo NavigationBar; về 0 khi bật giảm chuyển động."
       }
     ],
-    "breakpoints": []
+    "breakpoints": [
+      {
+        "name": "rail",
+        "value": "600px"
+      }
+    ]
   },
   "components": [
     {
@@ -442,7 +431,7 @@
   ],
   "narrative": {
     "northStar": "The Clean Bar",
-    "overview": "Fore trông như mặt quầy pha chế vừa lau xong: bề mặt sáng, mọi dụng cụ đặt đúng chỗ, không có thứ gì thừa trên quầy. Người dùng mở app giữa lúc phục vụ khách hoặc khi đang ở xa quán, nên giao diện phải đọc được trong một cái liếc và bấm được bằng một tay. Biểu cảm thương hiệu nằm ở chi tiết chính xác (chữ có chân cho tiêu đề và con số, màu mực xanh đậm), không nằm ở trang trí.\n\nHệ thống tinh gọn và tiết chế. Bề mặt phẳng, phân lớp bằng sắc độ nền và viền mảnh thay vì bóng đổ. Màu trạng thái (xanh, vàng, đỏ) chỉ xuất hiện khi có điều cần chú ý, để một ca lệch nổi lên rõ ràng trên nền yên tĩnh. Mật độ vừa phải: thẻ có khoảng thở 16 px, nhưng danh sách thao tác trong ca được xếp chặt để nhân viên thấy nhiều hơn mà không cuộn.\n\nHệ thống đang ở giữa đợt chuyển: bộ `core/design/` (phẳng, viền mảnh) là chuẩn; bộ `Fore*` trong `core/widgets/` (thẻ bóng mềm, nút có bóng đổ, thanh điều hướng nổi) là bản cũ, chuyển dần sang chuẩn.",
+    "overview": "Fore trông như mặt quầy pha chế vừa lau xong: bề mặt sáng, mọi dụng cụ đặt đúng chỗ, không có thứ gì thừa trên quầy. Người dùng mở app giữa lúc phục vụ khách hoặc khi đang ở xa quán, nên giao diện phải đọc được trong một cái liếc và bấm được bằng một tay. Biểu cảm thương hiệu nằm ở chi tiết chính xác (chữ có chân cho tiêu đề và con số, màu mực xanh đậm), không nằm ở trang trí.\n\nHệ thống tinh gọn và tiết chế. Bề mặt phẳng, phân lớp bằng sắc độ nền và viền mảnh thay vì bóng đổ. Màu trạng thái (xanh, vàng, đỏ) chỉ xuất hiện khi có điều cần chú ý, để một ca lệch nổi lên rõ ràng trên nền yên tĩnh. Mật độ vừa phải: thẻ có khoảng thở 16 px, nhưng danh sách thao tác trong ca được xếp chặt để nhân viên thấy nhiều hơn mà không cuộn.\n\nCả bộ `core/design/` lẫn bộ `Fore*` trong `core/widgets/` đều phẳng: không thành phần nào còn bóng đổ.",
     "keyCharacteristics": [
       "Nền xanh xám rất nhạt, thẻ trắng viền mảnh, không bóng.",
       "Tiêu đề, số KPI bằng chữ có chân Newsreader; nội dung, nhãn, nút bằng Inter.",
@@ -496,7 +485,7 @@
       "**Don't** dùng `Colors.white` trên nền mực; dùng `AppColors.onInk` để đúng ở cả hai chế độ.",
       "**Don't** dùng Lime Pour trên nền sáng hoặc cho hành động phụ.",
       "**Don't** dùng màu trạng thái cho mục đích trang trí.",
-      "**Don't** tạo thêm token \"legacy\" mới; các biến thể shadow cũ chỉ để xóa dần.",
+      "**Don't** tạo thêm token \"legacy\" mới.",
       "**Don't** dùng `ListView(children: ...)` cho danh sách theo dữ liệu; dùng `LazyListView`."
     ]
   }

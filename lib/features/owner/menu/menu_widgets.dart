@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/design/colors.dart';
 import '../../../core/design/spacing.dart';
 import '../../../core/design/typography.dart';
+import '../../../core/widgets/content_width.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/errors/network_errors.dart';
@@ -54,7 +55,8 @@ Future<T?> openMenuPage<T>(BuildContext context, Widget page) {
 }
 
 /// Báo lỗi của một lệnh ghi bằng thanh thông báo; trả `null` khi lỗi.
-Future<T?> menuGuard<T>(BuildContext context, Future<T> Function() action) async {
+Future<T?> menuGuard<T>(
+    BuildContext context, Future<T> Function() action) async {
   try {
     return await action();
   } catch (error) {
@@ -100,7 +102,8 @@ const _menuMessages = <String, String>{
   'RECIPE_EMPTY': 'Công thức cần ít nhất một nguyên liệu.',
   'RECIPE_UNCHANGED': 'Công thức chưa thay đổi so với bản hiện tại.',
   'INGREDIENT_NOT_FOUND': 'Nguyên liệu này không còn trong kho. Đang tải lại.',
-  'INGREDIENT_DUPLICATE': 'Một nguyên liệu chỉ xuất hiện một lần trong công thức.',
+  'INGREDIENT_DUPLICATE':
+      'Một nguyên liệu chỉ xuất hiện một lần trong công thức.',
   'QTY_INVALID': 'Định lượng phải là số nguyên lớn hơn 0.',
   'EFFECTIVE_INVALID': 'Ngày áp dụng không hợp lệ (tối đa 1 năm tới).',
   'RECIPE_VERSION_NOT_FOUND': 'Không tìm thấy phiên bản công thức này.',
@@ -161,9 +164,13 @@ class MenuPage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Column(
+          child: ContentWidth(
+              child: Column(
             children: [
-              MenuTopBar(onBack: showBack ? (onBack ?? () => Navigator.of(context).maybePop()) : null),
+              MenuTopBar(
+                  onBack: showBack
+                      ? (onBack ?? () => Navigator.of(context).maybePop())
+                      : null),
               Expanded(
                 child: LazyListView(
                   padding: const EdgeInsets.fromLTRB(
@@ -185,7 +192,8 @@ class MenuPage extends StatelessWidget {
                 DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.background,
-                    border: Border(top: BorderSide(color: AppColors.cardBorder)),
+                    border:
+                        Border(top: BorderSide(color: AppColors.cardBorder)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -202,7 +210,7 @@ class MenuPage extends StatelessWidget {
                   ),
                 ),
             ],
-          ),
+          )),
         ),
       );
 }
@@ -222,7 +230,8 @@ class MenuTopBar extends StatelessWidget {
                 tooltip: 'Quay lại',
                 onPressed: onBack,
                 icon: const Icon(Icons.arrow_back_rounded),
-                constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+                constraints:
+                    const BoxConstraints.tightFor(width: 48, height: 48),
               )
             else
               const SizedBox(width: 8),
@@ -311,10 +320,26 @@ class MenuBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, icon) = switch (kind) {
-      BannerKind.info => (AppColors.tint, AppColors.textPrimary, Icons.info_outline_rounded),
-      BannerKind.warning => (AppColors.statusAttentionTint, AppColors.statusAttention, Icons.warning_amber_rounded),
-      BannerKind.error => (AppColors.statusCriticalTint, AppColors.statusCritical, Icons.error_outline_rounded),
-      BannerKind.success => (AppColors.statusHealthyTint, AppColors.statusHealthy, Icons.check_circle_outline_rounded),
+      BannerKind.info => (
+          AppColors.tint,
+          AppColors.textPrimary,
+          Icons.info_outline_rounded
+        ),
+      BannerKind.warning => (
+          AppColors.statusAttentionTint,
+          AppColors.statusAttention,
+          Icons.warning_amber_rounded
+        ),
+      BannerKind.error => (
+          AppColors.statusCriticalTint,
+          AppColors.statusCritical,
+          Icons.error_outline_rounded
+        ),
+      BannerKind.success => (
+          AppColors.statusHealthyTint,
+          AppColors.statusHealthy,
+          Icons.check_circle_outline_rounded
+        ),
     };
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -336,7 +361,9 @@ class MenuBanner extends StatelessWidget {
                   children: [
                     Text(title,
                         style: TextStyle(
-                            color: fg, fontWeight: FontWeight.w700, fontSize: 14)),
+                            color: fg,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14)),
                     if (body != null) ...[
                       const SizedBox(height: 3),
                       Text(body!, style: AppTextStyles.body),
@@ -426,7 +453,9 @@ class MenuMarginHero extends StatelessWidget {
                     Text(
                       '${formatPct(pct!)}${low ? ' · Lãi thấp' : ''}',
                       style: TextStyle(
-                          color: low ? const Color(0xFFFFD28A) : AppColors.actionLime,
+                          color: low
+                              ? AppColors.onDarkWarning
+                              : AppColors.actionLime,
                           fontWeight: FontWeight.w700,
                           fontSize: 14),
                     ),
@@ -436,7 +465,8 @@ class MenuMarginHero extends StatelessWidget {
                 Text(
                   note ??
                       'Lãi gộp ước tính. Giá vốn gồm nguyên liệu + bao bì. Chưa trừ thuê mặt bằng, nhân công, phí nền tảng.',
-                  style: const TextStyle(color: AppColors.onDarkMuted, fontSize: 12),
+                  style: const TextStyle(
+                      color: AppColors.onDarkMuted, fontSize: 12),
                 ),
               ],
             ],
@@ -477,10 +507,13 @@ class SizeTabs extends StatelessWidget {
                     child: Ink(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: i == selected ? AppColors.brand : AppColors.surface,
+                        color:
+                            i == selected ? AppColors.brand : AppColors.surface,
                         borderRadius: BorderRadius.circular(AppSizes.radius),
                         border: Border.all(
-                            color: i == selected ? AppColors.brand : AppColors.border),
+                            color: i == selected
+                                ? AppColors.brand
+                                : AppColors.border),
                       ),
                       child: Center(
                         child: Text(
@@ -490,7 +523,9 @@ class SizeTabs extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
-                            color: i == selected ? AppColors.onInk : AppColors.brand,
+                            color: i == selected
+                                ? AppColors.onInk
+                                : AppColors.brand,
                           ),
                         ),
                       ),
@@ -530,7 +565,8 @@ class OptionChip extends StatelessWidget {
             decoration: BoxDecoration(
               color: selected ? AppColors.brand : AppColors.surface,
               borderRadius: BorderRadius.circular(AppSizes.radius),
-              border: Border.all(color: selected ? AppColors.brand : AppColors.border),
+              border: Border.all(
+                  color: selected ? AppColors.brand : AppColors.border),
             ),
             child: Center(
               child: Text(
@@ -574,7 +610,11 @@ class MenuSkeleton extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [bar(140, 14), const SizedBox(height: 8), bar(200, 11)],
+                        children: [
+                          bar(140, 14),
+                          const SizedBox(height: 8),
+                          bar(200, 11)
+                        ],
                       ),
                     ),
                     bar(48, 28),
@@ -660,7 +700,8 @@ class MenuPrimaryButton extends StatelessWidget {
           child: loading
               ? SizedBox.square(
                   dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onInk),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.onInk),
                 )
               : Text(label),
         ),
@@ -668,7 +709,8 @@ class MenuPrimaryButton extends StatelessWidget {
 }
 
 class MenuSecondaryButton extends StatelessWidget {
-  const MenuSecondaryButton({super.key, required this.label, required this.onPressed});
+  const MenuSecondaryButton(
+      {super.key, required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;
@@ -707,7 +749,8 @@ class MenuActionRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppTextStyles.cardTitle),
-                  if (subtitle != null) Text(subtitle!, style: AppTextStyles.caption),
+                  if (subtitle != null)
+                    Text(subtitle!, style: AppTextStyles.caption),
                 ],
               ),
             ),
@@ -742,7 +785,8 @@ class DateTimeFields extends StatelessWidget {
         lastDate: DateTime.now().add(const Duration(days: 365)),
       );
       if (picked != null) {
-        onChanged(DateTime(picked.year, picked.month, picked.day, value.hour, value.minute));
+        onChanged(DateTime(
+            picked.year, picked.month, picked.day, value.hour, value.minute));
       }
     }
 
@@ -752,11 +796,13 @@ class DateTimeFields extends StatelessWidget {
         initialTime: TimeOfDay(hour: value.hour, minute: value.minute),
       );
       if (picked != null) {
-        onChanged(DateTime(value.year, value.month, value.day, picked.hour, picked.minute));
+        onChanged(DateTime(
+            value.year, value.month, value.day, picked.hour, picked.minute));
       }
     }
 
-    Widget field(String label, String text, IconData icon, VoidCallback onTap) =>
+    Widget field(
+            String label, String text, IconData icon, VoidCallback onTap) =>
         Expanded(
           child: InkWell(
             onTap: onTap,
@@ -790,7 +836,8 @@ class DateTimeFields extends StatelessWidget {
 
     return Row(
       children: [
-        field('Ngày áp dụng', formatDmy(value), Icons.calendar_today_outlined, pickDate),
+        field('Ngày áp dụng', formatDmy(value), Icons.calendar_today_outlined,
+            pickDate),
         const SizedBox(width: 10),
         field('Giờ áp dụng', formatHm(value), Icons.schedule_rounded, pickTime),
       ],

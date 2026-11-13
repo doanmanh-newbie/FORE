@@ -202,7 +202,8 @@ class _PoFormScreenState extends State<PoFormScreen> {
             Text('Nhà cung cấp *', style: AppTextStyles.label),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              value: _suppliers.any((s) => s.id == c.supplierId)
+              key: ValueKey('${c.supplierId}|${_suppliers.length}'),
+              initialValue: _suppliers.any((s) => s.id == c.supplierId)
                   ? c.supplierId
                   : null,
               isExpanded: true,

@@ -82,7 +82,8 @@ class _AuditScreenState extends State<AuditScreen> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String?>(
-                  value: _actor,
+                  key: ValueKey(_actor),
+                  initialValue: _actor,
                   isExpanded: true,
                   hint: const Text('Mọi người'),
                   items: [

@@ -205,7 +205,8 @@ class _WasteEntryScreenState extends State<WasteEntryScreen> {
               const KhoNote('Nguyên liệu này chưa có lô nào ghi hạn dùng.')
             else
               DropdownButtonFormField<String?>(
-                value: _lot?.id,
+                key: ValueKey(_lot?.id),
+                initialValue: _lot?.id,
                 isExpanded: true,
                 items: [
                   const DropdownMenuItem<String?>(

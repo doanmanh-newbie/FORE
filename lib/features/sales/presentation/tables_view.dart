@@ -198,8 +198,8 @@ class _TablesViewState extends State<TablesView> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Tìm bàn',
-                prefixIcon: Icon(Icons.search_rounded,
-                    color: AppColors.textSecondary),
+                prefixIcon:
+                    Icon(Icons.search_rounded, color: AppColors.textSecondary),
                 suffixIcon: c.query.isEmpty
                     ? null
                     : IconButton(
@@ -293,12 +293,6 @@ class _TableCard extends StatelessWidget {
               color: busy ? AppColors.ink : AppColors.surface,
               borderRadius: BorderRadius.circular(20),
               border: busy ? null : Border.all(color: AppColors.hairline),
-              boxShadow: [
-                BoxShadow(
-                    color: AppColors.shadowSoft,
-                    blurRadius: 16,
-                    offset: const Offset(0, 6)),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,8 +358,7 @@ class _GuestsFormState extends State<_GuestsForm> {
         children: [
           Row(
             children: [
-              Expanded(
-                  child: Text('Số khách', style: AppTextStyles.title)),
+              Expanded(child: Text('Số khách', style: AppTextStyles.title)),
               _RoundIcon(
                 icon: Icons.remove_rounded,
                 onTap: _guests > 0 ? () => setState(() => _guests--) : null,

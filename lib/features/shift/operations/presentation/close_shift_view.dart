@@ -117,8 +117,7 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                         ),
                       ),
                       const SizedBox(height: 28),
-                      Text('Trước khi đóng ca',
-                          style: AppTextStyles.headline),
+                      Text('Trước khi đóng ca', style: AppTextStyles.headline),
                       const SizedBox(height: 12),
                       _CheckCard(
                         loading: status == null,
@@ -152,12 +151,7 @@ class _CloseShiftViewState extends State<CloseShiftView> {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  boxShadow: [
-                    BoxShadow(
-                        color: AppColors.shadowSoft,
-                        blurRadius: 20,
-                        offset: const Offset(0, -6))
-                  ],
+                  border: Border(top: BorderSide(color: AppColors.cardBorder)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),

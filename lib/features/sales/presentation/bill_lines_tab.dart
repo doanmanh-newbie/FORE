@@ -57,8 +57,7 @@ class _LinesTab extends StatelessWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Expanded(
-                      child: Text('Giảm giá', style: AppTextStyles.body)),
+                  Expanded(child: Text('Giảm giá', style: AppTextStyles.body)),
                   if (bill.isOpen)
                     TextButton(
                       onPressed: controller.busy ? null : onDiscount,

@@ -29,13 +29,7 @@ class ForeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: color ?? AppColors.surface,
             borderRadius: BorderRadius.circular(radius),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadowSoft,
-                blurRadius: 18,
-                offset: const Offset(0, 5),
-              ),
-            ],
+            border: Border.all(color: AppColors.cardBorder),
           ),
           child: Padding(padding: padding, child: child),
         ),

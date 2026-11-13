@@ -20,8 +20,7 @@ class _PayFormState extends State<_PayForm> {
               child: Text(formatVnd(widget.amount),
                   style: AppTextStyles.numberXL)),
           const SizedBox(height: 4),
-          Center(
-              child: Text('Số tiền phải thu', style: AppTextStyles.caption)),
+          Center(child: Text('Số tiền phải thu', style: AppTextStyles.caption)),
           const SizedBox(height: 20),
           Row(
             children: [

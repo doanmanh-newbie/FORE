@@ -26,13 +26,7 @@ class ForeHeader extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowSoft,
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
         ),
         child: SafeArea(
           bottom: false,
@@ -115,13 +109,7 @@ class _LogoBadge extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          border: Border.all(color: AppColors.cardBorder),
         ),
         child: const Padding(
           padding: EdgeInsets.all(9),

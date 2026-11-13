@@ -148,7 +148,7 @@ Fore trông như mặt quầy pha chế vừa lau xong: bề mặt sáng, mọi 
 
 Hệ thống tinh gọn và tiết chế. Bề mặt phẳng, phân lớp bằng sắc độ nền và viền mảnh thay vì bóng đổ. Màu trạng thái (xanh, vàng, đỏ) chỉ xuất hiện khi có điều cần chú ý, để một ca lệch nổi lên rõ ràng trên nền yên tĩnh. Mật độ vừa phải: thẻ có khoảng thở 16 px, nhưng danh sách thao tác trong ca được xếp chặt để nhân viên thấy nhiều hơn mà không cuộn.
 
-Hệ thống đang ở giữa đợt chuyển: bộ `core/design/` (phẳng, viền mảnh) là chuẩn; bộ `Fore*` trong `core/widgets/` (thẻ bóng mềm, nút có bóng đổ, thanh điều hướng nổi) là bản cũ, chuyển dần sang chuẩn.
+Cả bộ `core/design/` lẫn bộ `Fore*` trong `core/widgets/` đều phẳng: không thành phần nào còn bóng đổ.
 
 **Key Characteristics:**
 - Nền xanh xám rất nhạt, thẻ trắng viền mảnh, không bóng.
@@ -192,7 +192,7 @@ Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho
 - **Bề mặt:** nền #0C1617, thẻ #142224, khối phụ #1C2C2E, viền thẻ #22383A.
 - **Chữ:** chính #E4EFEC, phụ #A7BCB8 (8,2:1 trên thẻ).
 - **Trạng thái:** Ổn #5DD39B trên #12301F, Cần xem #F2BE55 trên #33280C, Nghiêm trọng #FF8E82 trên #3B1915.
-- **Không đổi theo chế độ:** Night Shift, Lime Pour và chữ trắng trên thẻ nổi bật (`onDarkMuted`, `onDarkBorder`).
+- **Không đổi theo chế độ:** Night Shift, Lime Pour và chữ trên thẻ nổi bật (`onDarkMuted`, `onDarkBorder`, `onDarkWarning` #FFD28A cho cảnh báo).
 
 ### Named Rules
 **The On-Ink Rule.** Chữ hoặc icon đặt trên nền mực luôn dùng `AppColors.onInk`, không dùng `Colors.white`; trắng cố định chỉ dành cho thẻ nền Night Shift.
@@ -227,16 +227,11 @@ Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho
 
 Bố cục một cột cho điện thoại, lề trang 16 px, khoảng cách giữa thẻ 12 px, giữa các phần 24 px, đáy trang 32 px; mọi khoảng cách là bội số của 4 px. Màn danh sách dùng dòng xếp chặt; màn tổng quan dùng thẻ có khoảng thở. Thanh điều hướng dưới cùng cho điện thoại.
 
-Máy tính bảng ở quầy: từ 600 dp trở lên, `AdaptiveNavScaffold` (`lib/core/widgets/adaptive_nav.dart`) đổi thanh dưới thành `NavigationRail` bên trái và giới hạn nội dung ở 960 px. Màn đăng nhập, đăng ký và tạo quán giới hạn form ở 480 px, căn giữa. Danh sách theo dữ liệu dùng `LazyListView` hoặc `ListView.builder` để chỉ dựng dòng đang hiện.
+Máy tính bảng ở quầy: từ 600 dp trở lên, `AdaptiveNavScaffold` (`lib/core/widgets/adaptive_nav.dart`) đổi thanh dưới thành `NavigationRail` bên trái và giới hạn nội dung ở 960 px. Các màn con (`KhoPage`, `MenuPage`) bọc nội dung trong `ContentWidth` (720 px). Màn đăng nhập, đăng ký và tạo quán giới hạn form ở 480 px, căn giữa. Danh sách theo dữ liệu dùng `LazyListView` hoặc `ListView.builder` để chỉ dựng dòng đang hiện.
 
 ## Elevation & Depth
 
 Hệ thống phẳng. Chiều sâu đến từ sắc độ: nền Mint Mist, thẻ trắng nằm trên với viền Card Edge 1 px, khối phụ dùng Pale Tint. Thẻ nổi bật dùng nền tối Night Shift thay vì bóng để tách khỏi trang. `CardTheme` đặt `elevation: 0`.
-
-### Shadow Vocabulary
-Chỉ còn trong bộ cũ `Fore*`, không dùng cho thành phần mới:
-- **Bóng mềm thẻ cũ** (blur 18, y 5, #0C2D32 7%): `ForeCard`.
-- **Bóng nút cũ** (blur 20, y 8, #0C2D32 25%): `ForeButton`.
 
 ### Named Rules
 **The Wiped-Counter Rule.** Bề mặt phẳng khi đứng yên. Không thêm bóng đổ cho thẻ, nút hay thanh điều hướng mới; dùng viền mảnh hoặc đổi sắc độ nền.
@@ -277,8 +272,13 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Chuẩn:** `AdaptiveNavScaffold` cho cả luồng chủ quán và nhân viên. Điện thoại: Material `NavigationBar` cao 68 dp, nền trắng, viên chỉ báo Nav Indicator, nhãn Inter 12px (700 khi chọn, 500 khi không). Máy tính bảng: `NavigationRail` cùng màu và nhãn.
 - **Tab bị khóa** (cần mở ca): mờ, không chọn được, vẫn được trình đọc màn hình đọc.
 
+### Icons
+- **Material Symbols (`Icons.*`, kiểu outlined/rounded)** là bộ mặc định cho mọi màn.
+- **`ForeIcon` (SVG trong `assets/icons/`)** chỉ cho điều hướng và thao tác nghiệp vụ của luồng nhân viên (trang chủ, mang đi, kho, đóng ca) và `ForeActionIcons` cho hao hụt, thu/chi.
+- Không trộn hai bộ trong cùng một nhóm điều khiển.
+
 ### Segmented Control
-Khung Pale Tint bo 16px, đệm 4px; đoạn chọn cao 44 dp nền Ink Teal chữ trắng Inter 700 15px, đoạn còn lại chữ Ink Teal. Dùng cho chuyển nhanh giữa hai đến ba chế độ (ví dụ số điện thoại / email).
+Khung Pale Tint bo 16px, đệm 4px; đoạn chọn cao tối thiểu 44 dp (cao thêm khi chữ to) nền Ink Teal chữ trắng Inter 700 15px, đoạn còn lại chữ Ink Teal. Dùng cho chuyển nhanh giữa hai đến ba chế độ (ví dụ số điện thoại / email).
 
 ### Qty Stepper
 Nút tròn trừ/cộng hiển thị 36–40px nhưng vùng chạm 48×48; nút cộng nền Ink Teal icon trắng, nút trừ nền Pale Tint icon Ink Teal. Dùng trong bill và phiếu nhập.
@@ -299,5 +299,5 @@ Nút tròn trừ/cộng hiển thị 36–40px nhưng vùng chạm 48×48; nút 
 - **Don't** dùng `Colors.white` trên nền mực; dùng `AppColors.onInk` để đúng ở cả hai chế độ.
 - **Don't** dùng Lime Pour trên nền sáng hoặc cho hành động phụ.
 - **Don't** dùng màu trạng thái cho mục đích trang trí.
-- **Don't** tạo thêm token "legacy" mới; các biến thể shadow cũ chỉ để xóa dần.
+- **Don't** tạo thêm token "legacy" mới.
 - **Don't** dùng `ListView(children: ...)` cho danh sách theo dữ liệu; dùng `LazyListView`.

@@ -25,8 +25,6 @@ class AppPalette {
     required this.warningSoft,
     required this.inkMuted,
     required this.tint,
-    required this.shadow,
-    required this.shadowSoft,
     required this.onInkMuted,
     required this.onInkStrong,
     required this.scrim,
@@ -35,9 +33,7 @@ class AppPalette {
     required this.backgroundTint,
     required this.healthyBackground,
     required this.warningOverlay,
-    required this.shadowSubtle,
     required this.shadowMedium,
-    required this.shadowRaised,
     required this.shadowStrong,
   });
 
@@ -66,8 +62,6 @@ class AppPalette {
   final Color warningSoft;
   final Color inkMuted;
   final Color tint;
-  final Color shadow;
-  final Color shadowSoft;
   final Color onInkMuted;
   final Color onInkStrong;
   final Color scrim;
@@ -76,9 +70,7 @@ class AppPalette {
   final Color backgroundTint;
   final Color healthyBackground;
   final Color warningOverlay;
-  final Color shadowSubtle;
   final Color shadowMedium;
-  final Color shadowRaised;
   final Color shadowStrong;
 
   static const light = AppPalette(
@@ -104,8 +96,6 @@ class AppPalette {
     // Đặc thay vì mực 55%: 4,9:1 trên nền, dùng được cho cả chữ.
     inkMuted: Color(0xFF5B726F),
     tint: Color(0xFFEAF0EE),
-    shadow: Color(0x1F0C2D32),
-    shadowSoft: Color(0x120C2D32),
     onInkMuted: Color(0xB3FFFFFF),
     onInkStrong: Color(0xCCFFFFFF),
     scrim: Color(0x730C2D32),
@@ -114,9 +104,7 @@ class AppPalette {
     backgroundTint: Color(0xFFDDEFE7),
     healthyBackground: Color(0xFFE6F4EC),
     warningOverlay: Color(0x66ED6C02),
-    shadowSubtle: Color(0x140C2D32),
     shadowMedium: Color(0x330C2D32),
-    shadowRaised: Color(0x400C2D32),
     shadowStrong: Color(0xDB0C2D32),
   );
 
@@ -143,8 +131,6 @@ class AppPalette {
     warningSoft: Color(0xFF33240F),
     inkMuted: Color(0xFF8EA6A2),
     tint: Color(0xFF1C2C2E),
-    shadow: Color(0x66000000),
-    shadowSoft: Color(0x40000000),
     onInkMuted: Color(0xB30C2D32),
     onInkStrong: Color(0xCC0C2D32),
     scrim: Color(0x99000000),
@@ -153,9 +139,7 @@ class AppPalette {
     backgroundTint: Color(0xFF17302B),
     healthyBackground: Color(0xFF133325),
     warningOverlay: Color(0x66FF9A3D),
-    shadowSubtle: Color(0x33000000),
     shadowMedium: Color(0x59000000),
-    shadowRaised: Color(0x66000000),
     shadowStrong: Color(0xE6000000),
   );
 
@@ -193,8 +177,6 @@ abstract final class AppColors {
   static Color get warningSoft => current.warningSoft;
   static Color get inkMuted => current.inkMuted;
   static Color get tint => current.tint;
-  static Color get shadow => current.shadow;
-  static Color get shadowSoft => current.shadowSoft;
   static Color get onInkMuted => current.onInkMuted;
   static Color get onSurfaceStrong => current.onInkStrong;
   static Color get navIndicator => current.navIndicator;
@@ -202,9 +184,7 @@ abstract final class AppColors {
   static Color get backgroundTint => current.backgroundTint;
   static Color get healthyBackground => current.healthyBackground;
   static Color get warningOverlay => current.warningOverlay;
-  static Color get shadowSubtle => current.shadowSubtle;
   static Color get shadowMedium => current.shadowMedium;
-  static Color get shadowRaised => current.shadowRaised;
   static Color get shadowStrong => current.shadowStrong;
 
   // Không đổi theo chế độ: thẻ nổi bật luôn nền tối, chữ trên nó luôn sáng.
@@ -212,6 +192,8 @@ abstract final class AppColors {
   static const actionLime = Color(0xFFD8F27A);
   static const onDarkMuted = Color(0xB3FFFFFF);
   static const onDarkBorder = Color(0x66FFFFFF);
+  /// Chữ cảnh báo trên thẻ nền tối (vd "Lãi thấp"): 9,6:1 trên Night Shift.
+  static const onDarkWarning = Color(0xFFFFD28A);
   static const white = Color(0xFFFFFFFF);
   /// Nền nút hành động nguy hiểm (xóa, hủy) với chữ trắng: 6,6:1 ở cả hai chế độ.
   static const danger = Color(0xFFB42318);

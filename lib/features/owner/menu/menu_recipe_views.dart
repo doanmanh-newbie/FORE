@@ -189,8 +189,9 @@ class _RecipeEditorPageState extends State<RecipeEditorPage> {
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
+        final navigator = Navigator.of(context);
         final leave = await _confirmLeave();
-        if (leave && mounted) Navigator.of(context).pop();
+        if (leave && mounted) navigator.pop();
       },
       child: MenuPage(
         title: 'Công thức pha chế',
