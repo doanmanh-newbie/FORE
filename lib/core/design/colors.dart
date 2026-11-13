@@ -191,6 +191,8 @@ abstract final class AppColors {
   static const surfaceDark = Color(0xFF123C3A);
   static const actionLime = Color(0xFFD8F27A);
   static const onDarkMuted = Color(0xB3FFFFFF);
+  /// Chữ trên nền lime: luôn mực đậm (11,8:1), không đảo theo chế độ tối.
+  static const onLime = Color(0xFF0C2D32);
   static const onDarkBorder = Color(0x66FFFFFF);
   /// Chữ cảnh báo trên thẻ nền tối (vd "Lãi thấp"): 9,6:1 trên Night Shift.
   static const onDarkWarning = Color(0xFFFFD28A);

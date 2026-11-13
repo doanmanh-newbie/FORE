@@ -192,7 +192,7 @@ Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho
 - **Bề mặt:** nền #0C1617, thẻ #142224, khối phụ #1C2C2E, viền thẻ #22383A.
 - **Chữ:** chính #E4EFEC, phụ #A7BCB8 (8,2:1 trên thẻ).
 - **Trạng thái:** Ổn #5DD39B trên #12301F, Cần xem #F2BE55 trên #33280C, Nghiêm trọng #FF8E82 trên #3B1915.
-- **Không đổi theo chế độ:** Night Shift, Lime Pour và chữ trên thẻ nổi bật (`onDarkMuted`, `onDarkBorder`, `onDarkWarning` #FFD28A cho cảnh báo).
+- **Không đổi theo chế độ:** Night Shift, Lime Pour và chữ trên thẻ nổi bật (`onDarkMuted`, `onDarkBorder`, `onDarkWarning` #FFD28A cho cảnh báo) và chữ trên nền lime (`onLime` #0C2D32).
 
 ### Named Rules
 **The On-Ink Rule.** Chữ hoặc icon đặt trên nền mực luôn dùng `AppColors.onInk`, không dùng `Colors.white`; trắng cố định chỉ dành cho thẻ nền Night Shift.
@@ -227,7 +227,7 @@ Chế độ tối theo cài đặt hệ thống (`ThemeMode.system`), dựng cho
 
 Bố cục một cột cho điện thoại, lề trang 16 px, khoảng cách giữa thẻ 12 px, giữa các phần 24 px, đáy trang 32 px; mọi khoảng cách là bội số của 4 px. Màn danh sách dùng dòng xếp chặt; màn tổng quan dùng thẻ có khoảng thở. Thanh điều hướng dưới cùng cho điện thoại.
 
-Máy tính bảng ở quầy: từ 600 dp trở lên, `AdaptiveNavScaffold` (`lib/core/widgets/adaptive_nav.dart`) đổi thanh dưới thành `NavigationRail` bên trái và giới hạn nội dung ở 960 px. Các màn con (`KhoPage`, `MenuPage`) bọc nội dung trong `ContentWidth` (720 px). Màn đăng nhập, đăng ký và tạo quán giới hạn form ở 480 px, căn giữa. Danh sách theo dữ liệu dùng `LazyListView` hoặc `ListView.builder` để chỉ dựng dòng đang hiện.
+Máy tính bảng ở quầy: từ 600 dp trở lên, `AdaptiveNavScaffold` (`lib/core/widgets/adaptive_nav.dart`) đổi thanh dưới thành `NavigationRail` bên trái và giới hạn nội dung ở 960 px. Các màn con (`KhoPage`, `MenuPage`) bọc nội dung trong `ContentWidth` (720 px). Màn đăng nhập, đăng ký và tạo quán giới hạn form ở 480 px, căn giữa. Ở khung từ 720 px, nhóm thẻ số trên Tổng quan xếp bốn thẻ một hàng thay vì 2 × 2. Danh sách theo dữ liệu dùng `LazyListView` hoặc `ListView.builder` để chỉ dựng dòng đang hiện.
 
 ## Elevation & Depth
 
@@ -248,7 +248,7 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Primary:** nền Ink Teal, chữ trắng Inter 600 14px (`PrimaryButton`, `FilledButton`).
 - **Secondary:** viền 1 px Ink Teal, nền trắng, chữ Ink Teal (`SecondaryButton`, `OutlinedButton`).
 - **Tertiary:** chữ Ink Teal không nền, vùng chạm 48×48 (`TertiaryButton`, `TextButton`).
-- **Hero action:** nền Lime Pour, chữ Ink Teal, chỉ trên `HeroCard` nền Night Shift.
+- **Hero action:** nền Lime Pour, chữ `onLime` (mực cố định, không đảo theo chế độ tối), chỉ trên `HeroCard` nền Night Shift.
 - **Disabled:** nền Disabled Fill, chữ Text Secondary.
 - **Destructive:** nền `AppColors.danger` (#B42318), chữ trắng, ở cả hai chế độ.
 

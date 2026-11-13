@@ -8,9 +8,8 @@ extension _OwnerOverview on _OwnerHomeContentState {
     final belowThreshold = data.lowStock
         .where((item) => _number(item['expected_qty']) >= 0)
         .toList(growable: false);
-    final reports = data.reports
-        .map(ReconcileReport.fromOwner)
-        .toList(growable: false);
+    final reports =
+        data.reports.map(ReconcileReport.fromOwner).toList(growable: false);
     ReconcileReport? needsReview;
     for (final report in reports) {
       if (report.needsAttention && !report.handled) {
@@ -38,15 +37,10 @@ extension _OwnerOverview on _OwnerHomeContentState {
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              'Hôm nay, ${_shortDate(data.updatedAt)} · cập nhật ${formatHm(data.updatedAt)}',
-              style: AppTextStyles.caption,
-              textAlign: TextAlign.right,
-            ),
-          ),
-          Text(_businessDayLabel(data), style: AppTextStyles.caption),
+          // Một khối căn trái: ngày kinh doanh là thông tin chính, giờ cập nhật đứng sau.
+          Text(_businessDayLabel(data), style: AppTextStyles.captionStrong),
+          Text('Cập nhật lúc ${formatHm(data.updatedAt)}',
+              style: AppTextStyles.caption),
           if (data.shifts.isEmpty &&
               data.menu.isEmpty &&
               data.expectedStock.isEmpty &&
@@ -72,51 +66,49 @@ extension _OwnerOverview on _OwnerHomeContentState {
           const SizedBox(height: 14),
           _RevenueCard(data: data),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _MetricCard(
-                  label: 'Bill đã thanh toán',
-                  value: '${data.billCount}',
-                  icon: Icons.receipt_long_outlined,
-                ),
+          LayoutBuilder(builder: (context, box) {
+            final tiles = <Widget>[
+              _MetricCard(
+                label: 'Bill đã thanh toán',
+                value: '${data.billCount}',
+                icon: Icons.receipt_long_outlined,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MetricCard(
-                  label: 'Doanh thu / bill',
-                  value: data.billCount == 0
-                      ? '—'
-                      : formatVnd(data.totalSales ~/ data.billCount),
-                  icon: Icons.trending_up_rounded,
-                ),
+              _MetricCard(
+                label: 'Doanh thu / bill',
+                value: data.billCount == 0
+                    ? '—'
+                    : formatVnd(data.totalSales ~/ data.billCount),
+                icon: Icons.trending_up_rounded,
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.person_add_alt_1_outlined,
-                  title: 'Mời nhân viên',
-                  subtitle: 'Thêm người vào quán',
-                  onTap: () => Navigator.of(context).pushNamed(AppRoutes.team),
-                ),
+              _QuickActionTile(
+                icon: Icons.person_add_alt_1_outlined,
+                title: 'Mời nhân viên',
+                subtitle: 'Thêm người vào quán',
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.team),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.groups_2_outlined,
-                  title: 'Nhân viên',
-                  subtitle: data.openShift == null
-                      ? 'Quản lý đội ngũ'
-                      : '${data.activeStaffCount} người đã tạo bill trong ca',
-                  onTap: () => Navigator.of(context).pushNamed(AppRoutes.team),
-                ),
+              _QuickActionTile(
+                icon: Icons.groups_2_outlined,
+                title: 'Nhân viên',
+                subtitle: data.openShift == null
+                    ? 'Quản lý đội ngũ'
+                    : '${data.activeStaffCount} người đã tạo bill trong ca',
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.team),
               ),
-            ],
-          ),
+            ];
+            Widget row(List<Widget> items) => Row(children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 10),
+                    Expanded(child: items[i]),
+                  ],
+                ]);
+            // Tablet: bốn thẻ trên một hàng thay vì hai thẻ to kéo giãn.
+            if (box.maxWidth >= 720) return row(tiles);
+            return Column(children: [
+              row(tiles.sublist(0, 2)),
+              const SizedBox(height: 12),
+              row(tiles.sublist(2)),
+            ]);
+          }),
           const SizedBox(height: 22),
           _SectionTitle(
             title: 'Đối soát',
@@ -149,7 +141,8 @@ extension _OwnerOverview on _OwnerHomeContentState {
                 severity: StatusSeverity.attention,
                 compact: true,
               ),
-              body: 'Các ca có chênh lệch trong 7 ngày gần đây mà bạn chưa đánh dấu đã xử lý.',
+              body:
+                  'Các ca có chênh lệch trong 7 ngày gần đây mà bạn chưa đánh dấu đã xử lý.',
               onTap: () {
                 _reconcile.setFilter(ReconcileFilter.pending);
                 _updateState(() {
@@ -270,17 +263,17 @@ extension _OwnerOverview on _OwnerHomeContentState {
             )
           else
             ...reports.take(3).map(
-              (report) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
-                child: ReconcileShiftCard(
-                  report: report,
-                  onTap: () => _updateState(() {
-                    _tab = 1;
-                    _selectedReport = report.source;
-                  }),
+                  (report) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
+                    child: ReconcileShiftCard(
+                      report: report,
+                      onTap: () => _updateState(() {
+                        _tab = 1;
+                        _selectedReport = report.source;
+                      }),
+                    ),
+                  ),
                 ),
-              ),
-            ),
           const SizedBox(height: 12),
           Text(
             'Cập nhật lúc ${formatHm(data.updatedAt)} · ngày kinh doanh 06:00–05:59',

@@ -1,7 +1,7 @@
 part of 'owner_home_screen.dart';
 
 String _businessDayLabel(OwnerDashboardData data) =>
-    'Ngày kinh doanh: ${formatHm(data.businessStart)} · ${data.businessStart.day}/${data.businessStart.month} – 05:59 hôm sau';
+    'Ngày kinh doanh ${data.businessStart.day}/${data.businessStart.month} · ${formatHm(data.businessStart)} – 05:59 hôm sau';
 
 String _unavailableNames(Set<String> names) => names
     .map((name) => switch (name) {
@@ -13,7 +13,6 @@ String _unavailableNames(Set<String> names) => names
         })
     .join(', ');
 
-String _shortDate(DateTime date) => '${date.day}/${date.month}';
 
 String _minimumStock(Map<String, dynamic> ingredient, OwnerDashboardData data) {
   final matching = data.lowStock

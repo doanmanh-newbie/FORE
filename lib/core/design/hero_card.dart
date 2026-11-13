@@ -61,7 +61,7 @@ class HeroCard extends StatelessWidget {
                       minimumSize:
                           const Size.fromHeight(AppSizes.controlHeight),
                       backgroundColor: AppColors.actionLime,
-                      foregroundColor: AppColors.brand,
+                      foregroundColor: AppColors.onLime,
                     ),
                     onPressed: onPrimary,
                     child: Text(primaryLabel!),
