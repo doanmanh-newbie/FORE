@@ -3,7 +3,10 @@ import 'package:flutter/widgets.dart';
 /// Giữ nội dung ở bề rộng dễ đọc trên màn rộng (máy tính bảng ở quầy), căn giữa.
 /// Trên điện thoại không có tác dụng.
 class ContentWidth extends StatelessWidget {
-  const ContentWidth({super.key, required this.child, this.maxWidth = 720});
+  const ContentWidth(
+      {super.key, required this.child, this.maxWidth = defaultMaxWidth});
+
+  static const defaultMaxWidth = 720.0;
 
   final Widget child;
   final double maxWidth;

@@ -38,7 +38,11 @@ class KhoPage extends StatelessWidget {
         backgroundColor: AppColors.background,
         body: Column(
           children: [
-            ScreenHeader(title: title, subtitle: subtitle, onBack: onBack),
+            ScreenHeader(
+                title: title,
+                subtitle: subtitle,
+                onBack: onBack,
+                maxContentWidth: ContentWidth.defaultMaxWidth),
             Expanded(child: ContentWidth(child: body)),
           ],
         ),

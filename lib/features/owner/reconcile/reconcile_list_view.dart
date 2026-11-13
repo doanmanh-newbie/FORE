@@ -98,8 +98,8 @@ class _ReconcileListViewState extends State<ReconcileListView> {
       ];
     }
     if (controller.items.isEmpty) {
-      final filtered = controller.date != null ||
-          controller.filter != ReconcileFilter.all;
+      final filtered =
+          controller.date != null || controller.filter != ReconcileFilter.all;
       if (filtered) {
         return [
           _ListMessage(
@@ -140,14 +140,7 @@ class _ReconcileListViewState extends State<ReconcileListView> {
         ],
       ),
       const SizedBox(height: 10),
-      for (final report in controller.items)
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
-          child: ReconcileShiftCard(
-              report: report,
-              onTap: () => widget.onOpen(report),
-            ),
-        ),
+      ..._groupedCards(controller.items),
       if (controller.moreFailure != null)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -240,7 +233,8 @@ class _Filters extends StatelessWidget {
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.label, required this.trailing});
+  const _Pill(
+      {required this.icon, required this.label, required this.trailing});
 
   final IconData icon;
   final String label;
@@ -355,8 +349,40 @@ class _ListMessage extends StatelessWidget {
 }
 
 /// Thẻ một ca: dùng chung cho danh sách Đối soát và mục "Ca gần đây" ở Tổng quan.
+/// Ca lệch lớn mà chưa xử lý đứng riêng ở đầu để không chìm giữa các ca "Cần xem".
+bool _needsActionNow(ReconcileReport r) =>
+    r.overall == ReconcileStatus.alert && !r.handled;
+
+extension on _ReconcileListViewState {
+  List<Widget> _groupedCards(List<ReconcileReport> items) {
+    Widget card(ReconcileReport report) => Padding(
+          padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
+          child: ReconcileShiftCard(
+            report: report,
+            onTap: () => widget.onOpen(report),
+          ),
+        );
+    final urgent = items.where(_needsActionNow).toList();
+    if (urgent.isEmpty) return [for (final r in items) card(r)];
+    final rest = items.where((r) => !_needsActionNow(r)).toList();
+    Widget header(String text) => Padding(
+          padding: const EdgeInsets.only(bottom: 8, top: 4),
+          child: Text(text, style: AppTextStyles.captionStrong),
+        );
+    return [
+      header('Cần xử lý ngay · ${urgent.length}'),
+      for (final r in urgent) card(r),
+      if (rest.isNotEmpty) ...[
+        header('Các ca còn lại · ${rest.length}'),
+        for (final r in rest) card(r),
+      ],
+    ];
+  }
+}
+
 class ReconcileShiftCard extends StatelessWidget {
-  const ReconcileShiftCard({super.key, required this.report, required this.onTap});
+  const ReconcileShiftCard(
+      {super.key, required this.report, required this.onTap});
 
   final ReconcileReport report;
   final VoidCallback onTap;
@@ -394,16 +420,19 @@ class ReconcileShiftCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   _HandledBadge(handled: report.handled),
-                  const SizedBox(height: 4),
-                  Text(
-                    impact,
-                    style: reconcileNumberStyle(
-                      size: hasImpact ? 18 : 14,
-                      color: hasImpact
-                          ? AppColors.brand
-                          : AppColors.textSecondary,
+                  // "Chưa ước tính" lặp ở mọi ca vàng mà không thêm thông tin: chỉ hiện số thật.
+                  if (hasImpact || report.overall == ReconcileStatus.ok) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      impact,
+                      style: reconcileNumberStyle(
+                        size: hasImpact ? 18 : 14,
+                        color: hasImpact
+                            ? AppColors.brand
+                            : AppColors.textSecondary,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ],
@@ -450,8 +479,7 @@ class _HandledBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        handled ? AppColors.statusHealthy : AppColors.textSecondary;
+    final color = handled ? AppColors.statusHealthy : AppColors.textSecondary;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

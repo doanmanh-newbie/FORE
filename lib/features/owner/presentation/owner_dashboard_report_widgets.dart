@@ -9,15 +9,19 @@ class _RevenueCard extends StatelessWidget {
     final change = data.salesChangePercent;
     final now = DateTime.now();
     final start = data.businessStart;
-    final isToday =
-        start.year == now.year && start.month == now.month && start.day == now.day;
+    final isToday = start.year == now.year &&
+        start.month == now.month &&
+        start.day == now.day;
     final changeLabel = change == null
         ? 'Chưa có doanh thu hôm qua để so sánh'
         : '${change >= 0 ? '+' : ''}${change.toStringAsFixed(0)}% so với hôm qua cùng giờ';
     return ForeCard(
       padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(isToday ? 'Doanh thu hôm nay' : 'Doanh thu ${start.day}/${start.month}',
+        Text(
+            isToday
+                ? 'Doanh thu hôm nay'
+                : 'Doanh thu ${start.day}/${start.month}',
             style: AppTextStyles.headline),
         const SizedBox(height: 8),
         Text(formatVnd(data.totalSales), style: AppTextStyles.metricXL),
@@ -49,8 +53,7 @@ class _SalesTrendBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
-      return Text('Chưa có dữ liệu 7 ngày.',
-          style: AppTextStyles.caption);
+      return Text('Chưa có dữ liệu 7 ngày.', style: AppTextStyles.caption);
     }
     final maxSales = points.fold<int>(1, (max, point) {
       return point.sales > max ? point.sales : max;
@@ -76,9 +79,12 @@ class _SalesTrendBars extends StatelessWidget {
                               ? 3
                               : 8 + 34 * point.sales / maxSales,
                           decoration: BoxDecoration(
-                            color: point == points.last
-                                ? AppColors.brandAccent
-                                : AppColors.statusHealthyTint,
+                            // Cột cũ >= 3:1 với nền thẻ ở cả hai chế độ; hôm nay đậm nhất.
+                            color: point.sales == 0
+                                ? AppColors.border
+                                : point == points.last
+                                    ? AppColors.brand
+                                    : AppColors.brandAccent,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -163,12 +169,15 @@ class _FeaturedReportCard extends StatelessWidget {
               style: AppTextStyles.caption.copyWith(color: Colors.white70),
             ),
             const SizedBox(height: 8),
-            Text('Ảnh hưởng ước tính',
-                style: AppTextStyles.caption.copyWith(color: Colors.white70)),
-            Text(
-              reconcileImpactText(report),
-              style: AppTextStyles.headline.copyWith(color: Colors.white),
-            ),
+            // Chưa có số ước tính thì không in một tiêu đề lớn "Chưa ước tính": nói thẳng vấn đề.
+            if (report.totalImpact > 0) ...[
+              Text('Ảnh hưởng ước tính',
+                  style: AppTextStyles.caption.copyWith(color: Colors.white70)),
+              Text(
+                reconcileImpactText(report),
+                style: AppTextStyles.headline.copyWith(color: Colors.white),
+              ),
+            ],
             const SizedBox(height: 6),
             Text(reconcileProblemSummary(report),
                 style: AppTextStyles.body.copyWith(color: Colors.white)),
