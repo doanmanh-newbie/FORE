@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fore/core/errors/app_failure.dart';
 import 'package:fore/features/inventory/application/cash_controller.dart';
-import 'package:fore/features/inventory/application/purchase_controller.dart';
 import 'package:fore/features/inventory/application/waste_controller.dart';
 import 'package:fore/features/inventory/domain/inventory_models.dart';
 
@@ -22,68 +21,6 @@ void main() {
     repo = FakeInventoryRepository()
       ..ingredientOptions = [milk, cups]
       ..wasteTypeOptions = [expired, other];
-  });
-
-  group('nhập hàng', () {
-    late PurchaseController c;
-    setUp(() async {
-      c = PurchaseController(repo);
-      await c.load();
-    });
-
-    test('chưa chọn gì thì không gửi được', () {
-      expect(c.canSubmit, isFalse);
-      c.select(milk);
-      expect(c.canSubmit, isFalse); // chưa có số lượng
-      c.setQuantityText('500');
-      expect(c.canSubmit, isTrue);
-    });
-
-    test('chọn nguyên liệu thì đơn vị về đơn vị gốc', () {
-      c.select(milk);
-      c.setUnit(unitChoices('ml')[1]);
-      c.select(cups);
-      expect(c.unitChoice!.label, equals('cái'));
-    });
-
-    test('nhập 1,5 lít sữa gửi 1500 ml', () async {
-      c.select(milk);
-      c.setUnit(unitChoices('ml')[1]);
-      c.setQuantityText('1,5');
-      c.setNote('  hàng mới về  ');
-      c.setLate(true);
-      expect(await c.submit(), isTrue);
-      expect(
-          repo.calls, contains('addPurchase:milk:1500:true:  hàng mới về  '));
-    });
-
-    test('gửi xong thì xóa form', () async {
-      c.select(milk);
-      c.setQuantityText('1000');
-      await c.submit();
-      expect(c.selected, isNull);
-      expect(c.quantityText, isEmpty);
-      expect(c.late, isFalse);
-    });
-
-    test('lỗi thì giữ nguyên form để sửa và thử lại', () async {
-      c.select(milk);
-      c.setQuantityText('1000');
-      repo.failNext('addPurchase', const DatabaseFailure('NO_OPEN_SHIFT'));
-      await expectLater(c.submit(), throwsA(isA<DatabaseFailure>()));
-      expect(c.selected, equals(milk));
-      expect(c.quantityText, equals('1000'));
-    });
-
-    test('số lượng không hợp lệ: bị chặn ở máy', () async {
-      c.select(milk);
-      c.setQuantityText('0');
-      await expectLater(
-          c.submit(),
-          throwsA(isA<DatabaseFailure>()
-              .having((e) => e.code, 'code', 'QTY_INVALID')));
-      expect(repo.count('addPurchase'), equals(0));
-    });
   });
 
   group('hao hụt', () {

@@ -5,14 +5,6 @@ abstract interface class InventoryRepository {
 
   Future<List<WasteTypeOption>> wasteTypes();
 
-  /// Nhập hàng. `qty` theo đơn vị gốc, số nguyên > 0.
-  Future<void> addPurchase({
-    required String ingredientId,
-    required int qty,
-    bool late = false,
-    String? note,
-  });
-
   /// Ghi hao hụt có lý do để đối soát không tính nhầm.
   Future<void> addWaste({
     required String ingredientId,

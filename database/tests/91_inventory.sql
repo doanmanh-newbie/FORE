@@ -135,6 +135,11 @@ begin
   perform po_set_prices((po3->>'id')::uuid, jsonb_build_array(jsonb_build_object('line_id', line_id, 'unit_price', 20)));
   if (select unit_cost from ingredients where id = sugar) <> 20 then raise exception 'sau khi bo sung gia, gia binh quan phai la 20'; end if;
   if (select needs_pricing from purchase_orders where id = (po3->>'id')::uuid) then raise exception 'het cho gia'; end if;
+  -- Báo cáo ca có dòng phiếu PN và chủ sửa được dòng đó
+  perform correct_purchase(line_id, 4999, 'Nhập dư');
+  if (select (p->>'qty')::int from jsonb_array_elements(shift_report(sh)->'purchases') p where (p->>'id')::uuid = line_id) <> 4999 then
+    raise exception 'bao cao ca phai co dong PN da sua'; end if;
+  perform correct_purchase(line_id, 5000, 'Trả lại');
   j := inv_ingredient_profile(milk);
   if (j->>'stock')::int <> 34000 then raise exception 'ton sua phai la 34000 (40000 - 5000 - 1000), nhan %', j->>'stock'; end if;
   if (select (l->>'qty_remaining')::int from jsonb_array_elements(j->'lots') l where l->>'code' = 'ST-0611') <> 10000 then
@@ -153,6 +158,11 @@ begin
   perform pg_temp.expect_err(format('select st_submit(%L)', kid), 'COUNT_INCOMPLETE');
   perform st_save(kid, jsonb_build_array(jsonb_build_object('ingredient_id', milk, 'counted_qty', 33000),
                                          jsonb_build_object('ingredient_id', sugar, 'counted_qty', 5000)));
+  reset session authorization;
+  -- Bán 2000 ml sữa SAU lúc đếm, TRƯỚC lúc gửi: không được tạo lệch giả
+  insert into stock_ledger (shop_id, shift_id, ingredient_id, kind, qty_delta, note)
+  values ((select shop_id from ingredients where id = milk), null, milk, 'adjust', -2000, 'test: ban sau luc dem');
+  perform set_config('request.jwt.claim.sub', nv1, true); set local session authorization authenticated;
   perform st_submit(kid);
   perform pg_temp.expect_err(format($$select st_save(%L, '[]')$$, kid), 'STOCKTAKE_LOCKED');
   reset session authorization;
@@ -160,7 +170,11 @@ begin
   perform set_config('request.jwt.claim.sub', owner_u, true); set local session authorization authenticated;
   j := st_detail(kid);
   if (select (l->>'variance')::int from jsonb_array_elements(j->'lines') l where l->>'name' = 'Sữa tươi') <> -1000 then
-    raise exception 'chenh lech sua phai la -1000'; end if;
+    raise exception 'chenh lech sua phai la -1000 (so he thong chup luc dem)'; end if;
+  reset session authorization;
+  insert into stock_ledger (shop_id, shift_id, ingredient_id, kind, qty_delta, note)
+  values ((select shop_id from ingredients where id = milk), null, milk, 'adjust', 2000, 'test: tra lai');
+  perform set_config('request.jwt.claim.sub', owner_u, true); set local session authorization authenticated;
   perform pg_temp.expect_err(format($$select st_approve(%L, '[]', '')$$, kid), 'REASON_REQUIRED');
   k := st_approve(kid, jsonb_build_array(jsonb_build_object('ingredient_id', milk, 'decision', 'adjust')), 'Hao hụt chưa ghi', null);
   if (k->>'adjusted_lines')::int <> 1 then raise exception 'phai dieu chinh 1 dong'; end if;

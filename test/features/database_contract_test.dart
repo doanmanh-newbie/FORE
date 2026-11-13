@@ -25,7 +25,6 @@ dynamic fixture(String name) =>
 const expectedCalls = <String, List<String>>{
   'add_bill_line': ['p_bill', 'p_qty', 'p_size'],
   'add_cash_movement': ['p_amount', 'p_direction', 'p_note'],
-  'add_purchase': ['p_ingredient', 'p_late', 'p_note', 'p_qty'],
   'add_waste': ['p_ingredient', 'p_note', 'p_qty', 'p_type'],
   'bill_detail': ['p_bill'],
   'cancel_open_bill': ['p_bill', 'p_reason'],
@@ -74,7 +73,6 @@ void main() {
       'pay_bill': 65000,
       'mark_prep_done': null,
       'submit_stock_count': 'x',
-      'add_purchase': 'x',
       'add_waste': 'x',
       'add_cash_movement': 'x',
     });
@@ -286,7 +284,6 @@ void main() {
       await stock.submit('i', CountKind.close, 5);
       await inv.ingredients();
       await inv.wasteTypes();
-      await inv.addPurchase(ingredientId: 'i', qty: 5);
       await inv.addWaste(ingredientId: 'i', qty: 5, typeCode: 'expired');
       await inv.addMovement(incoming: false, amount: 1000, note: 'đá');
 
@@ -309,8 +306,6 @@ void main() {
       await RpcStocktakeRepository(rpc).sheet(CountKind.open);
       await RpcInventoryRepository(rpc)
           .addMovement(incoming: true, amount: 5, note: '   ');
-      await RpcInventoryRepository(rpc).addPurchase(
-          ingredientId: 'i', qty: 1, late: true, note: '  hàng muộn ');
       final byFn = {for (final c in rpc.calls) c.fn: c.params};
       expect(byFn['open_bill'],
           equals({'p_table': null, 'p_type': 'take_away', 'p_guests': null}));
@@ -318,14 +313,6 @@ void main() {
       expect(byFn['count_sheet'], equals({'p_kind': 'open'}));
       expect(byFn['add_cash_movement'],
           equals({'p_direction': 'in', 'p_amount': 5, 'p_note': null}));
-      expect(
-          byFn['add_purchase'],
-          equals({
-            'p_ingredient': 'i',
-            'p_qty': 1,
-            'p_late': true,
-            'p_note': 'hàng muộn'
-          }));
     });
   });
 }

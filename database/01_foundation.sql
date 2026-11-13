@@ -852,6 +852,8 @@ begin
 
   select coalesce(sum(qty * unit_price), 0) into v_sub from bill_lines where bill_id = p_bill and voided_at is null;
   if v_sub = 0 then raise exception 'BILL_EMPTY'; end if;
+  -- Hủy món sau khi giảm giá có thể làm giảm giá vượt tạm tính
+  if v_bill.discount > v_sub then raise exception 'DISCOUNT_INVALID'; end if;
   v_total := v_sub - v_bill.discount;
 
   update bills set status = 'paid', paid_at = now(), paid_by = v_me, payment_method = p_method, total_amount = v_total

@@ -20,7 +20,7 @@ insert into dining_tables (area_id, name) select id, 'Bàn 1' from areas;
 do $test$
 declare
   owner_u constant text := '00000000-0000-0000-0000-0000000000a1';
-  sold uuid; unsold uuid; milk uuid; cafe uuid; s uuid; b uuid; t1 uuid; msg text; n int;
+  sold uuid; unsold uuid; milk uuid; cafe uuid; s uuid; b uuid; b2 uuid; ln uuid; t1 uuid; msg text; n int;
 begin
   select ms.id into sold   from menu_sizes ms join menu_items mi on mi.id = ms.item_id where mi.name = 'Cà phê sữa';
   select ms.id into unsold from menu_sizes ms join menu_items mi on mi.id = ms.item_id where mi.name = 'Trà sữa';
@@ -46,6 +46,15 @@ begin
   exception when others then get stacked diagnostics msg = message_text;
     if msg <> 'PAYMENT_METHOD_INVALID' then raise exception 'pay_bill: mong PAYMENT_METHOD_INVALID, nhan: %', msg; end if; end;
   perform pay_bill(b, 'cash');
+  -- Giảm giá rồi hủy món: giảm giá vượt tạm tính thì pay_bill báo DISCOUNT_INVALID (không lỗi check constraint)
+  b2 := open_bill(t1, 'dine_in', 1);
+  ln := add_bill_line(b2, sold, 1); perform add_bill_line(b2, sold, 1);
+  perform set_bill_discount(b2, 40000, 'Khách quen');
+  perform void_bill_line(ln, 'Khách đổi ý');
+  begin perform pay_bill(b2, 'cash'); raise exception 'LE RA PHAI LOI (giam gia vuot tam tinh)';
+  exception when others then get stacked diagnostics msg = message_text;
+    if msg <> 'DISCOUNT_INVALID' then raise exception 'pay_bill: mong DISCOUNT_INVALID, nhan: %', msg; end if; end;
+  perform cancel_open_bill(b2, 'Dọn bill thử');
   reset session authorization;
 
   -- Đã bán: sửa, xóa, thêm dòng, đổi size_id đều bị chặn với RECIPE_IN_USE

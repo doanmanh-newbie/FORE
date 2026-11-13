@@ -255,7 +255,7 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Destructive:** nền `AppColors.danger` (#B42318), chữ trắng, ở cả hai chế độ.
 
 ### Chips
-- **Style:** viên bo tròn, nền tint trạng thái, chữ màu trạng thái 12px đậm (`StatusChip`, `SeverityChip`, `StatusPill`).
+- **Style:** viên bo tròn, nền tint trạng thái, chữ màu trạng thái 12px đậm (`StatusChip`, `StatusPill`).
 - **State:** bốn mức Ổn / Cần xem / Nghiêm trọng / Trung tính (Pale Tint + Text Secondary).
 
 ### Cards / Containers
@@ -266,7 +266,7 @@ Chắc chắn nhưng kín đáo, không có bóng.
 - **Internal Padding:** 16px (`cardPadding`).
 
 ### Inputs / Fields
-- **Style:** nền trắng, viền 1 px Hairline, bo 12px, đệm 14px (`AppTextField`, `AppFormField`, `MoneyField`).
+- **Style:** nền trắng, viền 1 px Hairline, bo 12px, đệm 14px (`AppTextField`, `MoneyField`).
 - **Focus:** viền đổi sang Ink Teal.
 - **Error / Disabled:** viền và chữ lỗi Status Critical 12px dưới ô; viền vô hiệu giữ Hairline.
 

@@ -34,21 +34,6 @@ class RpcInventoryRepository implements InventoryRepository, CashRepository {
   }
 
   @override
-  Future<void> addPurchase({
-    required String ingredientId,
-    required int qty,
-    bool late = false,
-    String? note,
-  }) async {
-    await _rpc.call('add_purchase', {
-      'p_ingredient': ingredientId,
-      'p_qty': qty,
-      'p_late': late,
-      'p_note': _clean(note),
-    });
-  }
-
-  @override
   Future<void> addWaste({
     required String ingredientId,
     required int qty,

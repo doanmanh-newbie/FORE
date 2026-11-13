@@ -292,15 +292,6 @@ class FakeInventoryRepository
   }
 
   @override
-  Future<void> addPurchase({
-    required String ingredientId,
-    required int qty,
-    bool late = false,
-    String? note,
-  }) =>
-      enter('addPurchase', '$ingredientId:$qty:$late:${note ?? ''}');
-
-  @override
   Future<void> addWaste({
     required String ingredientId,
     required int qty,

@@ -684,14 +684,6 @@ class _FakeInventoryRepository implements InventoryRepository, CashRepository {
   }) async {}
 
   @override
-  Future<void> addPurchase({
-    required String ingredientId,
-    required int qty,
-    bool late = false,
-    String? note,
-  }) async {}
-
-  @override
   Future<void> addWaste({
     required String ingredientId,
     required int qty,

@@ -1,25 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/fore_card.dart' show ForeCard;
+import '../widgets/fore_card.dart' show ForeCard, SectionHeader;
 import '../widgets/status_chip.dart';
 import 'action_tile.dart';
-import 'app_form_field.dart';
 import 'app_header.dart';
 import 'app_sheet.dart';
-import 'attention_item.dart';
 import '../widgets/ops_icon.dart';
 import 'colors.dart';
 import 'empty_state.dart';
 import 'error_state.dart';
 import 'hero_card.dart';
-import 'kpi_card.dart';
-import 'list_row.dart';
-import 'page_title_block.dart';
-import 'section_header.dart';
 import 'skeleton_box.dart';
 import 'spacing.dart';
-import 'stat_tile.dart';
-import 'severity_chip.dart';
 import 'status_pill.dart';
 import 'tertiary_button.dart';
 import 'typography.dart';
@@ -51,12 +43,7 @@ class DesignGalleryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const PageTitleBlock(
-                    title: 'Thư viện giao diện',
-                    today: 'Hôm nay, 28/10',
-                    updatedAt: 'Cập nhật lúc 07:12',
-                    businessDay: 'Ngày kinh doanh: 06:00 đến 05:59 hôm sau',
-                  ),
+                  Text('Thư viện giao diện', style: AppTextStyles.display),
                   const SizedBox(height: 12),
                   const SectionHeader(title: 'Màu và kiểu chữ'),
                   const SizedBox(height: 8),
@@ -83,28 +70,9 @@ class DesignGalleryScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   const SectionHeader(title: 'Chỉ số và hành động'),
                   const SizedBox(height: 8),
-                  const KpiCard(
-                    label: 'Doanh thu hôm nay',
-                    value: '8.518.000đ',
-                    comparison: 'Đến 19:12 · cùng khung giờ',
-                    footer: 'Tiền mặt 5.696.000đ · Chuyển khoản 2.822.000đ',
-                  ),
-                  const SizedBox(height: 8),
-                  const Row(
-                    children: [
-                      Expanded(
-                          child: StatTile(
-                              label: 'Bill đã thanh toán', value: '193')),
-                      SizedBox(width: 8),
-                      Expanded(
-                          child: StatTile(
-                              label: 'Doanh thu / bill', value: '44.134đ')),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
                   const HeroCard(
                     title: 'Ca 28/10 · Minh Anh · Ca sáng',
-                    status: SeverityChip(
+                    status: StatusPill(
                       label: 'Lệch lớn',
                       severity: StatusSeverity.critical,
                     ),
@@ -128,23 +96,6 @@ class DesignGalleryScreen extends StatelessWidget {
                     title: 'Mời nhân viên',
                     subtitle: 'Thêm người vào quán',
                     onTap: null,
-                  ),
-                  const SizedBox(height: 8),
-                  const AttentionItem(
-                    icon: Icons.warning_amber_rounded,
-                    title: '2 nguyên liệu dưới ngưỡng',
-                    message: 'Kiểm tra tồn kho trước ca tiếp theo.',
-                    actionLabel: 'Mở kho',
-                  ),
-                  const SizedBox(height: 8),
-                  const ForeCard(
-                    padding: EdgeInsets.zero,
-                    child: ListRow(
-                      title: 'Ca 28/10 · Minh Anh · Ca sáng',
-                      subtitle: 'Đã đóng lúc 22:04 · Chưa xử lý',
-                      leading: Icon(Icons.receipt_long_outlined),
-                      trailing: Icon(Icons.chevron_right_rounded),
-                    ),
                   ),
                   const SizedBox(height: 16),
                   const SectionHeader(title: 'Nút và trạng thái tải'),
@@ -179,8 +130,6 @@ class DesignGalleryScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const AppFormFieldSample(),
-                  const SizedBox(height: 12),
                   const ForeCard(
                     padding: EdgeInsets.zero,
                     child: AppSheet(
@@ -200,32 +149,6 @@ class DesignGalleryScreen extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      );
-}
-
-class AppFormFieldSample extends StatefulWidget {
-  const AppFormFieldSample({super.key});
-
-  @override
-  State<AppFormFieldSample> createState() => _AppFormFieldSampleState();
-}
-
-class _AppFormFieldSampleState extends State<AppFormFieldSample> {
-  final _controller = TextEditingController(text: 'Ghi chú của ca');
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => ForeCard(
-        child: AppFormField(
-          label: 'Trường nhập dùng chung',
-          controller: _controller,
-          hint: 'Nhập nội dung',
         ),
       );
 }

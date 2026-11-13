@@ -868,6 +868,8 @@ begin
 
   select coalesce(sum(qty * unit_price), 0) into v_sub from bill_lines where bill_id = p_bill and voided_at is null;
   if v_sub = 0 then raise exception 'BILL_EMPTY'; end if;
+  -- Hủy món sau khi giảm giá có thể làm giảm giá vượt tạm tính
+  if v_bill.discount > v_sub then raise exception 'DISCOUNT_INVALID'; end if;
   v_total := v_sub - v_bill.discount;
 
   update bills set status = 'paid', paid_at = now(), paid_by = v_me, payment_method = p_method, total_amount = v_total
@@ -1436,6 +1438,11 @@ begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
   if p_new_qty < 0 then raise exception 'QTY_INVALID'; end if;
   select shift_id, ingredient_id into v_shift, v_ing from purchases where id = p_purchase and shop_id = app_shop_id();
+  if v_shift is null then   -- dòng phiếu nhập PN: lấy ca từ dòng sổ kho gốc
+    select sl.shift_id, sl.ingredient_id into v_shift, v_ing
+      from stock_ledger sl join purchase_order_lines pl on pl.id = sl.ref_id
+     where sl.ref_id = p_purchase and sl.kind = 'purchase' and not sl.is_correction and sl.shop_id = app_shop_id();
+  end if;
   if v_shift is null then raise exception 'NOT_FOUND'; end if;
 
   select coalesce(sum(qty_delta), 0) into v_cur from stock_ledger where kind = 'purchase' and ref_id = p_purchase;
@@ -1910,21 +1917,29 @@ begin
     left join staff st on st.id = w.entered_by
    where w.shift_id = p_shift;
 
-  -- Phiếu nhập kho trong ca (số lượng hiệu lực sau điều chỉnh) để chủ đối chiếu khi nguyên liệu lệch
+  -- Hàng nhập trong ca (số lượng hiệu lực sau điều chỉnh) để chủ đối chiếu khi nguyên liệu lệch:
+  -- phiếu nhập nhanh cũ (purchases) và từng dòng phiếu nhập PN đã ghi vào sổ kho của ca này.
   select coalesce(jsonb_agg(jsonb_build_object(
-           'id', pu.id,
+           'id', x.id,
            'ingredient_name', i.name, 'unit', i.unit,
            'qty', coalesce((select sum(l.qty_delta) from stock_ledger l
-                             where l.kind = 'purchase' and l.ref_id = pu.id), pu.qty),
-           'original_qty', pu.qty,
-           'is_late_entry', pu.is_late_entry, 'note', pu.note,
-           'entered_at', pu.entered_at, 'entered_by_name', st.full_name)
-           order by pu.entered_at), '[]'::jsonb)
+                             where l.kind = 'purchase' and l.ref_id = x.id), x.qty),
+           'original_qty', x.qty,
+           'is_late_entry', x.is_late_entry, 'note', x.note,
+           'entered_at', x.entered_at, 'entered_by_name', st.full_name)
+           order by x.entered_at), '[]'::jsonb)
     into v_purchases
-    from purchases pu
-    join ingredients i on i.id = pu.ingredient_id
-    left join staff st on st.id = pu.entered_by
-   where pu.shift_id = p_shift;
+    from (select pu.id, pu.ingredient_id, pu.qty, pu.is_late_entry, pu.note, pu.entered_at, pu.entered_by
+            from purchases pu
+           where pu.shift_id = p_shift
+          union all
+          select pl.id, pl.ingredient_id, pl.qty, false, po.code, sl.at, sl.created_by
+            from stock_ledger sl
+            join purchase_order_lines pl on pl.id = sl.ref_id
+            join purchase_orders po on po.id = pl.order_id
+           where sl.shift_id = p_shift and sl.kind = 'purchase' and not sl.is_correction) x
+    join ingredients i on i.id = x.ingredient_id
+    left join staff st on st.id = x.entered_by;
 
   v_overall := case when not v_has_data then 'no_data'
                     when v_rank >= 2 then 'alert'
@@ -4764,7 +4779,7 @@ create table if not exists stocktake_lines (
   ingredient_id      uuid not null references ingredients(id),
   counted_qty        integer check (counted_qty is null or counted_qty >= 0),
   counted_at         timestamptz,
-  system_qty         integer,                 -- chụp lúc GỬI; không bao giờ trả cho nhân viên
+  system_qty         integer,                 -- chụp lúc ĐẾM (st_save); không bao giờ trả cho nhân viên
   unit_cost          numeric(14,4),
   recount_requested  boolean not null default false,
   recount_prev_qty   integer,
@@ -5618,9 +5633,14 @@ begin
     select * into l from stocktake_lines where stocktake_id = p_id and ingredient_id = v_ing for update;
     if not found then raise exception 'NOT_FOUND'; end if;
     if k.status = 'recount' and not l.recount_requested then continue; end if;
+    -- Lưu nháp lại cùng số thì giữ nguyên thời điểm đếm và số hệ thống đã chụp
+    if v_qty is not distinct from l.counted_qty and l.system_qty is not null then continue; end if;
+    -- Chụp tồn hệ thống NGAY LÚC ĐẾM: hàng bán/nhập giữa lúc đếm và lúc gửi không tạo lệch giả
     update stocktake_lines set
            recount_prev_qty = case when k.status = 'recount' and recount_prev_qty is null then counted_qty else recount_prev_qty end,
-           counted_qty = v_qty, counted_at = case when v_qty is null then null else now() end
+           counted_qty = v_qty, counted_at = case when v_qty is null then null else now() end,
+           system_qty = case when v_qty is null then null else _inv_stock(v_ing) end,
+           unit_cost = case when v_qty is null then null else (select i.unit_cost from ingredients i where i.id = v_ing) end
      where id = l.id;
   end loop;
   update stocktakes set saved_at = now() where id = p_id;
@@ -5639,10 +5659,10 @@ begin
                 and (k.status = 'draft' or x.recount_requested)) then
     raise exception 'COUNT_INCOMPLETE';
   end if;
-  -- chụp tồn hệ thống + giá bình quân tại thời điểm gửi (lần gửi đầu: mọi dòng; đếm lại: các dòng đếm lại)
+  -- số hệ thống đã chụp lúc đếm (st_save); dòng nào còn thiếu thì chụp bây giờ
   update stocktake_lines x set
-         system_qty = _inv_stock(x.ingredient_id),
-         unit_cost = (select i.unit_cost from ingredients i where i.id = x.ingredient_id),
+         system_qty = coalesce(x.system_qty, _inv_stock(x.ingredient_id)),
+         unit_cost = coalesce(x.unit_cost, (select i.unit_cost from ingredients i where i.id = x.ingredient_id)),
          recount_requested = false
    where x.stocktake_id = p_id and (k.status = 'draft' or x.recount_requested);
   update stocktakes set status = 'submitted', submitted_at = now(), saved_at = now() where id = p_id;
@@ -5709,7 +5729,9 @@ begin
   if not found then raise exception 'NOT_FOUND'; end if;
   if k.status <> 'submitted' then raise exception 'STOCKTAKE_LOCKED'; end if;
   if p_ingredients is null or array_length(p_ingredients, 1) is null then raise exception 'LINES_REQUIRED'; end if;
-  update stocktake_lines set recount_requested = true where stocktake_id = p_id and ingredient_id = any (p_ingredients);
+  -- xóa số hệ thống cũ: lần đếm lại sẽ chụp số mới lúc đếm
+  update stocktake_lines set recount_requested = true, system_qty = null, unit_cost = null
+   where stocktake_id = p_id and ingredient_id = any (p_ingredients);
   get diagnostics v_n = row_count;
   if v_n = 0 then raise exception 'NOT_FOUND'; end if;
   update stocktakes set status = 'recount', review_note = nullif(btrim(p_note), '') where id = p_id;
