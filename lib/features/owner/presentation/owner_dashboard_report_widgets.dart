@@ -18,31 +18,97 @@ class _RevenueCard extends StatelessWidget {
     return ForeCard(
       padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-            isToday
-                ? 'Doanh thu hôm nay'
-                : 'Doanh thu ${start.day}/${start.month}',
-            style: AppTextStyles.headline),
-        const SizedBox(height: 8),
-        Text(formatVnd(data.totalSales), style: AppTextStyles.metricXL),
-        const SizedBox(height: 6),
-        Text(
-          'Tiền mặt ${formatVnd(data.cashSales)} · Chuyển khoản ${formatVnd(data.transferSales)}',
-          style: AppTextStyles.caption,
-        ),
+        Row(children: [
+          ForeIconBadge(
+            icon: Icons.payments_outlined,
+            color: AppColors.brand,
+            background: AppColors.accentTint,
+            size: 36,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+                isToday
+                    ? 'Doanh thu hôm nay'
+                    : 'Doanh thu ${start.day}/${start.month}',
+                style: AppTextStyles.cardTitle),
+          ),
+        ]),
         const SizedBox(height: 12),
+        Text(formatVnd(data.totalSales),
+            style: AppTextStyles.metricXL.copyWith(
+              fontFamily: AppFonts.body,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            )),
+        const SizedBox(height: 10),
+        // Một chuỗi duy nhất cho đọc màn hình; hai viên hiển thị chia tiền mặt / chuyển khoản.
+        Semantics(
+          label:
+              'Tiền mặt ${formatVnd(data.cashSales)} · Chuyển khoản ${formatVnd(data.transferSales)}',
+          child: ExcludeSemantics(
+            child: Wrap(spacing: 8, runSpacing: 8, children: [
+              _PayChip(
+                icon: Icons.account_balance_wallet_outlined,
+                label: 'Tiền mặt ${formatVnd(data.cashSales)}',
+              ),
+              _PayChip(
+                icon: Icons.qr_code_2_rounded,
+                label: 'Chuyển khoản ${formatVnd(data.transferSales)}',
+              ),
+            ]),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Divider(height: 1, color: AppColors.cardBorder),
+        const SizedBox(height: 14),
         Text('Doanh thu 7 ngày', style: AppTextStyles.captionStrong),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         if (data.unavailable.contains('trend'))
           Text('Chưa tải được biểu đồ 7 ngày. Kéo xuống để thử lại.',
               style: AppTextStyles.caption)
         else
           _SalesTrendBars(points: data.recentSales),
-        const SizedBox(height: 4),
-        Text(changeLabel, style: AppTextStyles.caption),
+        const SizedBox(height: 6),
+        Text(changeLabel,
+            style: AppTextStyles.caption.copyWith(
+              color: change == null
+                  ? AppColors.textSecondary
+                  : change >= 0
+                      ? AppColors.statusHealthy
+                      : AppColors.statusCritical,
+              fontWeight: change == null ? FontWeight.w400 : FontWeight.w600,
+            )),
       ]),
     );
   }
+}
+
+/// Viên nhỏ nền kem: một phương thức thanh toán và số tiền.
+class _PayChip extends StatelessWidget {
+  const _PayChip({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 15, color: AppColors.brandAccent),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.captionStrong),
+          ),
+        ]),
+      );
 }
 
 class _SalesTrendBars extends StatelessWidget {
@@ -59,7 +125,7 @@ class _SalesTrendBars extends StatelessWidget {
       return point.sales > max ? point.sales : max;
     });
     return SizedBox(
-      height: 62,
+      height: 70,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -77,7 +143,7 @@ class _SalesTrendBars extends StatelessWidget {
                         Container(
                           height: point.sales == 0
                               ? 3
-                              : 8 + 34 * point.sales / maxSales,
+                              : 8 + 42 * point.sales / maxSales,
                           decoration: BoxDecoration(
                             // Cột cũ >= 3:1 với nền thẻ ở cả hai chế độ; hôm nay đậm nhất.
                             color: point.sales == 0
@@ -85,7 +151,7 @@ class _SalesTrendBars extends StatelessWidget {
                                 : point == points.last
                                     ? AppColors.brand
                                     : AppColors.brandAccent,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -116,7 +182,10 @@ class _ShiftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _InfoCard(
-        icon: shift == null ? Icons.schedule_outlined : Icons.circle,
+        icon: shift == null
+            ? Icons.schedule_outlined
+            : Icons.storefront_outlined,
+        iconColor: shift == null ? AppColors.textSecondary : AppColors.statusHealthy,
         title: shift == null ? 'Chưa có ca đang mở' : 'Ca đang mở',
         body: shift == null
             ? 'Mở màn hình vận hành để bắt đầu ca.'

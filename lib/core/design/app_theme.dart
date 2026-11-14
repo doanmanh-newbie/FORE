@@ -102,10 +102,24 @@ abstract final class AppTheme {
           foregroundColor: p.brand,
         ),
       ),
+      // Thanh điều hướng nền rêu đậm cố định ở cả hai chế độ; tab đang chọn là
+      // viên mù tạt, icon rêu (7,0:1); tab khác trắng 75% (8,9:1 trên rêu).
       navigationBarTheme: NavigationBarThemeData(
         height: 68,
-        backgroundColor: p.surface,
-        indicatorColor: p.navIndicator,
+        backgroundColor: AppColors.moss,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: AppColors.mustard,
+        indicatorShape: const StadiumBorder(),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            size: 24,
+            color: states.contains(WidgetState.disabled)
+                ? AppColors.white.withValues(alpha: 0.35)
+                : states.contains(WidgetState.selected)
+                    ? AppColors.moss
+                    : AppColors.white.withValues(alpha: 0.75),
+          ),
+        ),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontFamily: AppFonts.body,
@@ -113,25 +127,31 @@ abstract final class AppTheme {
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w700
                 : FontWeight.w500,
-            color: p.brand,
+            color: states.contains(WidgetState.disabled)
+                ? AppColors.white.withValues(alpha: 0.35)
+                : states.contains(WidgetState.selected)
+                    ? AppColors.mustard
+                    : AppColors.white.withValues(alpha: 0.75),
           ),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: p.surface,
-        indicatorColor: p.navIndicator,
-        selectedIconTheme: IconThemeData(color: p.brand),
-        unselectedIconTheme: IconThemeData(color: p.brand),
-        selectedLabelTextStyle: TextStyle(
+        backgroundColor: AppColors.moss,
+        indicatorColor: AppColors.mustard,
+        indicatorShape: const StadiumBorder(),
+        selectedIconTheme: const IconThemeData(color: AppColors.moss),
+        unselectedIconTheme:
+            IconThemeData(color: AppColors.white.withValues(alpha: 0.75)),
+        selectedLabelTextStyle: const TextStyle(
             fontFamily: AppFonts.body,
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: p.brand),
+            color: AppColors.mustard),
         unselectedLabelTextStyle: TextStyle(
             fontFamily: AppFonts.body,
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: p.brand),
+            color: AppColors.white.withValues(alpha: 0.75)),
       ),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(

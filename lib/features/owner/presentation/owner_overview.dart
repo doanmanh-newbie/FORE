@@ -19,28 +19,8 @@ extension _OwnerOverview on _OwnerHomeContentState {
     }
     final featured = needsReview;
     final otherPending = data.pendingReviewCount - (featured == null ? 0 : 1);
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: PageScaffold(
-        header: _pageHeader(),
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text('Tổng quan', style: AppTextStyles.display),
-              ),
-              IconButton(
-                tooltip: 'Làm mới',
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh_rounded),
-              ),
-            ],
-          ),
-          // Một khối căn trái: ngày kinh doanh là thông tin chính, giờ cập nhật đứng sau.
-          Text(_businessDayLabel(data), style: AppTextStyles.captionStrong),
-          Text('Cập nhật lúc ${formatHm(data.updatedAt)}',
-              style: AppTextStyles.caption),
+    final content = <Widget>[
+          const SizedBox(height: 6),
           if (data.shifts.isEmpty &&
               data.menu.isEmpty &&
               data.expectedStock.isEmpty &&
@@ -280,10 +260,51 @@ extension _OwnerOverview on _OwnerHomeContentState {
             textAlign: TextAlign.center,
             style: AppTextStyles.caption,
           ),
+    ];
+    // Header rêu tràn mép; phần thân có lề 20 hai bên, thẻ đầu tiên nổi đè lên mép header.
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: AppColors.brand,
+      child: PageScaffold(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: AppSizes.pageBottomPadding),
+        children: [
+          _overviewHeader(data),
+          for (final child in content)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.screenGutter),
+              child: child,
+            ),
         ],
       ),
     );
   }
+
+  /// Header nền rêu của trang Tổng quan: quán, chuông, tiêu đề và ngày kinh doanh.
+  Widget _overviewHeader(OwnerDashboardData data) => _mossHeader(
+        title: 'Tổng quan',
+        titleAction: IconButton(
+          tooltip: 'Làm mới',
+          onPressed: _refresh,
+          color: AppColors.white,
+          icon: const Icon(Icons.refresh_rounded),
+        ),
+        // Một khối căn trái: ngày kinh doanh là thông tin chính, giờ cập nhật đứng sau.
+        caption: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _businessDayLabel(data),
+              style: const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text('Cập nhật lúc ${formatHm(data.updatedAt)}'),
+          ],
+        ),
+      );
 }
 
 String _stockNames(List<Map<String, dynamic>> items) {

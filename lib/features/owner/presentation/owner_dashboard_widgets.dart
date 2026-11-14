@@ -11,9 +11,15 @@ class _MetricCard extends StatelessWidget {
   Widget build(BuildContext context) => ForeCard(
         padding: const EdgeInsets.all(14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, color: AppColors.brandAccent),
-          const SizedBox(height: 8),
+          ForeIconBadge(
+            icon: icon,
+            color: AppColors.brand,
+            background: AppColors.accentTint,
+            size: 36,
+          ),
+          const SizedBox(height: 10),
           Text(value, style: AppTextStyles.metric),
+          const SizedBox(height: 2),
           Text(label, style: AppTextStyles.caption),
         ]),
       );
@@ -43,12 +49,12 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       onTap: onTap,
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: iconColor ?? AppColors.brandAccent),
+        ForeIconBadge(icon: icon, color: iconColor ?? AppColors.brandAccent),
         const SizedBox(width: 12),
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: AppTextStyles.title),
+            Text(title, style: AppTextStyles.cardTitle),
             if (status != null) ...[
               const SizedBox(height: 6),
               status!,
@@ -59,8 +65,11 @@ class _InfoCard extends StatelessWidget {
         ),
         if (showArrow) ...[
           const SizedBox(width: 4),
-          Icon(Icons.arrow_forward_rounded,
-              size: 18, color: AppColors.brand),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Icon(Icons.chevron_right_rounded,
+                size: 22, color: AppColors.brand),
+          ),
         ],
       ]),
     );
@@ -90,7 +99,9 @@ class _NewShopChecklist extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Chào mừng quán của bạn!', style: AppTextStyles.title),
+              Text('Chào mừng quán của bạn!',
+                  style: AppTextStyles.appBarTitle
+                      .copyWith(color: AppColors.brand)),
               const SizedBox(height: 4),
               Text('Hoàn thành vài bước để bắt đầu vận hành.',
                   style: AppTextStyles.caption),
@@ -128,13 +139,27 @@ class _ChecklistAction extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: double.infinity,
-        child: TextButton.icon(
-          onPressed: onTap,
-          icon: Icon(icon, size: 20),
-          label: Align(alignment: Alignment.centerLeft, child: Text(label)),
-          style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Material(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.field),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(children: [
+                  ForeIconBadge(icon: icon, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(label, style: AppTextStyles.bodyStrong)),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.brand),
+                ]),
+              ),
+            ),
+          ),
         ),
       );
 }
@@ -162,8 +187,8 @@ class _QuickActionTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: AppColors.brandAccent),
-              const SizedBox(height: 7),
+              ForeIconBadge(icon: icon, color: AppColors.brandAccent, size: 36),
+              const SizedBox(height: 10),
               Text(title, style: AppTextStyles.bodyStrong),
               const SizedBox(height: 3),
               Text(subtitle, style: AppTextStyles.caption),
@@ -209,9 +234,14 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 9),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Expanded(child: Text(title, style: AppTextStyles.headline)),
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.appBarTitle.copyWith(color: AppColors.brand),
+            ),
+          ),
           if (trailing != null) trailing!,
         ]),
       );
@@ -227,10 +257,15 @@ class _ErrorPanel extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.cloud_off_outlined,
-                size: 42, color: AppColors.warning),
-            const SizedBox(height: 12),
-            Text('Chưa thể cập nhật', style: AppTextStyles.headline),
+            ForeIconBadge(
+              icon: Icons.cloud_off_outlined,
+              color: AppColors.warningText,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            Text('Chưa thể cập nhật',
+                style: AppTextStyles.appBarTitle
+                    .copyWith(color: AppColors.brand, fontSize: 20)),
             const SizedBox(height: 6),
             Text(
               message ??
@@ -239,10 +274,11 @@ class _ErrorPanel extends StatelessWidget {
               style: AppTextStyles.body,
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
+            ForeButton(
+              label: 'Thử lại',
+              icon: Icons.refresh_rounded,
+              expand: false,
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Thử lại'),
             ),
           ]),
         ),

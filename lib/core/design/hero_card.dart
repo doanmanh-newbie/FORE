@@ -4,6 +4,7 @@ import 'colors.dart';
 import 'spacing.dart';
 import 'typography.dart';
 
+/// Thẻ nổi bật nền rêu đậm: tiêu đề trắng, nút chính viên thuốc mù tạt, nút phụ viền trắng.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
@@ -31,7 +32,7 @@ class HeroCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSizes.radiusCard),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppSizes.cardPadding),
+          padding: const EdgeInsets.all(AppSizes.cardPadding + 2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -60,8 +61,9 @@ class HeroCard extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       minimumSize:
                           const Size.fromHeight(AppSizes.controlHeight),
-                      backgroundColor: AppColors.actionLime,
-                      foregroundColor: AppColors.onLime,
+                      // Nền thẻ luôn tối: dùng mù tạt cố định, không đảo theo chế độ.
+                      backgroundColor: AppColors.mustard,
+                      foregroundColor: AppColors.moss,
                     ),
                     onPressed: onPrimary,
                     child: Text(primaryLabel!),

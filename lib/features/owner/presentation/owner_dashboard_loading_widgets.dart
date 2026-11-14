@@ -6,35 +6,37 @@ class _OwnerDashboardLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.background,
-        body: const PageScaffold(
+        body: PageScaffold(
+          padding: const EdgeInsets.only(bottom: AppSizes.pageBottomPadding),
           children: [
-            Row(
-              children: [
-                SkeletonBox(width: 150, height: 38),
-                Spacer(),
-                SkeletonBox(
-                  width: 44,
-                  height: 44,
-                  radius: AppSizes.radiusChip,
+            // Chỗ của header rêu, để trang không nhảy khi dữ liệu về.
+            Container(
+              height: 190,
+              decoration: const BoxDecoration(
+                color: AppColors.moss,
+                borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(AppRadius.panel)),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(
+                  AppSizes.screenGutter, 20, AppSizes.screenGutter, 0),
+              child: Column(children: [
+                SkeletonBox(height: 84),
+                SizedBox(height: 12),
+                SkeletonBox(height: 190),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: SkeletonBox(height: 104)),
+                    SizedBox(width: 12),
+                    Expanded(child: SkeletonBox(height: 104)),
+                  ],
                 ),
-              ],
+                SizedBox(height: 18),
+                SkeletonBox(height: 116),
+              ]),
             ),
-            SizedBox(height: 28),
-            SkeletonBox(width: 140, height: 34),
-            SizedBox(height: 12),
-            SkeletonBox(height: 142),
-            SizedBox(height: 12),
-            SkeletonBox(height: 126),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: SkeletonBox(height: 94)),
-                SizedBox(width: 12),
-                Expanded(child: SkeletonBox(height: 94)),
-              ],
-            ),
-            SizedBox(height: 18),
-            SkeletonBox(height: 116),
           ],
         ),
       );
