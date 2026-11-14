@@ -10,9 +10,10 @@
 --   Ca D: lệch -5 (ĐỔI CHIỀU)                                       -> chuỗi bị đứt, về 1
 \set ON_ERROR_STOP on
 
-truncate staff, ingredients, menu_items, menu_sizes, recipe_lines, areas, dining_tables, shifts, bills, bill_lines,
+truncate shops, user_settings, shop_invites, staff, ingredients, menu_items, menu_sizes, recipe_lines, areas, dining_tables, shifts, bills, bill_lines,
          purchases, stock_counts, waste_logs, stock_ledger, audit_log, pin_attempts restart identity cascade;
 delete from auth.users;
+insert into shops (id, name) values ('00000000-0000-0000-0000-0000000000f1', 'Quán test');
 -- đặt lại TOÀN BỘ cấu hình về mặc định (các test khác có đổi cấu hình, không để ảnh hưởng nhau)
 update app_settings set value_int = case key
   when 'important_warn_pct' then 3   when 'important_alert_pct' then 5
@@ -26,9 +27,11 @@ update app_settings set value_int = case key
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a1', 'owner@test'),
   ('00000000-0000-0000-0000-0000000000b1', 'nv1@test');
-insert into staff (auth_user_id, full_name, role) values
-  ('00000000-0000-0000-0000-0000000000a1', 'Chủ', 'owner'),
-  ('00000000-0000-0000-0000-0000000000b1', 'NV1', 'staff');
+insert into staff (shop_id, auth_user_id, full_name, role) values
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Chủ', 'owner'),
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000b1', 'NV1', 'staff');
+-- (đặt người đăng nhập mặc định = chủ để giá trị mặc định shop_id của các lệnh nạp dữ liệu bên dưới trỏ đúng quán)
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', false);
 insert into ingredients (name, unit, importance) values ('Sữa', 'ml', 'important');
 insert into menu_items (name) values ('Cà phê sữa');
 insert into menu_sizes (item_id, size_name, price) select id, 'M', 29000 from menu_items;
@@ -42,7 +45,7 @@ declare
   nv1     constant text := '00000000-0000-0000-0000-0000000000b1';
   milk uuid; cf uuid; t1 uuid; b uuid;
   sa uuid; sb uuid; sc uuid; sd uuid; s uuid;
-  i int; delta int; wst int; cash_close int; j jsonb; e jsonb; msg text; k text;
+  i int; delta int; wst int; cash_close int; oc int; j jsonb; e jsonb; msg text; k text;
 begin
   select id into milk from ingredients where name = 'Sữa';
   select id into cf from menu_sizes;
@@ -53,12 +56,13 @@ begin
   for i in 1..4 loop
     delta := case i when 4 then -5 else 5 end;
     wst   := case i when 3 then 2 else 0 end;
-    s := open_shift(0);
+    s := open_shift(case when i = 1 then 0 else cash_close end);   -- mở ca bằng đúng tiền cuối ca trước
+    oc := case when i = 1 then 0 else cash_close end;
     perform submit_stock_count(milk, 'open', 1000);
     b := open_bill(t1, 'dine_in', 1); perform add_bill_line(b, cf, 1); perform pay_bill(b, 'cash');
     if wst > 0 then perform add_waste(milk, wst, 'expired', null); end if;
-    cash_close := 29000;
-    if i = 3 then perform add_cash_movement('out', 20000, 'mua đá'); cash_close := 9000; end if;
+    cash_close := oc + 29000;
+    if i = 3 then perform add_cash_movement('out', 20000, 'mua đá'); cash_close := cash_close - 20000; end if;
     perform submit_stock_count(milk, 'close', 1000 - 30 - wst - delta);
     perform close_shift(cash_close);
     if i = 1 then sa := s; elsif i = 2 then sb := s; elsif i = 3 then sc := s; else sd := s; end if;

@@ -10,12 +10,39 @@ dependencies:
   flutter:
     sdk: flutter
   supabase_flutter: ^2.5.0
+  image_picker: ^1.1.2
   provider: ^6.1.2
+  flutter_svg: ^2.3.0
+  shared_preferences: ^2.5.6
+  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_secure_storage_platform_interface: ^1.1.2
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/splash/
+    - assets/icons/
+
+  fonts:
+    - family: ForeInter
+      fonts:
+        - asset: assets/fonts/Inter-400.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-500.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-600.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-700.ttf
+          weight: 700
+    - family: ForeNewsreader
+      fonts:
+        - asset: assets/fonts/Newsreader-500.ttf
+          weight: 500
+        - asset: assets/fonts/Newsreader-600.ttf
+          weight: 600

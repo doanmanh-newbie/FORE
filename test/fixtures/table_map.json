@@ -1,0 +1,4 @@
+[{"area_id":"6b552514-5df2-488b-9fde-6821359c6f0b","area_name":"Tầng 1","table_id":"38d9e0fc-745c-43b7-92ce-c6449d4f707a","table_name":"Bàn 1","bill_id":null,"bill_no":null,"portions":0,"guests":null,"bill_opened_at":null}, 
+ {"area_id":"6b552514-5df2-488b-9fde-6821359c6f0b","area_name":"Tầng 1","table_id":"650da8ab-530c-4cd2-9642-0d5edb252e68","table_name":"Bàn 2","bill_id":"af73c213-9d5e-4174-a36d-fd2d7b4fbc4a","bill_no":1,"portions":3,"guests":2,"bill_opened_at":"2026-10-27T02:13:50.353177+00:00"}, 
+ {"area_id":"6b552514-5df2-488b-9fde-6821359c6f0b","area_name":"Tầng 1","table_id":"d269003c-ad57-4d12-ac8d-05e02d9080b7","table_name":"Bàn 10","bill_id":null,"bill_no":null,"portions":0,"guests":null,"bill_opened_at":null}, 
+ {"area_id":"ce31a29f-52a1-4bfb-8751-1c2f384a77cc","area_name":"Sân","table_id":"bc4bce0d-0c4e-4659-a0b6-985cd9f53d4c","table_name":"Sân 1","bill_id":null,"bill_no":null,"portions":0,"guests":null,"bill_opened_at":null}]

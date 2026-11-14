@@ -5,9 +5,10 @@
 -- chống mở trùng bàn, PIN khóa sau 3 lần sai, nhân viên không đọc được sổ kho, nhật ký không sửa được.
 \set ON_ERROR_STOP on
 
-truncate staff, ingredients, menu_items, menu_sizes, recipe_lines, areas, dining_tables, shifts, bills, bill_lines,
+truncate shops, user_settings, shop_invites, staff, ingredients, menu_items, menu_sizes, recipe_lines, areas, dining_tables, shifts, bills, bill_lines,
          purchases, stock_counts, waste_logs, stock_ledger, audit_log, pin_attempts restart identity cascade;
 delete from auth.users;
+insert into shops (id, name) values ('00000000-0000-0000-0000-0000000000f1', 'Quán test');
 -- đặt lại TOÀN BỘ cấu hình về mặc định (các test khác có đổi cấu hình, không để ảnh hưởng nhau)
 update app_settings set value_int = case key
   when 'important_warn_pct' then 3   when 'important_alert_pct' then 5
@@ -22,10 +23,12 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a1', 'owner@test'),
   ('00000000-0000-0000-0000-0000000000b1', 'nv1@test'),
   ('00000000-0000-0000-0000-0000000000b2', 'nv2@test');
-insert into staff (auth_user_id, full_name, role) values
-  ('00000000-0000-0000-0000-0000000000a1', 'Chủ', 'owner'),
-  ('00000000-0000-0000-0000-0000000000b1', 'NV1', 'staff'),
-  ('00000000-0000-0000-0000-0000000000b2', 'NV2', 'staff');
+insert into staff (shop_id, auth_user_id, full_name, role) values
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Chủ', 'owner'),
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000b1', 'NV1', 'staff'),
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000b2', 'NV2', 'staff');
+-- (đặt người đăng nhập mặc định = chủ để giá trị mặc định shop_id của các lệnh nạp dữ liệu bên dưới trỏ đúng quán)
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', false);
 insert into ingredients (name, unit, importance) values ('Sữa', 'ml', 'important');
 insert into menu_items (name) values ('Cà phê sữa'), ('Trà sữa');
 insert into menu_sizes (item_id, size_name, price)

@@ -16,3 +16,8 @@ local.properties
 secrets.*
 key.properties
 *.jks
+env.json
+.env
+qa-accounts.local.md
+.loop/
+.playwright-mcp/

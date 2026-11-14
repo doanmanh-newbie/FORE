@@ -1,0 +1,2 @@
+[{"bill_id":"5f5e4611-2fad-4373-bd87-203cb4bb99ea","bill_no":2,"status":"open","opened_at":"2026-10-27T02:13:50.358729+00:00","portions":2,"items":"Bánh mì trứng, Cà phê sữa"}, 
+ {"bill_id":"4d49c588-b33a-4c52-999a-ac70c36f8237","bill_no":3,"status":"paid","opened_at":"2026-10-27T02:13:50.360778+00:00","portions":2,"items":"Cà phê sữa"}]

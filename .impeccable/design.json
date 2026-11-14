@@ -1,0 +1,492 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T11:28:29.995408+00:00",
+  "title": "Design System: Fore",
+  "extensions": {
+    "colorMeta": {
+      "ink-teal": {
+        "role": "primary",
+        "displayName": "Mực Xanh Quầy",
+        "canonical": "#0C2D32",
+        "tonalRamp": [
+          "#051214",
+          "#071B1E",
+          "#0A2428",
+          "#0C2D32",
+          "#556C70",
+          "#92A0A3",
+          "#C2CACC",
+          "#E7EAEA"
+        ]
+      },
+      "counter-teal": {
+        "role": "secondary",
+        "displayName": "Teal Quầy",
+        "canonical": "#51A19B",
+        "tonalRamp": [
+          "#20403E",
+          "#31615D",
+          "#41817C",
+          "#51A19B",
+          "#85BDB9",
+          "#B1D5D2",
+          "#D4E8E6",
+          "#EEF6F5"
+        ]
+      },
+      "lime-pour": {
+        "role": "tertiary",
+        "displayName": "Lime Rót",
+        "canonical": "#D8F27A",
+        "tonalRamp": [
+          "#566131",
+          "#829149",
+          "#ADC262",
+          "#D8F27A",
+          "#E4F6A2",
+          "#EDF9C3",
+          "#F5FCDE",
+          "#FBFEF2"
+        ]
+      },
+      "night-shift": {
+        "role": "tertiary",
+        "displayName": "Ca Đêm",
+        "canonical": "#123C3A",
+        "tonalRamp": [
+          "#071817",
+          "#0B2423",
+          "#0E302E",
+          "#123C3A",
+          "#597675",
+          "#94A7A6",
+          "#C4CECE",
+          "#E7ECEB"
+        ]
+      },
+      "mint-mist": {
+        "role": "neutral",
+        "displayName": "Sương Bạc Hà",
+        "canonical": "#F3F7F5",
+        "tonalRamp": [
+          "#616362",
+          "#929493",
+          "#C2C6C4",
+          "#F3F7F5",
+          "#F7F9F8",
+          "#FAFBFA",
+          "#FCFDFC",
+          "#FEFEFE"
+        ]
+      },
+      "clean-white": {
+        "role": "neutral",
+        "displayName": "Trắng Sạch",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#666666",
+          "#999999",
+          "#CCCCCC",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF"
+        ]
+      },
+      "pale-tint": {
+        "role": "neutral",
+        "displayName": "Sắc Nhạt",
+        "canonical": "#EAF0EE",
+        "tonalRamp": [
+          "#5E605F",
+          "#8C908F",
+          "#BBC0BE",
+          "#EAF0EE",
+          "#F0F4F3",
+          "#F6F8F7",
+          "#FAFBFB",
+          "#FDFEFD"
+        ]
+      },
+      "nav-indicator": {
+        "role": "neutral",
+        "displayName": "Chỉ Báo Điều Hướng",
+        "canonical": "#DDF1EF",
+        "tonalRamp": [
+          "#586060",
+          "#85918F",
+          "#B1C1BF",
+          "#DDF1EF",
+          "#E7F5F4",
+          "#F0F9F8",
+          "#F6FCFB",
+          "#FCFEFD"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Đường Kẻ",
+        "canonical": "#CBD8D4",
+        "tonalRamp": [
+          "#515655",
+          "#7A827F",
+          "#A2ADAA",
+          "#CBD8D4",
+          "#DBE4E1",
+          "#E8EDEC",
+          "#F2F5F4",
+          "#FAFBFB"
+        ]
+      },
+      "card-edge": {
+        "role": "neutral",
+        "displayName": "Mép Thẻ",
+        "canonical": "#E7EFEC",
+        "tonalRamp": [
+          "#5C605E",
+          "#8B8F8E",
+          "#B9BFBD",
+          "#E7EFEC",
+          "#EEF4F2",
+          "#F4F8F6",
+          "#F9FBFA",
+          "#FDFDFD"
+        ]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Chữ Chính",
+        "canonical": "#14292A",
+        "tonalRamp": [
+          "#081011",
+          "#0C1919",
+          "#102122",
+          "#14292A",
+          "#5A696A",
+          "#959F9F",
+          "#C4CACA",
+          "#E8EAEA"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Chữ Phụ",
+        "canonical": "#4F6663",
+        "tonalRamp": [
+          "#202928",
+          "#2F3D3B",
+          "#3F524F",
+          "#4F6663",
+          "#849492",
+          "#B0BAB9",
+          "#D3D9D8",
+          "#EDF0EF"
+        ]
+      },
+      "disabled-fill": {
+        "role": "neutral",
+        "displayName": "Nền Vô Hiệu",
+        "canonical": "#E3EAE7",
+        "tonalRamp": [
+          "#5B5E5C",
+          "#888C8B",
+          "#B6BBB9",
+          "#E3EAE7",
+          "#EBF0EE",
+          "#F2F6F4",
+          "#F8FAF9",
+          "#FCFDFD"
+        ]
+      },
+      "status-healthy": {
+        "role": "status",
+        "displayName": "Ổn",
+        "canonical": "#18794E",
+        "tonalRamp": [
+          "#0A301F",
+          "#0E492F",
+          "#13613E",
+          "#18794E",
+          "#5DA183",
+          "#97C3AF",
+          "#C5DED3",
+          "#E8F2ED"
+        ]
+      },
+      "status-healthy-tint": {
+        "role": "status",
+        "displayName": "Nền Ổn",
+        "canonical": "#E2F4EA",
+        "tonalRamp": [
+          "#5A625E",
+          "#88928C",
+          "#B5C3BB",
+          "#E2F4EA",
+          "#EBF7F0",
+          "#F2FAF6",
+          "#F8FCFA",
+          "#FCFEFD"
+        ]
+      },
+      "status-attention": {
+        "role": "status",
+        "displayName": "Cần xem",
+        "canonical": "#8A5A00",
+        "tonalRamp": [
+          "#372400",
+          "#533600",
+          "#6E4800",
+          "#8A5A00",
+          "#AD8C4C",
+          "#CAB58C",
+          "#E2D6BF",
+          "#F3EEE6"
+        ]
+      },
+      "status-attention-tint": {
+        "role": "status",
+        "displayName": "Nền Cần xem",
+        "canonical": "#FFF1CC",
+        "tonalRamp": [
+          "#666052",
+          "#99917A",
+          "#CCC1A3",
+          "#FFF1CC",
+          "#FFF5DB",
+          "#FFF9E8",
+          "#FFFCF2",
+          "#FFFEFA"
+        ]
+      },
+      "status-critical": {
+        "role": "status",
+        "displayName": "Nghiêm trọng",
+        "canonical": "#B42318",
+        "tonalRamp": [
+          "#480E0A",
+          "#6C150E",
+          "#901C13",
+          "#B42318",
+          "#CA655D",
+          "#DD9C97",
+          "#ECC8C5",
+          "#F8E9E8"
+        ]
+      },
+      "status-critical-tint": {
+        "role": "status",
+        "displayName": "Nền Nghiêm trọng",
+        "canonical": "#FBE4E2",
+        "tonalRamp": [
+          "#645B5A",
+          "#978988",
+          "#C9B6B5",
+          "#FBE4E2",
+          "#FCECEB",
+          "#FDF3F2",
+          "#FEF8F8",
+          "#FFFCFC"
+        ]
+      },
+      "warning-text": {
+        "role": "status",
+        "displayName": "Chữ cảnh báo",
+        "canonical": "#B54708",
+        "tonalRamp": [
+          "#481C03",
+          "#6D2B05",
+          "#913906",
+          "#B54708",
+          "#CB7E52",
+          "#DEAC90",
+          "#ECD1C1",
+          "#F8EDE6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Tiêu đề trang."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Tiêu đề màn phụ, sheet."
+      },
+      "kpi": {
+        "displayName": "Kpi",
+        "purpose": "Con số chính của ca và tổng quan."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Tiêu đề phần."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Tiêu đề thẻ, dòng danh sách."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Nội dung, mô tả."
+      },
+      "body-strong": {
+        "displayName": "Body strong",
+        "purpose": "Giá trị cần nhấn, nhãn nút."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Nhãn ô nhập, chip."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Chú thích, thời gian, đơn vị."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "state-change",
+        "value": "200ms ease",
+        "purpose": "Đổi trạng thái thanh phân đoạn, nút; về 0 khi bật giảm chuyển động."
+      },
+      {
+        "name": "nav-indicator",
+        "value": "400ms",
+        "purpose": "Viên chỉ báo NavigationBar; về 0 khi bật giảm chuyển động."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Hành động chính duy nhất của màn.",
+      "html": "<button class=\"ds-btn-primary\">Mở ca</button>",
+      "css": ".ds-btn-primary{font-family:Inter,Roboto,sans-serif;background:#0C2D32;color:#FFFFFF;font-size:14px;font-weight:600;height:48px;padding:0 24px;border:none;border-radius:12px;min-width:200px;transition:background .2s}.ds-btn-primary:hover{background:#123C3A}.ds-btn-primary:focus-visible{outline:2px solid #51A19B;outline-offset:2px}.ds-btn-primary:active{background:#0A2428}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Hành động phụ bên cạnh nút chính.",
+      "html": "<button class=\"ds-btn-secondary\">Xem lịch sử</button>",
+      "css": ".ds-btn-secondary{font-family:Inter,Roboto,sans-serif;background:#FFFFFF;color:#0C2D32;font-size:14px;font-weight:600;height:48px;padding:0 24px;border:1px solid #0C2D32;border-radius:12px;min-width:200px;transition:background .2s}.ds-btn-secondary:hover{background:#EAF0EE}.ds-btn-secondary:focus-visible{outline:2px solid #51A19B;outline-offset:2px}"
+    },
+    {
+      "name": "Hero Card",
+      "kind": "card",
+      "refersTo": "hero-card",
+      "description": "Thẻ nổi bật trên Tổng quan: ca cần xử lý, nền tối với nút lime.",
+      "html": "<div class=\"ds-hero\"><div class=\"ds-hero-k\">Ca chiều · 14:00–22:00</div><div class=\"ds-hero-n\">−1.240 g sữa</div><button class=\"ds-hero-btn\">Xem đối soát</button></div>",
+      "css": ".ds-hero{font-family:Inter,Roboto,sans-serif;background:#123C3A;color:#FFFFFF;border-radius:20px;padding:16px;max-width:320px}.ds-hero-k{font-size:12px;color:rgba(255,255,255,.8)}.ds-hero-n{font-family:Newsreader,Georgia,serif;font-size:32px;font-weight:500;margin:12px 0 16px;font-variant-numeric:tabular-nums}.ds-hero-btn{font-family:Inter,Roboto,sans-serif;width:100%;height:48px;border:none;border-radius:12px;background:#D8F27A;color:#0C2D32;font-size:14px;font-weight:600}.ds-hero-btn:hover{background:#E4F69F}.ds-hero-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Thẻ phẳng viền mảnh, không bóng.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-t\">Doanh thu hôm nay</div><div class=\"ds-card-n\">4.820.000 ₫</div><div class=\"ds-card-c\">32 bill · 2 ca</div></div>",
+      "css": ".ds-card{font-family:Inter,Roboto,sans-serif;background:#FFFFFF;border:1px solid #E7EFEC;border-radius:20px;padding:16px;max-width:320px}.ds-card-t{font-size:15px;font-weight:600;color:#14292A}.ds-card-n{font-family:Newsreader,Georgia,serif;font-size:32px;font-weight:500;color:#0C2D32;margin:8px 0;font-variant-numeric:tabular-nums}.ds-card-c{font-size:12px;color:#4F6663}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Ô nhập có nhãn phía trên.",
+      "html": "<label class=\"ds-field\"><span>Tiền đầu ca</span><input placeholder=\"600.000\"></label>",
+      "css": ".ds-field{font-family:Inter,Roboto,sans-serif;display:flex;flex-direction:column;gap:6px;max-width:320px}.ds-field span{font-size:13px;font-weight:600;color:#14292A}.ds-field input{font-family:Inter,Roboto,sans-serif;font-size:14px;background:#FFFFFF;border:1px solid #CBD8D4;border-radius:12px;padding:14px;color:#14292A}.ds-field input:focus-visible{outline:none;border-color:#0C2D32}"
+    },
+    {
+      "name": "Status Chips",
+      "kind": "chip",
+      "refersTo": "chip-status-healthy",
+      "description": "Mức đối soát của ca: Ổn, Cần xem, Nghiêm trọng.",
+      "html": "<span class=\"ds-chip ds-ok\">Ổn</span> <span class=\"ds-chip ds-warn\">Cần xem</span> <span class=\"ds-chip ds-bad\">Nghiêm trọng</span>",
+      "css": ".ds-chip{font-family:Inter,Roboto,sans-serif;display:inline-block;font-size:12px;font-weight:700;line-height:1.1;padding:6px 10px;border-radius:999px}.ds-ok{background:#E2F4EA;color:#18794E}.ds-warn{background:#FFF1CC;color:#8A5A00}.ds-bad{background:#FBE4E2;color:#B42318}"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Thanh điều hướng dưới cùng Material 3.",
+      "html": "<nav class=\"ds-nav\"><a class=\"on\" href=\"#\"><i></i>Tổng quan</a><a href=\"#\"><i></i>Đối soát</a><a href=\"#\"><i></i>Kho</a><a href=\"#\"><i></i>Thêm</a></nav>",
+      "css": ".ds-nav{font-family:Inter,Roboto,sans-serif;display:flex;background:#FFFFFF;height:68px;border-top:1px solid #E7EFEC;max-width:360px}.ds-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:500;color:#0C2D32;text-decoration:none}.ds-nav a i{width:56px;height:28px;border-radius:999px}.ds-nav a.on{font-weight:700}.ds-nav a.on i{background:#DDF1EF}.ds-nav a:focus-visible{outline:2px solid #51A19B}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-selected",
+      "description": "Chuyển giữa hai đến ba chế độ.",
+      "html": "<div class=\"ds-seg\"><button class=\"on\">Số điện thoại</button><button>Email</button></div>",
+      "css": ".ds-seg{display:flex;background:#EAF0EE;border-radius:16px;padding:4px;max-width:320px}.ds-seg button{font-family:Inter,Roboto,sans-serif;flex:1;height:44px;border:none;border-radius:12px;background:transparent;color:#0C2D32;font-size:15px;font-weight:700;transition:background .2s}.ds-seg button.on{background:#0C2D32;color:#FFFFFF}.ds-seg button:focus-visible{outline:2px solid #51A19B}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clean Bar",
+    "overview": "Fore trông như mặt quầy pha chế vừa lau xong: bề mặt sáng, mọi dụng cụ đặt đúng chỗ, không có thứ gì thừa trên quầy. Người dùng mở app giữa lúc phục vụ khách hoặc khi đang ở xa quán, nên giao diện phải đọc được trong một cái liếc và bấm được bằng một tay. Biểu cảm thương hiệu nằm ở chi tiết chính xác (chữ có chân cho tiêu đề và con số, màu mực xanh đậm), không nằm ở trang trí.\n\nHệ thống tinh gọn và tiết chế. Bề mặt phẳng, phân lớp bằng sắc độ nền và viền mảnh thay vì bóng đổ. Màu trạng thái (xanh, vàng, đỏ) chỉ xuất hiện khi có điều cần chú ý, để một ca lệch nổi lên rõ ràng trên nền yên tĩnh. Mật độ vừa phải: thẻ có khoảng thở 16 px, nhưng danh sách thao tác trong ca được xếp chặt để nhân viên thấy nhiều hơn mà không cuộn.\n\nCả bộ `core/design/` lẫn bộ `Fore*` trong `core/widgets/` đều phẳng: không thành phần nào còn bóng đổ.",
+    "keyCharacteristics": [
+      "Nền xanh xám rất nhạt, thẻ trắng viền mảnh, không bóng.",
+      "Tiêu đề, số KPI bằng chữ có chân Newsreader; nội dung, nhãn, nút bằng Inter.",
+      "Một màu hành động chính (mực xanh đậm), màu lime chỉ dành cho thẻ nổi bật nền tối.",
+      "Màu trạng thái là tín hiệu, không phải trang trí.",
+      "Vùng chạm tối thiểu 48 dp; chuyển động tôn trọng \"giảm chuyển động\" của thiết bị."
+    ],
+    "rules": [
+      {
+        "name": "The On-Ink Rule",
+        "body": "Chữ hoặc icon đặt trên nền mực luôn dùng `AppColors.onInk`, không dùng `Colors.white`; trắng cố định chỉ dành cho thẻ nền Night Shift.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal-Only Rule",
+        "body": "Xanh, vàng, đỏ trạng thái chỉ xuất hiện khi dữ liệu thật sự ở trạng thái đó. Không dùng chúng để trang trí, phân nhóm hay làm màu thương hiệu.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Ink Rule",
+        "body": "Mỗi màn chỉ có một hành động chính tô màu mực xanh đậm; các hành động khác dùng viền hoặc chữ.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif-for-Numbers Rule",
+        "body": "Con số quyết định (tiền ca, chênh lệch, KPI) dùng Newsreader với số đều độ rộng; con số trong danh sách và bảng dùng Inter số đều độ rộng.",
+        "section": "typography"
+      },
+      {
+        "name": "The Role-not-Size Rule",
+        "body": "Màn hình dùng vai trò trong `AppTextStyles`, không tự đặt `fontSize`. Thang `AppFontSizes` chỉ dành cho thành phần nền.",
+        "section": "typography"
+      },
+      {
+        "name": "The Wiped-Counter Rule",
+        "body": "Bề mặt phẳng khi đứng yên. Không thêm bóng đổ cho thẻ, nút hay thanh điều hướng mới; dùng viền mảnh hoặc đổi sắc độ nền.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** lấy mọi màu, cỡ chữ, khoảng cách từ `lib/core/design/` (`AppColors`, `AppTextStyles`, `AppSizes`).",
+      "**Do** giữ vùng chạm tối thiểu 48×48 dp, kể cả khi phần nhìn thấy nhỏ hơn.",
+      "**Do** dùng `Motion.of(context, ...)` cho mọi thời lượng chuyển động.",
+      "**Do** dùng Text Secondary (#4F6663) cho chữ phụ và Warning Text (#B54708) cho chữ cảnh báo.",
+      "**Do** dùng thành phần trong `core/design/` cho màn mới; chuyển màn cũ khi sửa tới."
+    ],
+    "donts": [
+      "**Don't** thêm bóng đổ cho thẻ, nút hoặc thanh điều hướng mới.",
+      "**Don't** viết mã màu thô (`Color(0x...)`) hay `Colors.*` ngoài `lib/core/design/`.",
+      "**Don't** dùng Counter Teal (#51A19B) hay `warning` (#ED6C02) cho chữ: đều dưới 4,5:1 ở chế độ sáng.",
+      "**Don't** dùng `Colors.white` trên nền mực; dùng `AppColors.onInk` để đúng ở cả hai chế độ.",
+      "**Don't** dùng Lime Pour trên nền sáng hoặc cho hành động phụ.",
+      "**Don't** dùng màu trạng thái cho mục đích trang trí.",
+      "**Don't** tạo thêm token \"legacy\" mới.",
+      "**Don't** dùng `ListView(children: ...)` cho danh sách theo dữ liệu; dùng `LazyListView`."
+    ]
+  }
+}

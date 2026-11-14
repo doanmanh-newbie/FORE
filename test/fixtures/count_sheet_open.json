@@ -1,0 +1,4 @@
+[{"ingredient_id":"016d0f33-8742-43e8-9929-17381802ffd6","name":"Cà phê","unit":"g","importance":"important","weekly_check":false,"group_name":null,"counted":false}, 
+ {"ingredient_id":"c6d3da3e-34ae-4a41-9f2b-9d2688cebab5","name":"Sữa","unit":"ml","importance":"important","weekly_check":false,"group_name":null,"counted":false}, 
+ {"ingredient_id":"e27e4094-647f-487c-b466-98fcca122ed8","name":"Ly","unit":"piece","importance":"normal","weekly_check":false,"group_name":null,"counted":false}, 
+ {"ingredient_id":"edd6ac68-26dd-40e4-9856-155d40008325","name":"Đường","unit":"g","importance":"normal","weekly_check":true,"group_name":null,"counted":false}]
