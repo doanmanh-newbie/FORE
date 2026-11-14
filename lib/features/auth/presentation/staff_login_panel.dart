@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_text_field.dart';
+import '../../../core/design/spacing.dart';
+import '../../../core/design/typography.dart';
+import '../../../core/widgets/brand_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../application/staff_login_controller.dart';
 import '../domain/staff_contact.dart';
 import 'contact_kind_toggle.dart';
+import 'widgets/auth_ui.dart';
 
 /// Đăng nhập của nhân viên: chọn số điện thoại hoặc email, nhập, bấm "Đăng nhập".
-/// Không mật khẩu, không mã xác nhận. Chưa có tài khoản thì bấm "Tạo tài khoản".
+/// Fore gửi mã xác nhận (OTP) rồi nhập mã. Chưa có tài khoản thì bấm "Tạo tài khoản".
 /// Đăng nhập xong gọi `onSignedIn` để màn cha chuyển trang.
 class StaffLoginPanel extends StatefulWidget {
   const StaffLoginPanel({super.key, required this.onSignedIn});
@@ -55,8 +56,8 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
             onChanged: c.setKind,
             enabled: !c.loading,
           ),
-          const SizedBox(height: 16),
-          AppTextField(
+          const SizedBox(height: AppGaps.lg),
+          BrandTextField(
             label: phone ? 'Số điện thoại' : 'Email',
             controller: _contact,
             hint: phone ? '0901 234 567' : 'Địa chỉ email của bạn',
@@ -70,18 +71,18 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
             ],
             onSubmitted: _submit,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppGaps.sm),
           Text(
             'Fore sẽ gửi mã xác nhận để bảo vệ tài khoản nhân viên.',
-            style: AppTextStyles.caption,
+            style: AppTextStyles.caption.copyWith(height: 1.5),
           ),
         ] else ...[
           Text(
             'Nếu thông tin có tài khoản, mã xác nhận đã được gửi. Nhập mã 6 chữ số để tiếp tục.',
             style: AppTextStyles.body,
           ),
-          const SizedBox(height: 16),
-          AppTextField(
+          const SizedBox(height: AppGaps.lg),
+          BrandTextField(
             label: 'Mã xác nhận',
             controller: _otp,
             hint: '000000',
@@ -101,27 +102,23 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
             ),
           ),
         ],
-        if (c.formError != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            c.formError!,
-            style: TextStyle(
-                color: AppColors.statusOff, fontSize: AppFontSizes.s13),
-          ),
-        ],
-        const SizedBox(height: 20),
+        if (c.formError != null) AuthFormError(c.formError!),
+        const SizedBox(height: AppGaps.xl),
         LoadingButton(
           label: c.otpRequested ? 'Xác nhận mã' : 'Gửi mã đăng nhập',
           loadingLabel: c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
           loading: c.loading,
           onPressed: _submit,
+          height: AppSizes.pillButtonHeight,
+          textStyle: AppTextStyles.pillButton,
         ),
-        const SizedBox(height: 14),
-        OutlinedButton(
-          onPressed: c.loading || c.otpRequested
+        const SizedBox(height: AppGaps.md),
+        AuthPromptLink(
+          prompt: 'Chưa có tài khoản? ',
+          action: 'Tạo tài khoản',
+          onTap: c.loading || c.otpRequested
               ? null
               : () => Navigator.of(context).pushNamed(AppRoutes.registerStaff),
-          child: const Text('Tạo tài khoản nhân viên'),
         ),
       ],
     );

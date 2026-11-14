@@ -8,10 +8,14 @@ import '../../../core/errors/failure_messages.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_text_field.dart';
+import '../../../core/design/spacing.dart';
+import '../../../core/design/typography.dart';
+import '../../../core/widgets/brand_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
+import '../../../core/widgets/pill_segmented.dart';
 import '../application/register_controller.dart';
 import '../application/session_controller.dart';
+import 'widgets/auth_ui.dart';
 
 /// Tạo tài khoản CHỦ QUÁN (email + mật khẩu). Tạo xong đi tiếp tới màn Tạo quán.
 /// Nhân viên không dùng màn này: họ tạo tài khoản bằng số điện thoại hoặc email ở `StaffRegisterScreen`.
@@ -81,93 +85,106 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       return _RegisterSuccessView(email: c.registeredEmail);
     }
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.pagePadding),
-          child: Center(
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          _asOwner
-                              ? 'Tạo tài khoản chủ quán'
-                              : 'Tạo tài khoản nhân viên',
-                          style: AppTextStyles.screenTitle),
-                      const SizedBox(height: 6),
-                      Text(
-                        _asOwner
-                            ? 'Dùng email của bạn để đăng ký. Sau đó bạn tạo quán và thêm nhân viên.'
-                            : 'Dùng email của bạn để đăng ký. Chủ quán sẽ mời bạn, lời mời hiện trong hộp thư.',
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: 24),
-                      AppTextField(
-                        label: 'Họ tên',
-                        controller: _name,
-                        hint: 'Họ tên của bạn',
-                        errorText: c.nameError,
-                        enabled: !c.loading,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: 'Email',
-                        controller: _email,
-                        hint: 'Địa chỉ email cá nhân',
-                        errorText: c.emailError,
-                        enabled: !c.loading,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: 'Mật khẩu',
-                        controller: _password,
-                        hint: 'Ít nhất ${AppConfig.minPasswordLength} ký tự',
-                        errorText: c.passwordError,
-                        enabled: !c.loading,
-                        obscure: true,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: 'Nhập lại mật khẩu',
-                        controller: _confirm,
-                        hint: 'Nhập lại mật khẩu của bạn',
-                        errorText: c.confirmError,
-                        enabled: !c.loading,
-                        obscure: true,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: _submit,
-                      ),
-                      if (c.formError != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          c.formError!,
-                          style: TextStyle(
-                            color: AppColors.statusOff,
-                            fontSize: AppFontSizes.s13,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      LoadingButton(
-                        label: 'Tạo tài khoản',
-                        loadingLabel: 'Đang tạo tài khoản',
-                        loading: c.loading,
-                        onPressed: _submit,
-                      ),
-                    ],
-                  ))),
-        ),
+    final busy = c.loading;
+    return AuthScaffold(
+      top: AuthStepHeader(
+        title: 'Tạo tài khoản mới',
+        steps: ownerSignUpSteps,
+        current: 0,
+        onBack: busy ? null : () => Navigator.of(context).maybePop(),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PillSegmented<bool>(
+            value: _asOwner,
+            enabled: !busy,
+            items: const [(true, 'Chủ quán'), (false, 'Nhân viên')],
+            onChanged: (owner) => owner
+                ? Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.register, arguments: true)
+                : Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.registerStaff),
+          ),
+          const SizedBox(height: AppGaps.md),
+          Text(
+            _asOwner
+                ? 'Dùng email của bạn để đăng ký. Sau đó bạn tạo quán và thêm nhân viên.'
+                : 'Dùng email của bạn để đăng ký. Chủ quán sẽ mời bạn, lời mời hiện trong hộp thư.',
+            style: AppTextStyles.caption.copyWith(height: 1.5),
+          ),
+          const SizedBox(height: AppGaps.xl),
+          BrandTextField(
+            label: 'Họ và tên',
+            leadingAsset: AuthAssets.person,
+            controller: _name,
+            errorText: c.nameError,
+            enabled: !busy,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.name],
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Email',
+            leadingAsset: AuthAssets.mail,
+            controller: _email,
+            errorText: c.emailError,
+            enabled: !busy,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email],
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Mật khẩu',
+            hint: 'Mật khẩu (ít nhất ${AppConfig.minPasswordLength} ký tự)',
+            leadingAsset: AuthAssets.lock,
+            controller: _password,
+            errorText: c.passwordError,
+            enabled: !busy,
+            obscure: true,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.newPassword],
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Nhập lại mật khẩu',
+            leadingAsset: AuthAssets.lock,
+            controller: _confirm,
+            errorText: c.confirmError,
+            enabled: !busy,
+            obscure: true,
+            textInputAction: TextInputAction.done,
+            onSubmitted: _submit,
+          ),
+          if (c.formError != null) AuthFormError(c.formError!),
+          const SizedBox(height: AppGaps.xl),
+          LoadingButton(
+            label: 'Đăng ký ngay',
+            loadingLabel: 'Đang tạo tài khoản',
+            loading: busy,
+            onPressed: _submit,
+            height: AppSizes.pillButtonHeight,
+            textStyle: AppTextStyles.pillButton,
+          ),
+          const SizedBox(height: AppGaps.md),
+          AuthPromptLink(
+            prompt: 'Đã có tài khoản? ',
+            action: 'Đăng nhập',
+            onTap: busy ? null : () => Navigator.of(context).maybePop(),
+          ),
+        ],
       ),
     );
   }
 }
+
+/// Các bước đăng ký của chủ quán: tạo tài khoản ở đây, tạo quán ở màn kế, xác nhận email.
+const ownerSignUpSteps = [
+  AuthStep('Vai trò', AuthAssets.stepRole),
+  AuthStep('Cửa hàng', AuthAssets.stepStore),
+  AuthStep('Bảo mật', AuthAssets.stepSecurity),
+];
 
 /// Màn thành công: không có nút quay lại (form đã gửi rồi).
 class _RegisterSuccessView extends StatefulWidget {

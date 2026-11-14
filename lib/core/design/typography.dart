@@ -136,6 +136,107 @@ abstract final class AppTextStyles {
     color: AppColors.brand,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
+  // --- Bộ "Rêu & Mù tạt": toàn bộ Inter, tiêu đề đậm, nhãn 13 đậm vừa. ---
+
+  /// Chữ thương hiệu "FORE" (32/700).
+  static TextStyle get brandName => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    color: AppColors.brand,
+    height: 1.13,
+  );
+
+  /// Tiêu đề lớn màn hình (vd "Đăng nhập", 34/700, chữ khít -1).
+  /// Lưu ý: mù tạt trên nền kem chỉ 1,7:1, chỉ dùng cho chữ rất lớn có ngữ cảnh rõ.
+  static TextStyle get heroTitle => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    color: AppColors.accent,
+    letterSpacing: -1,
+    height: 1.15,
+  );
+
+  /// Tiêu đề trên nền tối của panel chào mừng (26/700, trắng).
+  static const panelTitle = TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 26,
+    fontWeight: FontWeight.w700,
+    color: AppColors.white,
+    height: 1.3,
+  );
+
+  /// Tiêu đề thanh trên của màn con (vd "Tạo tài khoản mới", 18/700).
+  static TextStyle get appBarTitle => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.accent,
+    height: 1.3,
+  );
+
+  /// Nhãn phía trên ô nhập (13/600).
+  static TextStyle get fieldLabel => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.38,
+  );
+
+  /// Chữ người dùng gõ trong ô nhập (15/500).
+  static TextStyle get input => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    height: 1.47,
+  );
+
+  /// Chữ gợi ý trong ô nhập (15/400).
+  static TextStyle get inputHint => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textHint,
+    height: 1.47,
+  );
+
+  /// Chữ trên nút viên thuốc (16/600).
+  static const pillButton = TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.5,
+  );
+
+  /// Chữ trong công tắc viên thuốc (14/600).
+  static const segment = TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// Liên kết gạch chân (13/700).
+  static TextStyle get link => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    color: AppColors.brand,
+    decoration: TextDecoration.underline,
+    decorationColor: AppColors.brand,
+    height: 1.54,
+  );
+
+  /// Nhãn dưới vòng bước (12/600).
+  static TextStyle get stepLabel => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: AppColors.brand,
+  );
+
   static TextStyle get metric => TextStyle(
     fontFamily: AppFonts.body,
     fontSize: 20,

@@ -8,6 +8,7 @@ import '../features/auth/application/staff_login_controller.dart';
 import '../features/auth/application/staff_register_controller.dart';
 import '../features/auth/application/register_controller.dart';
 import '../features/auth/domain/auth_repository.dart';
+import '../features/auth/presentation/onboarding_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/staff_register_screen.dart';
@@ -27,6 +28,10 @@ import '../core/design/gallery_screen.dart';
 /// Tên các màn hình. Đi tới màn nào thì dùng hằng ở đây, không gõ chuỗi rời.
 abstract final class AppRoutes {
   static const splash = '/';
+  /// Màn chào mừng (giới thiệu), chỉ hiện khi mở app lúc chưa đăng nhập.
+  static const onboarding = '/onboarding';
+
+  /// Màn đăng nhập (giữ tên route cũ để các chỗ đăng xuất không phải đổi).
   static const welcome = '/welcome';
   static const register = '/register';
   static const registerStaff = '/register-staff';
@@ -54,6 +59,7 @@ abstract final class AppRoutes {
       designGallery =>
         kDebugMode ? const DesignGalleryScreen() : const SplashScreen(),
       splash => const SplashScreen(),
+      onboarding => const OnboardingScreen(),
       welcome => MultiProvider(
           providers: [
             ChangeNotifierProvider(
@@ -98,8 +104,8 @@ abstract final class AppRoutes {
       _ => const SplashScreen(),
     };
 
-    // Welcome mở chậm hơn một chút để logo kịp bay từ Splash sang.
-    final duration = settings.name == welcome
+    // Màn chào mừng mở chậm hơn một chút để logo kịp bay từ Splash sang.
+    final duration = settings.name == onboarding || settings.name == welcome
         ? const Duration(milliseconds: 500)
         : const Duration(milliseconds: 250);
 

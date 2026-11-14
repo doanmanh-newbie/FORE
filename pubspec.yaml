@@ -28,6 +28,8 @@ flutter:
   assets:
     - assets/splash/
     - assets/icons/
+    - assets/auth/
+    - assets/brand/
 
   fonts:
     - family: ForeInter

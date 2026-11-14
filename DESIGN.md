@@ -2,19 +2,22 @@
 name: Fore
 description: Quản lý ca, bán hàng và đối soát thất thoát cho quán đồ uống nhỏ
 colors:
-  ink-teal: "#0C2D32"
-  counter-teal: "#51A19B"
+  moss-ink: "#0D3B2E"
+  leaf: "#2D7A5E"
+  mustard: "#E4BD5A"
+  mustard-tint: "#F7EDD2"
+  cream: "#F8F7F2"
   lime-pour: "#D8F27A"
-  night-shift: "#123C3A"
-  mint-mist: "#F3F7F5"
+  night-shift: "#0D3B2E"
   clean-white: "#FFFFFF"
-  pale-tint: "#EAF0EE"
-  nav-indicator: "#DDF1EF"
-  hairline: "#CBD8D4"
-  card-edge: "#E7EFEC"
-  text-primary: "#14292A"
-  text-secondary: "#4F6663"
-  disabled-fill: "#E3EAE7"
+  pale-tint: "#EFEEE6"
+  nav-indicator: "#DCEBE3"
+  hairline: "#E2E5E1"
+  card-edge: "#E9EBE6"
+  text-primary: "#0D3B2E"
+  text-secondary: "#5E6A63"
+  text-hint: "#69756E"
+  disabled-fill: "#E9EAE4"
   status-healthy: "#18794E"
   status-healthy-tint: "#E2F4EA"
   status-attention: "#8A5A00"
@@ -69,6 +72,10 @@ typography:
     fontWeight: 400
     lineHeight: 1.33
 rounded:
+  checkbox: "5px"
+  field: "12px"
+  role-card: "16px"
+  panel: "28px"
   control: "12px"
   tile: "14px"
   segmented: "16px"
@@ -84,20 +91,20 @@ spacing:
   page-bottom: "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.ink-teal}"
-    textColor: "{colors.clean-white}"
+    backgroundColor: "{colors.mustard}"
+    textColor: "{colors.moss-ink}"
     typography: "{typography.body-strong}"
-    rounded: "{rounded.control}"
-    height: "48px"
+    rounded: "{rounded.pill}"
+    height: "48px (54px on auth screens)"
   button-secondary:
     backgroundColor: "{colors.clean-white}"
-    textColor: "{colors.ink-teal}"
+    textColor: "{colors.moss-ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.control}"
     height: "48px"
   button-hero-action:
     backgroundColor: "{colors.lime-pour}"
-    textColor: "{colors.ink-teal}"
+    textColor: "{colors.moss-ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.control}"
     height: "48px"
@@ -113,8 +120,9 @@ components:
   input:
     backgroundColor: "{colors.clean-white}"
     textColor: "{colors.text-primary}"
-    rounded: "{rounded.control}"
-    padding: "14px"
+    rounded: "{rounded.field}"
+    padding: "16px"
+    height: "52px"
   chip-status-healthy:
     backgroundColor: "{colors.status-healthy-tint}"
     textColor: "{colors.status-healthy}"
@@ -129,16 +137,38 @@ components:
     rounded: "{rounded.pill}"
   nav-bar:
     backgroundColor: "{colors.clean-white}"
-    textColor: "{colors.ink-teal}"
+    textColor: "{colors.moss-ink}"
     height: "68px"
   segmented-selected:
-    backgroundColor: "{colors.ink-teal}"
+    backgroundColor: "{colors.moss-ink}"
     textColor: "{colors.clean-white}"
     rounded: "{rounded.control}"
     height: "44px"
 ---
 
 # Design System: Fore
+
+## Bộ "Rêu & Mù tạt" (11/2026)
+
+Thiết kế lại bắt đầu từ ba màn Chào mừng, Đăng nhập, Đăng ký (Figma). Token sống trong
+`lib/core/design/` (`colors.dart`, `typography.dart`, `spacing.dart`, `app_theme.dart`);
+`lib/core/theme/` chỉ re-export.
+
+- **Màu:** mực rêu đậm `#0D3B2E`, xanh lá `#2D7A5E`, vàng mù tạt `#E4BD5A` cho hành động chính,
+  nền kem `#F8F7F2`, viền `#E2E5E1`. Chữ phụ `#5E6A63` (đậm hơn `#69756E` của Figma để đạt
+  5,3:1 trên nền kem); `#69756E` chỉ dùng cho gợi ý và icon trong ô trắng (4,8:1).
+- **Mù tạt làm chữ** (tiêu đề "Đăng nhập", "Tạo tài khoản mới") chỉ đạt 1,7:1 trên nền kem.
+  Giữ theo thiết kế cho chữ rất lớn; không dùng mù tạt cho chữ thân hay nhãn.
+- **Chữ:** Inter toàn bộ. `brandName` 32/700, `heroTitle` 34/700 (-1), `appBarTitle` 18/700,
+  `fieldLabel` 13/600, `input` 15/500, `inputHint` 15/400, `pillButton` 16/600, `link` 13/700
+  gạch chân, `stepLabel` 12/600. Tiêu đề Newsreader cũ chuyển dần theo từng màn.
+- **Bo góc (`AppRadius`):** checkbox 5, ô nhập 12, thẻ vai trò 16, panel 28, viên thuốc 999.
+- **Kích thước (`AppSizes`):** lề màn 20, ô nhập 52, nút viên thuốc 54, công tắc 52, vòng bước 44,
+  thẻ vai trò 169. **Khoảng (`AppGaps`):** 4 / 8 / 12 / 16 / 22 / 28.
+- **Thành phần:** `BrandTextField`, `PillSegmented`, `LoadingButton` (viên thuốc theo theme),
+  `RoleCard`, `AuthStepHeader`, `AuthPromptLink`.
+- Màu cố định không đảo theo chế độ tối (`AppColors.moss`, `leafFixed`, `mustard`, `cream`) chỉ
+  dùng cho mảng đồ họa luôn tối: thẻ vai trò, panel chào mừng, vòng bước.
 
 ## Overview
 

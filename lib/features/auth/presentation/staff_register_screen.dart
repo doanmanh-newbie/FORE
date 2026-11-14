@@ -7,8 +7,10 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_text_field.dart';
+import '../../../core/design/spacing.dart';
+import '../../../core/widgets/brand_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
+import '../../../core/widgets/pill_segmented.dart';
 import '../../shift/application/shift_controller.dart';
 import '../../shop/application/auto_join.dart';
 import '../../shop/domain/shop_repository.dart';
@@ -16,6 +18,7 @@ import '../application/session_controller.dart';
 import '../application/staff_register_controller.dart';
 import '../domain/staff_contact.dart';
 import 'contact_kind_toggle.dart';
+import 'widgets/auth_ui.dart';
 
 /// Tạo tài khoản nhân viên: số điện thoại hoặc email, tên hiển thị, ngày sinh.
 /// Tạo xong là đăng nhập luôn và vào thẳng giao diện nhân viên (chưa có quán thì vào không gian
@@ -107,145 +110,210 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
     final c = context.watch<StaffRegisterController>();
     final phone = c.kind == ContactKind.phone;
     final busy = c.loading;
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.pagePadding),
-          child: Center(
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text('Tạo tài khoản nhân viên',
-                          style: AppTextStyles.screenTitle),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Chỉ cần số điện thoại hoặc email. Chủ quán mời bạn bằng đúng số/email này, '
-                        'lời mời sẽ hiện trong hộp thư của bạn.',
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: 8),
-                      if (c.otpRequested)
-                        Text(
-                          'Mã xác nhận đã được gửi. Nhập mã 6 chữ số để hoàn tất tạo tài khoản.',
-                          style: AppTextStyles.body,
-                        )
-                      else
-                        Text(
-                          'Bạn cần xác minh email hoặc số điện thoại để bảo vệ tài khoản.',
-                          style: AppTextStyles.caption,
-                        ),
-                      const SizedBox(height: 24),
-                      if (!c.otpRequested) ...[
-                        ContactKindToggle(
-                          kind: c.kind,
-                          onChanged: c.setKind,
-                          enabled: !busy,
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          label: phone ? 'Số điện thoại' : 'Email',
-                          controller: _contact,
-                          hint:
-                              phone ? '0901 234 567' : 'Địa chỉ email của bạn',
-                          errorText: c.contactError,
-                          enabled: !busy,
-                          onChanged: (_) => c.clearContactError(),
-                          keyboardType: phone
-                              ? TextInputType.phone
-                              : TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          autofillHints: [
-                            phone
-                                ? AutofillHints.telephoneNumber
-                                : AutofillHints.email,
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          label: 'Tên hiển thị',
-                          controller: _name,
-                          hint: 'Ví dụ: Lan',
-                          errorText: c.nameError,
-                          enabled: !busy,
-                          onChanged: (_) => c.clearNameError(),
-                          textInputAction: TextInputAction.done,
-                          autofillHints: const [AutofillHints.name],
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Ngày sinh', style: AppTextStyles.label),
-                        const SizedBox(height: 6),
-                        OutlinedButton.icon(
-                          onPressed: busy ? null : _pickBirthDate,
-                          icon: const Icon(Icons.calendar_month_outlined),
-                          label: Text(_birthDate == null
-                              ? 'Chọn ngày sinh'
-                              : formatDmy(_birthDate!)),
-                        ),
-                        if (c.birthDateError != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              c.birthDateError!,
-                              style: TextStyle(
-                                  color: AppColors.statusOff,
-                                  fontSize: AppFontSizes.s12),
-                            ),
-                          ),
-                      ] else ...[
-                        AppTextField(
-                          label: 'Mã xác nhận',
-                          controller: _otp,
-                          hint: '000000',
-                          errorText: c.otpError,
-                          enabled: !busy,
-                          keyboardType: TextInputType.number,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: _submit,
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: c.canResend ? c.resendOtp : null,
-                            child: Text(c.canResend
-                                ? 'Gửi lại mã'
-                                : 'Gửi lại mã sau ${c.resendSeconds} giây'),
-                          ),
-                        ),
-                      ],
-                      if (c.formError != null || _sessionError != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          c.formError ?? _sessionError!,
-                          style: TextStyle(
-                              color: AppColors.statusOff,
-                              fontSize: AppFontSizes.s13),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      LoadingButton(
-                        label: _needsRetry
-                            ? 'Thử lại'
-                            : c.otpRequested
-                                ? 'Xác nhận và tạo tài khoản'
-                                : 'Gửi mã xác nhận',
-                        loadingLabel:
-                            c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
-                        loading: busy,
-                        onPressed: _submit,
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed:
-                            busy ? null : () => Navigator.of(context).pop(),
-                        child: const Text('Đã có tài khoản? Đăng nhập'),
-                      ),
-                    ],
-                  ))),
-        ),
+    return AuthScaffold(
+      top: AuthStepHeader(
+        title: 'Tạo tài khoản mới',
+        steps: _staffSteps,
+        current: c.otpRequested ? 1 : 0,
+        onBack: busy ? null : () => Navigator.of(context).maybePop(),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PillSegmented<bool>(
+            value: false,
+            // Đã gửi mã thì không đổi vai trò giữa chừng.
+            enabled: !busy && !c.otpRequested,
+            items: const [(true, 'Chủ quán'), (false, 'Nhân viên')],
+            onChanged: (owner) {
+              if (owner) {
+                Navigator.of(context)
+                    .pushReplacementNamed(AppRoutes.register, arguments: true);
+              }
+            },
+          ),
+          const SizedBox(height: AppGaps.md),
+          Text(
+            c.otpRequested
+                ? 'Mã xác nhận đã được gửi. Nhập mã 6 chữ số để hoàn tất tạo tài khoản.'
+                : 'Chỉ cần số điện thoại hoặc email. Chủ quán mời bạn bằng đúng số/email này, '
+                    'lời mời sẽ hiện trong hộp thư của bạn.',
+            style: AppTextStyles.caption.copyWith(height: 1.5),
+          ),
+          const SizedBox(height: AppGaps.xl),
+          if (!c.otpRequested) ...[
+            ContactKindToggle(
+              kind: c.kind,
+              onChanged: c.setKind,
+              enabled: !busy,
+            ),
+            const SizedBox(height: AppGaps.md),
+            BrandTextField(
+              label: phone ? 'Số điện thoại' : 'Email',
+              hint: phone
+                  ? 'Số điện thoại (vd 0901 234 567)'
+                  : 'Địa chỉ email của bạn',
+              leadingAsset: phone ? null : AuthAssets.mail,
+              leadingIcon: phone ? Icons.phone_outlined : null,
+              controller: _contact,
+              errorText: c.contactError,
+              enabled: !busy,
+              onChanged: (_) => c.clearContactError(),
+              keyboardType:
+                  phone ? TextInputType.phone : TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: [
+                phone ? AutofillHints.telephoneNumber : AutofillHints.email,
+              ],
+            ),
+            const SizedBox(height: AppGaps.md),
+            BrandTextField(
+              label: 'Tên hiển thị',
+              hint: 'Tên hiển thị (vd: Lan)',
+              leadingAsset: AuthAssets.person,
+              controller: _name,
+              errorText: c.nameError,
+              enabled: !busy,
+              onChanged: (_) => c.clearNameError(),
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.name],
+            ),
+            const SizedBox(height: AppGaps.md),
+            _BirthDateField(
+              value: _birthDate,
+              errorText: c.birthDateError,
+              onTap: busy ? null : _pickBirthDate,
+            ),
+          ] else ...[
+            BrandTextField(
+              label: 'Mã xác nhận',
+              hint: 'Mã 6 chữ số',
+              leadingAsset: AuthAssets.lock,
+              controller: _otp,
+              errorText: c.otpError,
+              enabled: !busy,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              onSubmitted: _submit,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: c.canResend ? c.resendOtp : null,
+                child: Text(c.canResend
+                    ? 'Gửi lại mã'
+                    : 'Gửi lại mã sau ${c.resendSeconds} giây'),
+              ),
+            ),
+          ],
+          if (c.formError != null || _sessionError != null)
+            AuthFormError(c.formError ?? _sessionError!),
+          const SizedBox(height: AppGaps.xl),
+          LoadingButton(
+            label: _needsRetry
+                ? 'Thử lại'
+                : c.otpRequested
+                    ? 'Xác nhận và tạo tài khoản'
+                    : 'Gửi mã xác nhận',
+            loadingLabel: c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
+            loading: busy,
+            onPressed: _submit,
+            height: AppSizes.pillButtonHeight,
+            textStyle: AppTextStyles.pillButton,
+          ),
+          const SizedBox(height: AppGaps.md),
+          AuthPromptLink(
+            prompt: 'Đã có tài khoản? ',
+            action: 'Đăng nhập',
+            onTap: busy ? null : () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bước đăng ký của nhân viên: chọn vai trò + điền thông tin, xác minh mã, vào quán.
+const _staffSteps = [
+  AuthStep('Vai trò', AuthAssets.stepRole),
+  AuthStep('Xác minh', AuthAssets.stepSecurity),
+  AuthStep('Vào quán', AuthAssets.stepStore),
+];
+
+/// Ô chọn ngày sinh, cùng dáng với ô nhập: bấm mở lịch.
+class _BirthDateField extends StatelessWidget {
+  const _BirthDateField({
+    required this.value,
+    required this.errorText,
+    required this.onTap,
+  });
+
+  final DateTime? value;
+  final String? errorText;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = errorText != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          button: true,
+          label: 'Ngày sinh',
+          value: value == null ? 'Chưa chọn' : formatDmy(value!),
+          child: Material(
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.field),
+              side: BorderSide(
+                color: hasError ? AppColors.statusCritical : AppColors.border,
+              ),
+            ),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppRadius.field),
+              child: SizedBox(
+                height: AppSizes.fieldHeight,
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    Icon(Icons.calendar_month_outlined,
+                        size: 20, color: AppColors.textHint),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ExcludeSemantics(
+                        child: Text(
+                          value == null
+                              ? 'Ngày sinh (bấm để chọn)'
+                              : formatDmy(value!),
+                          style: value == null
+                              ? AppTextStyles.inputHint
+                              : AppTextStyles.input,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.textHint),
+                    const SizedBox(width: 12),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (hasError)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 6),
+            child: Text(
+              errorText!,
+              style: TextStyle(
+                color: AppColors.statusCritical,
+                fontSize: AppFontSizes.s12,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

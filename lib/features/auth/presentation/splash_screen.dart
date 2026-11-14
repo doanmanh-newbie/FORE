@@ -37,9 +37,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   // Kích thước dấu hiệu logo ở màn này và chiều cao cả khối logo + chữ
-  // (80 + khoảng cách 26,5 + chữ 20,6, tính từ tỉ lệ trong BrandLogo).
+  // (tính từ tỉ lệ trong BrandLogo).
   static const _markSize = 80.0;
-  static const _logoBlockHeight = 127.0;
+  static final _logoBlockHeight = BrandLogo.blockHeight(_markSize);
   // Khi đã lên đầu màn, logo cách mép trên 10% chiều cao vùng hiển thị
   // (bản thiết kế đặt dấu hiệu ở khoảng 13% chiều cao màn).
   static const _settledTopFraction = 0.10;
@@ -72,7 +72,9 @@ class _SplashScreenState extends State<SplashScreen>
     final next = AppRoutes.routeFor(state);
     if (next == null) return;
     _left = true;
-    Navigator.of(context).pushReplacementNamed(next);
+    // Mở app khi chưa đăng nhập: qua màn chào mừng trước, "Bắt đầu ngay" mới tới Đăng nhập.
+    Navigator.of(context).pushReplacementNamed(
+        next == AppRoutes.welcome ? AppRoutes.onboarding : next);
   }
 
   @override

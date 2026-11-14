@@ -4,6 +4,10 @@ import 'colors.dart';
 import 'spacing.dart';
 import 'typography.dart';
 
+/// Theme toàn app theo bộ "Rêu & Mù tạt" (xem DESIGN.md):
+/// - Nền kem, mực rêu đậm, nút chính viên thuốc vàng mù tạt chữ rêu.
+/// - Ô nhập nền trắng, viền #E2E5E1, bo 12, cao 52.
+/// - Font Inter cho thân chữ; tiêu đề cũ (Newsreader) chuyển dần theo từng màn.
 abstract final class AppTheme {
   static ThemeData light() => build(AppPalette.light);
 
@@ -19,12 +23,13 @@ abstract final class AppTheme {
       onSurface: p.textPrimary,
       error: p.statusCritical,
     );
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppSizes.radius),
+    final pill = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.pill),
     );
-    OutlineInputBorder border(Color color) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radius),
-          borderSide: BorderSide(color: color),
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.field),
+          borderSide: BorderSide(color: color, width: width),
         );
 
     return ThemeData(
@@ -45,11 +50,18 @@ abstract final class AppTheme {
         filled: true,
         fillColor: p.surface,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
+          horizontal: 16,
+          vertical: 15,
         ),
+        hintStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 15,
+          color: p.textHint,
+        ),
+        prefixIconColor: p.textHint,
+        suffixIconColor: p.textHint,
         enabledBorder: border(p.border),
-        focusedBorder: border(p.brand),
+        focusedBorder: border(p.brand, 1.5),
         errorBorder: border(p.statusCritical),
         focusedErrorBorder: border(p.statusCritical),
         disabledBorder: border(p.border),
@@ -59,18 +71,26 @@ abstract final class AppTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
+        // Nút hành động chính: viên thuốc vàng mù tạt, chữ rêu (7,0:1).
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.controlHeight),
-          shape: shape,
-          backgroundColor: p.brand,
-          foregroundColor: p.onInk,
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          shape: pill,
+          backgroundColor: p.accent,
+          foregroundColor: p.onAccent,
+          disabledBackgroundColor: p.disabledFill,
+          disabledForegroundColor: p.textSecondary,
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontFamily: AppFonts.body,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.controlHeight),
-          shape: shape,
+          shape: pill,
           foregroundColor: p.brand,
           side: BorderSide(color: p.brand),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -112,6 +132,18 @@ abstract final class AppTheme {
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: p.brand),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.checkbox),
+        ),
+        side: BorderSide(color: p.textHint, width: 1.5),
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? p.brand
+              : Colors.transparent,
+        ),
+        checkColor: WidgetStatePropertyAll(p.onInk),
       ),
       cardTheme: CardThemeData(
         color: p.surface,
