@@ -1,7 +1,8 @@
 /// Khoảng cách và kích thước dùng chung. Lưới 4px.
 abstract final class AppSizes {
   static const unit = 4.0;
-  static const pagePadding = 16.0;
+  /// Lề trái/phải của trang (bằng [screenGutter] của bộ "Rêu & Mù tạt").
+  static const pagePadding = 20.0;
   static const pageTopPadding = 16.0;
   static const pageBottomPadding = 32.0;
   static const sectionGap = 24.0;

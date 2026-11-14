@@ -20,6 +20,7 @@ class _BillLoadingState extends StatelessWidget {
       );
 }
 
+/// Header của bill: nền rêu cố định, bo hai góc dưới, chữ và icon trắng.
 class _BillHeader extends StatelessWidget {
   const _BillHeader({
     required this.title,
@@ -35,32 +36,38 @@ class _BillHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+        decoration: const BoxDecoration(
+          color: AppColors.moss,
+          borderRadius:
+              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
         ),
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 6, 4, 12),
+            padding: const EdgeInsets.fromLTRB(4, 6, 4, 16),
             child: Row(
               children: [
                 IconButton(
                   tooltip: 'Quay lại',
                   onPressed: onBack,
-                  icon: Icon(Icons.arrow_back_rounded, color: AppColors.ink),
+                  icon: const Icon(Icons.arrow_back_rounded,
+                      color: AppColors.white),
                 ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title,
-                          style: AppTextStyles.headline,
+                          style: AppTextStyles.panelTitle.copyWith(fontSize: 20),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                       if (subtitle.isNotEmpty)
                         Text(subtitle,
-                            style: AppTextStyles.caption,
+                            style: const TextStyle(
+                              fontFamily: AppFonts.body,
+                              fontSize: 12,
+                              color: AppColors.onDarkMuted,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                     ],
@@ -69,7 +76,8 @@ class _BillHeader extends StatelessWidget {
                 if (onCancel != null)
                   PopupMenuButton<String>(
                     tooltip: 'Thêm',
-                    icon: Icon(Icons.more_horiz_rounded, color: AppColors.ink),
+                    icon: const Icon(Icons.more_horiz_rounded,
+                        color: AppColors.white),
                     onSelected: (_) => onCancel!(),
                     itemBuilder: (_) => const [
                       PopupMenuItem(value: 'cancel', child: Text('Hủy bill')),
@@ -82,6 +90,7 @@ class _BillHeader extends StatelessWidget {
       );
 }
 
+/// "Gọi món" / "Bill (n)": công tắc viên thuốc như các màn khác.
 class _Segmented extends StatelessWidget {
   const _Segmented(
       {required this.labels, required this.selected, required this.onChanged});
@@ -91,53 +100,10 @@ class _Segmented extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-            color: AppColors.surfaceTint,
-            borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Row(
-            children: [
-              for (var i = 0; i < labels.length; i++)
-                Expanded(
-                  child: Semantics(
-                    button: true,
-                    selected: i == selected,
-                    label: labels[i],
-                    child: ExcludeSemantics(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => onChanged(i),
-                        child: AnimatedContainer(
-                          duration: Motion.of(
-                              context, const Duration(milliseconds: 200)),
-                          height: 44,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: i == selected
-                                ? AppColors.ink
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            labels[i],
-                            style: TextStyle(
-                              fontSize: AppFontSizes.s15,
-                              fontWeight: FontWeight.w700,
-                              color: i == selected
-                                  ? AppColors.onInk
-                                  : AppColors.ink,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+  Widget build(BuildContext context) => PillSegmented<int>(
+        value: selected,
+        items: [for (var i = 0; i < labels.length; i++) (i, labels[i])],
+        onChanged: onChanged,
       );
 }
 
@@ -159,7 +125,7 @@ class _MenuTab extends StatelessWidget {
     }
     final items = c.visibleMenu;
     return LazyListView(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
         TextField(
           onChanged: c.setQuery,
@@ -233,18 +199,19 @@ class _GroupChip extends StatelessWidget {
             duration: Motion.of(context, const Duration(milliseconds: 180)),
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 16),
+            // Nhóm đang chọn: viên mù tạt chữ rêu.
             decoration: BoxDecoration(
-              color: selected ? AppColors.ink : AppColors.surface,
+              color: selected ? AppColors.accent : AppColors.surface,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                  color: selected ? AppColors.ink : AppColors.border),
+                  color: selected ? AppColors.accent : AppColors.border),
             ),
             child: Text(
               label,
               style: TextStyle(
                 fontSize: AppFontSizes.s14,
                 fontWeight: FontWeight.w600,
-                color: selected ? AppColors.onInk : AppColors.ink,
+                color: selected ? AppColors.onAccent : AppColors.ink,
               ),
             ),
           ),
@@ -279,7 +246,8 @@ class _MenuItemCard extends StatelessWidget {
                         if (item.sizes.length > 1 || size.name.isNotEmpty)
                           Text(size.name, style: AppTextStyles.bodyStrong),
                         Text(formatVnd(size.price),
-                            style: AppTextStyles.caption),
+                            style: AppTextStyles.bodyStrong
+                                .copyWith(color: AppColors.brandAccent)),
                       ],
                     ),
                   ),

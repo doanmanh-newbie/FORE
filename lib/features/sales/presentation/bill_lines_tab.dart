@@ -29,7 +29,7 @@ class _LinesTab extends StatelessWidget {
       );
     }
     return LazyListView(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
         ForeCard(
           radius: 20,

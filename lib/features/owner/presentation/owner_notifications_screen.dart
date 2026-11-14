@@ -57,13 +57,13 @@ class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        title: Text('Thông báo', style: AppTextStyles.headline),
+        title: const Text('Thông báo'),
         actions: [
-          const ThemeModeToggle(),
+          const ThemeModeToggle(color: AppColors.white),
           if (unread.isNotEmpty)
             TextButton(
               onPressed: _marking ? null : () => _markRead(unread),
+              style: TextButton.styleFrom(foregroundColor: AppColors.mustard),
               child: Text(_marking ? 'Đang lưu…' : 'Đánh dấu tất cả đã đọc'),
             ),
         ],

@@ -269,7 +269,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.title, style: AppTextStyles.headline),
+            Text(widget.title, style: AppTextStyles.sectionHeading),
             const SizedBox(height: 4),
             Text(widget.subtitle, style: AppTextStyles.caption),
             const SizedBox(height: 14),
@@ -354,7 +354,7 @@ Future<bool?> showReviewSheet(
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppSizes.radiusCard)),
+            BorderRadius.vertical(top: Radius.circular(AppRadius.panel)),
       ),
       builder: (context) => ReviewSheet(
         title: title,
@@ -446,7 +446,7 @@ class _CorrectionSheetState extends State<CorrectionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.title, style: AppTextStyles.headline),
+            Text(widget.title, style: AppTextStyles.sectionHeading),
             const SizedBox(height: 4),
             Text(widget.subtitle, style: AppTextStyles.caption),
             const SizedBox(height: 14),
@@ -526,7 +526,7 @@ Future<bool?> showCorrectionSheet(
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppSizes.radiusCard)),
+            BorderRadius.vertical(top: Radius.circular(AppRadius.panel)),
       ),
       builder: (context) => CorrectionSheet(
         title: title,

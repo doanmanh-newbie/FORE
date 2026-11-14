@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/errors/app_failure.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/fore_button.dart';
 import '../../../../core/widgets/fore_card.dart';
 import '../../../../core/widgets/ops_icon.dart';
 import '../../../../core/widgets/money_field.dart';
@@ -29,18 +30,27 @@ class NoShiftView extends StatelessWidget {
         onRefresh: shift.load,
         child: LazyListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
           children: [
             ForeCard(
               padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
               child: Column(
                 children: [
-                  ForeIcon(ForeIcons.calendar,
-                      size: 34, color: AppColors.ink),
-                  const SizedBox(height: 28),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.accentTint,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: ForeIcon(ForeIcons.calendar,
+                        size: 36, color: AppColors.ink),
+                  ),
+                  const SizedBox(height: 24),
                   Text(
                     'Chưa có ca đang mở',
-                    style: AppTextStyles.headline,
+                    style: AppTextStyles.sectionHeading.copyWith(fontSize: 22),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
@@ -52,11 +62,12 @@ class NoShiftView extends StatelessWidget {
                         height: 1.4),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 56),
-                  FilledButton(
+                  const SizedBox(height: 32),
+                  ForeButton(
+                    label: 'Mở ca',
+                    icon: Icons.lock_open_rounded,
                     onPressed:
                         shift.busy ? null : () => _askOpeningCash(context),
-                    child: const Text('Mở ca'),
                   ),
                 ],
               ),
@@ -145,10 +156,10 @@ class _OpeningCashFormState extends State<_OpeningCashForm> {
             onChanged: (v) => setState(() => _value = v),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+          ForeButton(
+            label: 'Mở ca',
             onPressed:
                 _value == null ? null : () => Navigator.of(context).pop(_value),
-            child: const Text('Mở ca'),
           ),
         ],
       );

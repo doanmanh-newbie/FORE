@@ -86,9 +86,12 @@ class _CreateShopScreenState extends State<CreateShopScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.brand,
+        iconTheme: IconThemeData(color: AppColors.brand),
+        shape: const RoundedRectangleBorder(),
         elevation: 0,
         automaticallyImplyLeading: canPop,
-        actions: const [ThemeModeToggle()],
+        actions: [ThemeModeToggle(color: AppColors.brand)],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

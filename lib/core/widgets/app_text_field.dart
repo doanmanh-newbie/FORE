@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../design/spacing.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'brand_text_field.dart' show TintedSvg;
 
 /// Ô nhập có nhãn phía trên và lỗi ngay dưới ô. Với `obscure: true` có nút hiện/ẩn.
+/// Cùng dáng với [ForeTextField] (bộ "Rêu & Mù tạt"): nhãn 13/600, chữ 15/500, cao tối thiểu 52.
 class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
@@ -48,8 +52,8 @@ class _AppTextFieldState extends State<AppTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: AppTextStyles.label),
-        const SizedBox(height: 6),
+        Text(widget.label, style: AppTextStyles.fieldLabel),
+        const SizedBox(height: AppGaps.sm),
         TextField(
           controller: widget.controller,
           enabled: widget.enabled,
@@ -63,15 +67,25 @@ class _AppTextFieldState extends State<AppTextField> {
           autocorrect: false,
           enableSuggestions: !widget.obscure,
           onSubmitted: (_) => widget.onSubmitted?.call(),
+          style: AppTextStyles.input,
+          cursorColor: AppColors.brand,
           decoration: InputDecoration(
             hintText: widget.hint,
+            hintStyle: AppTextStyles.inputHint,
             errorText: widget.errorText,
+            errorMaxLines: 3,
+            constraints: widget.maxLines == 1 || widget.obscure
+                ? const BoxConstraints(minHeight: AppSizes.fieldHeight)
+                : null,
             suffixIcon: widget.obscure
                 ? IconButton(
                     tooltip: _hidden ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
-                    icon: Icon(_hidden
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
+                    // Cùng icon với ô mật khẩu màn Đăng nhập.
+                    icon: _hidden
+                        ? TintedSvg('assets/auth/ic_eye_off.svg',
+                            color: AppColors.textHint, size: 22)
+                        : Icon(Icons.visibility_outlined,
+                            color: AppColors.textHint, size: 22),
                     onPressed: widget.enabled
                         ? () => setState(() => _hidden = !_hidden)
                         : null,

@@ -5,6 +5,7 @@ import '../../../core/design/colors.dart';
 import '../../../core/design/spacing.dart';
 import '../../../core/design/typography.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/fore_card.dart' show ForeIconBadge;
 import '../../../core/widgets/status_chip.dart';
 import 'menu_category_views.dart';
 import 'menu_detail_view.dart';
@@ -17,11 +18,22 @@ import 'menu_store.dart';
 import 'menu_widgets.dart';
 import '../../../core/widgets/lazy_list_view.dart';
 
+/// Dựng header rêu của tab Thực đơn: tiêu đề, nút cạnh tiêu đề và ô tìm kiếm nằm trong header.
+typedef MenuHeaderBuilder = Widget Function({
+  required String title,
+  Widget? action,
+  Widget? search,
+});
+
 /// Thân tab Thực đơn: tìm kiếm, lọc, danh sách món. [header] là thanh quán/chuông của trang chủ chủ quán.
 class MenuHomeView extends StatefulWidget {
-  const MenuHomeView({super.key, required this.header});
+  const MenuHomeView({super.key, required this.header, this.headerBuilder});
 
   final Widget header;
+
+  /// Có giá trị thì tiêu đề "Thực đơn", nút "Quản lý danh mục" và ô tìm kiếm nằm trong
+  /// header rêu do nơi gọi dựng (thay cho [header]); thân trang bắt đầu bằng danh mục.
+  final MenuHeaderBuilder? headerBuilder;
 
   @override
   State<MenuHomeView> createState() => _MenuHomeViewState();
@@ -73,11 +85,67 @@ class _MenuHomeViewState extends State<MenuHomeView> {
   Widget build(BuildContext context) {
     final store = context.watch<MenuStore>();
     final data = store.overview;
+    final builder = widget.headerBuilder;
+    if (builder == null) {
+      return Column(
+        children: [
+          widget.header,
+          Expanded(child: _body(store, data)),
+        ],
+      );
+    }
+    // Header rêu có ô tìm kiếm (TextField chứa một Scrollable riêng). Đặt thân trang
+    // trước header trong cây widget (vẽ từ dưới lên) để danh sách món vẫn là Scrollable
+    // đầu tiên; trên màn hình header vẫn ở trên cùng. Thứ tự Tab và đọc màn hình theo
+    // vị trí hiển thị nên không đổi.
     return Column(
+      verticalDirection: VerticalDirection.up,
       children: [
-        widget.header,
         Expanded(child: _body(store, data)),
+        _mossHeader(builder, store, data),
       ],
+    );
+  }
+
+  /// Header rêu: tiêu đề theo trạng thái (giữ lại / đang tìm), nút quản lý danh mục
+  /// viền trắng, ô tìm kiếm bo tròn nền trắng. Chưa tải xong thì chỉ có tiêu đề.
+  Widget _mossHeader(
+      MenuHeaderBuilder builder, MenuStore store, MenuOverview? data) {
+    if (data == null) return builder(title: 'Thực đơn');
+    final offline = store.stale;
+    final searching = store.filters.query.trim().isNotEmpty;
+    return builder(
+      title: offline
+          ? 'Thực đơn đang giữ lại'
+          : searching
+              ? 'Tìm trong thực đơn'
+              : 'Thực đơn',
+      action: offline
+          ? null
+          // Viên mù tạt chữ rêu trên nền header (màu cố định, không đổi theo chế độ).
+          : FilledButton(
+              onPressed: () =>
+                  openMenuPage<void>(context, const CategoryListPage()),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.mustard,
+                foregroundColor: AppColors.moss,
+                minimumSize: const Size(48, 40),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                textStyle: const TextStyle(
+                  fontFamily: AppFonts.body,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: const Text('Quản lý danh mục'),
+            ),
+      search: _SearchRow(
+        controller: _search,
+        onChanged: store.setQuery,
+        hasFilter: store.filters.hasAdvanced,
+        onDark: true,
+        onFilter: () => openMenuPage<void>(context, const MenuFilterPage()),
+      ),
     );
   }
 
@@ -103,8 +171,9 @@ class _MenuHomeViewState extends State<MenuHomeView> {
             onRefresh: () => store.load(silent: true),
             child: LazyListView(
               padding: const EdgeInsets.fromLTRB(
-                  AppSizes.pagePadding, 0, AppSizes.pagePadding, 16),
+                  AppSizes.screenGutter, 16, AppSizes.screenGutter, 16),
               children: [
+                if (widget.headerBuilder == null) ...[
                 Text(
                   offline
                       ? 'SỔ TAY THỰC ĐƠN'
@@ -147,15 +216,18 @@ class _MenuHomeViewState extends State<MenuHomeView> {
                     children: [Expanded(child: title), manageButton],
                   );
                 }),
+                ],
                 if (offline) _OfflineBanner(store: store, data: data),
-                const SizedBox(height: 10),
-                _SearchRow(
-                  controller: _search,
-                  onChanged: store.setQuery,
-                  hasFilter: filters.hasAdvanced,
-                  onFilter: () =>
-                      openMenuPage<void>(context, const MenuFilterPage()),
-                ),
+                if (widget.headerBuilder == null) ...[
+                  const SizedBox(height: 10),
+                  _SearchRow(
+                    controller: _search,
+                    onChanged: store.setQuery,
+                    hasFilter: filters.hasAdvanced,
+                    onFilter: () =>
+                        openMenuPage<void>(context, const MenuFilterPage()),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 _CategoryChips(store: store, data: data),
                 if (!offline && !searching && data.items.isNotEmpty) ...[
@@ -229,7 +301,7 @@ class _MenuHomeViewState extends State<MenuHomeView> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
-              AppSizes.pagePadding, 6, AppSizes.pagePadding, 10),
+              AppSizes.screenGutter, 8, AppSizes.screenGutter, 12),
           child: offline
               ? MenuPrimaryButton(
                   label: 'Thử kết nối lại',
@@ -247,18 +319,28 @@ class _MenuHomeViewState extends State<MenuHomeView> {
   }
 }
 
+/// Viền ô tìm trong header rêu: viên thuốc, không viền màu.
+const _pillBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.all(Radius.circular(999)),
+  borderSide: BorderSide(color: Colors.transparent),
+);
+
 class _SearchRow extends StatelessWidget {
   const _SearchRow({
     required this.controller,
     required this.onChanged,
     required this.hasFilter,
     required this.onFilter,
+    this.onDark = false,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final bool hasFilter;
   final VoidCallback onFilter;
+
+  /// Đặt trong header rêu: ô tìm bo tròn viên thuốc, nút lọc tròn nền trắng.
+  final bool onDark;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -269,6 +351,13 @@ class _SearchRow extends StatelessWidget {
               onChanged: onChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
+                border: onDark ? _pillBorder : null,
+                enabledBorder: onDark ? _pillBorder : null,
+                focusedBorder: onDark
+                    ? _pillBorder.copyWith(
+                        borderSide: const BorderSide(
+                            color: AppColors.mustard, width: 1.5))
+                    : null,
                 hintText: 'Tìm tên món...',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: controller.text.isEmpty
@@ -293,6 +382,14 @@ class _SearchRow extends StatelessWidget {
               onPressed: onFilter,
               icon: const Icon(Icons.tune_rounded),
               constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+              // Trên header: nút tròn mù tạt, icon rêu.
+              style: onDark
+                  ? IconButton.styleFrom(
+                      backgroundColor: AppColors.mustard,
+                      foregroundColor: AppColors.moss,
+                      side: BorderSide.none,
+                    )
+                  : null,
             ),
           ),
         ],
@@ -487,8 +584,9 @@ class _ItemCard extends StatelessWidget {
     final single = sizes.length == 1 ? sizes.first : null;
     final lines = <Widget>[];
 
+    // Giá là thông tin chính của dòng: chữ đậm màu xanh lá.
     lines.add(Text(priceSummary(item) + (single != null && single.cost != null ? ' · Vốn ${formatVnd(single.cost!)}' : ''),
-        style: AppTextStyles.body));
+        style: AppTextStyles.bodyStrong.copyWith(color: AppColors.brandAccent)));
 
     if (draft) {
       lines.add(Text('Bản nháp · chưa bán', style: AppTextStyles.caption));
@@ -526,7 +624,7 @@ class _ItemCard extends StatelessWidget {
       onTap: onOpen,
       child: Row(
         children: [
-          MenuThumb(path: item.imagePath, size: 48),
+          MenuThumb(path: item.imagePath, size: 56),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -624,7 +722,8 @@ class _EmptyMenu extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.edit_note_rounded, size: 36),
+                    const ForeIconBadge(
+                        icon: Icons.edit_note_rounded, size: 56),
                     const SizedBox(height: 10),
                     Text('Món đầu tiên, chỉ cần tên và giá.',
                         style: AppTextStyles.headline),

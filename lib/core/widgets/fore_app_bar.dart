@@ -19,10 +19,13 @@ class ForeAppBar extends StatelessWidget {
     this.onChooseShop,
     this.onNotifications,
     this.unreadCount = 0,
+    this.onBack,
+    this.backTooltip = 'Quay lại',
     this.title,
     this.caption,
     this.titleAction,
     this.bottom,
+    this.titleSize = 28,
   });
 
   final String shopName;
@@ -30,6 +33,10 @@ class ForeAppBar extends StatelessWidget {
   final VoidCallback? onChooseShop;
   final VoidCallback? onNotifications;
   final int unreadCount;
+
+  /// Nút quay lại ở cuối hàng trên (vd "Về màn quản lý" từ màn vận hành).
+  final VoidCallback? onBack;
+  final String backTooltip;
 
   /// Tiêu đề trang lớn (vd "Tổng quan").
   final String? title;
@@ -40,6 +47,9 @@ class ForeAppBar extends StatelessWidget {
   /// Nút cạnh tiêu đề (vd làm mới).
   final Widget? titleAction;
   final Widget? bottom;
+
+  /// Cỡ chữ tiêu đề; giảm cho tiêu đề dài để không quá hai dòng.
+  final double titleSize;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +79,15 @@ class ForeAppBar extends StatelessWidget {
                     const SizedBox(width: AppGaps.md),
                     Expanded(child: _ShopName(this)),
                     const ThemeModeToggle(color: AppColors.white),
+                    if (onBack != null)
+                      IconButton(
+                        tooltip: backTooltip,
+                        onPressed: onBack,
+                        color: AppColors.white,
+                        constraints: const BoxConstraints.tightFor(
+                            width: 48, height: 48),
+                        icon: const Icon(Icons.arrow_back_rounded),
+                      ),
                     if (onNotifications != null)
                       IconButton(
                         tooltip: unreadCount > 0
@@ -98,7 +117,7 @@ class ForeAppBar extends StatelessWidget {
                           child: Text(
                             title!,
                             style: AppTextStyles.panelTitle
-                                .copyWith(fontSize: 28, height: 1.15),
+                                .copyWith(fontSize: titleSize, height: 1.15),
                           ),
                         ),
                         if (titleAction != null) titleAction!,
@@ -120,7 +139,7 @@ class ForeAppBar extends StatelessWidget {
                     ),
                   ),
                 if (bottom != null) ...[
-                  const SizedBox(height: AppGaps.lg),
+                  SizedBox(height: title == null ? AppGaps.md : AppGaps.lg),
                   Padding(
                     padding: const EdgeInsets.only(left: 4, right: 12),
                     child: bottom!,

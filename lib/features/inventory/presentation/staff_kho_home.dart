@@ -161,7 +161,7 @@ class _ActionTile extends StatelessWidget {
           child: Row(children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: highlight ? AppColors.statusAttentionTint : AppColors.tint,
+                color: highlight ? AppColors.statusAttentionTint : AppColors.navIndicator,
                 borderRadius: BorderRadius.circular(AppSizes.radiusTile),
               ),
               child: SizedBox(
@@ -183,7 +183,7 @@ class _ActionTile extends StatelessWidget {
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary),
+                color: AppColors.brand),
           ]),
         ),
       );

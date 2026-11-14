@@ -52,14 +52,21 @@ class KhoPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: Border(top: BorderSide(color: AppColors.cardBorder)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.shadowMedium.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
                 ),
                 child: SafeArea(
                   top: false,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
-                      AppSizes.pagePadding,
+                      AppSizes.screenGutter,
                       12,
-                      AppSizes.pagePadding,
+                      AppSizes.screenGutter,
                       12 + MediaQuery.viewInsetsOf(context).bottom,
                     ),
                     child: ContentWidth(child: bottom!),
@@ -190,9 +197,12 @@ class LabelValueRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: Text(label, style: AppTextStyles.body)),
+            // Nhãn 3 phần, số 2 phần; số canh sát mép phải để cột tiền thẳng hàng.
+            // (Trước dùng Flexible nên số nằm ở đầu nửa phải, trông lơ lửng giữa thẻ.)
+            Expanded(flex: 3, child: Text(label, style: AppTextStyles.body)),
             const SizedBox(width: 12),
-            Flexible(
+            Expanded(
+              flex: 2,
               child: Text(
                 value,
                 textAlign: TextAlign.right,

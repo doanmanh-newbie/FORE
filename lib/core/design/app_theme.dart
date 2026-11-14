@@ -7,7 +7,7 @@ import 'typography.dart';
 /// Theme toàn app theo bộ "Rêu & Mù tạt" (xem DESIGN.md):
 /// - Nền kem, mực rêu đậm, nút chính viên thuốc vàng mù tạt chữ rêu.
 /// - Ô nhập nền trắng, viền #E2E5E1, bo 12, cao 52.
-/// - Font Inter cho thân chữ; tiêu đề cũ (Newsreader) chuyển dần theo từng màn.
+/// - Font Inter cho mọi chữ, kể cả tiêu đề.
 abstract final class AppTheme {
   static ThemeData light() => build(AppPalette.light);
 
@@ -152,6 +152,109 @@ abstract final class AppTheme {
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: AppColors.white.withValues(alpha: 0.75)),
+      ),
+      // AppBar của các màn con: nền rêu bo góc dưới, chữ và icon trắng.
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.moss,
+        foregroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: AppColors.white),
+        actionsIconTheme: IconThemeData(color: AppColors.white),
+        titleTextStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.white,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
+        ),
+      ),
+      // Bảng trượt từ dưới: nền kem, bo 28 hai góc trên, có tay nắm.
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: p.background,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        dragHandleColor: p.border,
+        shape: const RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadius.panel)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: p.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.panel),
+        ),
+        titleTextStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: p.textPrimary,
+        ),
+      ),
+      // Công tắc bật: rãnh rêu, núm trắng; tắt: rãnh nhạt viền xám.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? p.onInk
+              : p.textSecondary,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? p.brand
+              : p.disabledFill,
+        ),
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? p.brand
+              : p.border,
+        ),
+      ),
+      // Viên chọn (ChoiceChip): viên thuốc trắng viền mảnh; đang chọn = mù tạt chữ rêu.
+      chipTheme: ChipThemeData(
+        shape: StadiumBorder(side: BorderSide(color: p.border)),
+        side: BorderSide(color: p.border),
+        backgroundColor: p.surface,
+        selectedColor: p.accent,
+        disabledColor: p.disabledFill,
+        showCheckmark: false,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        labelStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: p.brand,
+        ),
+        secondaryLabelStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: p.onAccent,
+        ),
+      ),
+      // Dòng danh sách (ListTile, SwitchListTile, CheckboxListTile): tiêu đề cùng kiểu
+      // với tiêu đề mục (16/600), mô tả là chữ phụ 12.
+      listTileTheme: ListTileThemeData(
+        iconColor: p.brand,
+        titleTextStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: p.textPrimary,
+          height: 1.3,
+        ),
+        subtitleTextStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 12,
+          color: p.textSecondary,
+          height: 1.35,
+        ),
       ),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(

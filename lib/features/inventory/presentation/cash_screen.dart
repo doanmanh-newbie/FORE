@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_segmented.dart';
 import '../../../core/widgets/money_field.dart';
 import '../../../core/widgets/notify.dart';
@@ -54,7 +55,7 @@ class _CashScreenState extends State<CashScreen> {
                       'Khoản tiền bỏ thêm vào két hoặc lấy ra ngoài bán hàng.'),
               Expanded(
                 child: LazyListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                   children: [
                     ForeSegmented(
                       labels: const ['Chi ra', 'Thu vào'],
@@ -83,10 +84,12 @@ class _CashScreenState extends State<CashScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    FilledButton(
+                    ForeButton(
+                      label: _c.incoming ? 'Ghi khoản thu' : 'Ghi khoản chi',
+                      icon: _c.incoming
+                          ? Icons.south_west_rounded
+                          : Icons.north_east_rounded,
                       onPressed: _c.canSubmit ? _save : null,
-                      child:
-                          Text(_c.incoming ? 'Ghi khoản thu' : 'Ghi khoản chi'),
                     ),
                   ],
                 ),

@@ -21,3 +21,5 @@ env.json
 qa-accounts.local.md
 .loop/
 .playwright-mcp/
+
+*.log

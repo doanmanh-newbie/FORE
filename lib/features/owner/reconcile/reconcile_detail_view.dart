@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/page_scaffold.dart';
+import '../../../core/widgets/pill_segmented.dart';
 import '../../../core/widgets/status_chip.dart';
 import 'reconcile_format.dart';
 import 'reconcile_ledgers.dart';
@@ -157,15 +160,19 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
       children: [
         Expanded(
           child: PageScaffold(
-            header: widget.header,
-            children: _inTicket
+            padding: const EdgeInsets.only(bottom: AppSizes.pageBottomPadding),
+            children: [
+              // Header tràn mép như danh sách; thân có lề hai bên.
+              widget.header,
+              const SizedBox(height: 8),
+              for (final child in _inTicket
                 ? [
                     _TopBar(label: _backLabel, onBack: _back),
                     ..._ticketContent(report),
                   ]
                 : [
                     _TopBar(label: _backLabel, onBack: _back),
-                    Text(report.title, style: AppTextStyles.display),
+                    Text(report.title, style: AppTextStyles.screenHeading),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -203,20 +210,35 @@ class _ReconcileDetailViewState extends State<ReconcileDetailView> {
                       const SizedBox(height: 14),
                     ],
                     ..._content(report),
-                  ],
+                  ])
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSizes.screenGutter),
+                  child: child,
+                ),
+            ],
           ),
         ),
+        // Thanh hành động cố định đáy: một nút chính viên thuốc mù tạt.
         DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.background,
-            border: Border(top: BorderSide(color: AppColors.border)),
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.cardBorder)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadowMedium.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: FilledButton.icon(
+            padding: const EdgeInsets.fromLTRB(
+                AppSizes.screenGutter, 12, AppSizes.screenGutter, 12),
+            child: ForeButton(
+              label: 'Ghi chú & xử lý',
+              icon: Icons.edit_note_rounded,
               onPressed: _openReview,
-              icon: const Icon(Icons.edit_note_rounded),
-              label: const Text('Ghi chú & xử lý'),
             ),
           ),
         ),
@@ -376,9 +398,18 @@ class _TopBar extends StatelessWidget {
           IconButton(
             onPressed: onBack,
             tooltip: 'Quay lại',
-            icon: const Icon(Icons.arrow_back),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.surface,
+              side: BorderSide(color: AppColors.cardBorder),
+            ),
+            icon: Icon(Icons.arrow_back_rounded, color: AppColors.brand),
           ),
-          Text(label, style: AppTextStyles.bodyStrong),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyStrong),
+          ),
         ],
       );
 }
@@ -419,99 +450,122 @@ class _HandledLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = handled ? AppColors.statusHealthy : AppColors.textSecondary;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(handled ? Icons.done_all_rounded : Icons.schedule_rounded,
-            size: 14, color: color),
-        const SizedBox(width: 4),
-        Text(
-          handled ? 'Đã xử lý' : 'Chưa xử lý',
-          style: TextStyle(
-            fontSize: AppFontSizes.s12,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _VerdictCard extends StatelessWidget {
-  const _VerdictCard({required this.report});
-
-  final ReconcileReport report;
-
-  @override
-  Widget build(BuildContext context) {
-    final cashLoss = report.cashShortfall;
-    return ForeCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: handled ? AppColors.statusHealthyTint : AppColors.tint,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: StatusChip(
-              label: reconcileStatusLabel(report.overall),
-              severity: reconcileSeverity(report.overall),
-              compact: true,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text('Ảnh hưởng ước tính', style: AppTextStyles.caption),
-          const SizedBox(height: 2),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                reconcileImpactText(report),
-                style: reconcileNumberStyle(size: 34),
-              ),
-            ),
-          ),
-          Divider(height: 24, color: AppColors.border),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _Figure(
-                  label: 'Doanh thu ước tính bị hụt',
-                  value: reconcileMoneyOrDash(report.ingredientLoss),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Figure(
-                  label: 'Tiền mặt thiếu',
-                  value: cashLoss > 0 ? formatVnd(cashLoss) : '—',
-                  alignEnd: true,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+          Icon(handled ? Icons.done_all_rounded : Icons.schedule_rounded,
+              size: 14, color: color),
+          const SizedBox(width: 4),
           Text(
-            report.overall == ReconcileStatus.ok
-                ? 'Số liệu ca này khớp với lượng đã bán và tiền trong két.'
-                : 'Chưa kết luận mất mát. Cần kiểm tra lại số đếm và chứng từ.',
-            style: AppTextStyles.caption,
-          ),
-          if (report.ingredientLoss > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Doanh thu hụt tính theo nguyên liệu hụt nhiều nhất, không cộng các nguyên liệu với nhau vì chúng có thể nằm trong cùng một ly.',
-              style: AppTextStyles.caption,
+            handled ? 'Đã xử lý' : 'Chưa xử lý',
+            style: TextStyle(
+              fontSize: AppFontSizes.s12,
+              fontWeight: FontWeight.w600,
+              color: color,
             ),
-          ],
+          ),
         ],
       ),
     );
   }
 }
 
+/// Thẻ kết luận nền rêu đậm: trạng thái, số ảnh hưởng lớn, hai số thành phần.
+/// Nền cố định nên chữ luôn trắng ở cả hai chế độ.
+class _VerdictCard extends StatelessWidget {
+  const _VerdictCard({required this.report});
+
+  final ReconcileReport report;
+
+  static const _muted = TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 12,
+    color: AppColors.onDarkMuted,
+    height: 1.4,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final cashLoss = report.cashShortfall;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.moss,
+        borderRadius: BorderRadius.circular(AppSizes.radiusCard),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: StatusChip(
+                label: reconcileStatusLabel(report.overall),
+                severity: reconcileSeverity(report.overall),
+                compact: true,
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text('Ảnh hưởng ước tính', style: _muted),
+            const SizedBox(height: 2),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  reconcileImpactText(report),
+                  style: reconcileNumberStyle(size: 34, color: AppColors.white),
+                ),
+              ),
+            ),
+            const Divider(height: 28, color: AppColors.onDarkBorder),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _Figure(
+                    label: 'Doanh thu ước tính bị hụt',
+                    value: reconcileMoneyOrDash(report.ingredientLoss),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _Figure(
+                    label: 'Tiền mặt thiếu',
+                    value: cashLoss > 0 ? formatVnd(cashLoss) : '—',
+                    alignEnd: true,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              report.overall == ReconcileStatus.ok
+                  ? 'Số liệu ca này khớp với lượng đã bán và tiền trong két.'
+                  : 'Chưa kết luận mất mát. Cần kiểm tra lại số đếm và chứng từ.',
+              style: _muted,
+            ),
+            if (report.ingredientLoss > 0) ...[
+              const SizedBox(height: 4),
+              const Text(
+                'Doanh thu hụt tính theo nguyên liệu hụt nhiều nhất, không cộng các nguyên liệu với nhau vì chúng có thể nằm trong cùng một ly.',
+                style: _muted,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Một số thành phần trong thẻ kết luận (nền rêu): nhãn mờ, số mù tạt.
 class _Figure extends StatelessWidget {
   const _Figure({
     required this.label,
@@ -531,47 +585,55 @@ class _Figure extends StatelessWidget {
           Text(
             label,
             textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-            style: AppTextStyles.caption,
+            style: _VerdictCard._muted,
           ),
           const SizedBox(height: 2),
-          Text(value, style: reconcileNumberStyle(size: 20)),
+          Text(value,
+              style: reconcileNumberStyle(size: 20, color: AppColors.mustard)),
         ],
       );
 }
 
-/// Thẻ kết luận thu gọn đặt trên đầu các tab.
+/// Thẻ kết luận thu gọn đặt trên đầu các tab: cùng nền rêu với thẻ đầy đủ.
 class _CompactVerdict extends StatelessWidget {
   const _CompactVerdict({required this.report});
 
   final ReconcileReport report;
 
   @override
-  Widget build(BuildContext context) => ForeCard(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  StatusChip(
-                    label: reconcileStatusLabel(report.overall),
-                    severity: reconcileSeverity(report.overall),
-                    compact: true,
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Tổng ảnh hưởng ước tính',
-                      style: AppTextStyles.caption),
-                ],
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.moss,
+          borderRadius: BorderRadius.circular(AppSizes.radiusCard),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    StatusChip(
+                      label: reconcileStatusLabel(report.overall),
+                      severity: reconcileSeverity(report.overall),
+                      compact: true,
+                    ),
+                    const SizedBox(height: 6),
+                    const Text('Tổng ảnh hưởng ước tính',
+                        style: _VerdictCard._muted),
+                  ],
+                ),
               ),
-            ),
-            Text(reconcileImpactText(report),
-                style: reconcileNumberStyle(size: 20)),
-          ],
+              Text(reconcileImpactText(report),
+                  style: reconcileNumberStyle(size: 20, color: AppColors.white)),
+            ],
+          ),
         ),
       );
 }
 
+/// Ba tab Nguyên liệu / Tiền mặt / Hao hụt: công tắc viên thuốc như màn Đăng ký.
 class _TabBar extends StatelessWidget {
   const _TabBar({required this.selected, required this.onSelect});
 
@@ -585,41 +647,11 @@ class _TabBar extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          for (final (section, label) in _tabs)
-            Expanded(
-              child: InkWell(
-                onTap: () => onSelect(section),
-                child: Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: section == selected
-                            ? AppColors.brand
-                            : AppColors.border,
-                        width: section == selected ? 2.5 : 1,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: AppFontSizes.s14,
-                      fontWeight: section == selected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: section == selected
-                          ? AppColors.brand
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+  Widget build(BuildContext context) => PillSegmented<_Section>(
+        value: selected,
+        items: _tabs,
+        onChanged: onSelect,
+        height: AppSizes.controlHeight,
       );
 }
 
@@ -652,21 +684,20 @@ class _SummaryRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 22, color: AppColors.brand),
+              ForeIconBadge(icon: icon, size: 36),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    // Wrap: màn hẹp thì nhãn "Quan trọng" xuống dòng thay vì tràn.
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(
-                          child: Text(title, style: AppTextStyles.bodyStrong),
-                        ),
-                        if (tag != null) ...[
-                          const SizedBox(width: 6),
-                          ReconcileTag(label: tag!),
-                        ],
+                        Text(title, style: AppTextStyles.bodyStrong),
+                        if (tag != null) ReconcileTag(label: tag!),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -687,7 +718,7 @@ class _SummaryRow extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  size: 20, color: AppColors.textSecondary),
+                  size: 20, color: AppColors.brand),
             ],
           ),
         ),

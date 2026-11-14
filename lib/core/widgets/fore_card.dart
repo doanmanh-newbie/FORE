@@ -76,7 +76,12 @@ class ForeIconBadge extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: background ?? fg.withValues(alpha: 0.12),
+        // Icon mặc định (mực rêu): nền rêu nhạt navIndicator, cùng tông ô icon của ActionTile
+        // và nút phụ. Icon có màu riêng (trạng thái): nền nhạt cùng tông màu đó.
+        color: background ??
+            (color == null || color == AppColors.brand
+                ? AppColors.navIndicator
+                : fg.withValues(alpha: 0.12)),
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
       child: Icon(icon, color: fg, size: size * 0.52),
@@ -96,7 +101,7 @@ class SectionHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          Expanded(child: Text(title, style: AppTextStyles.headline)),
+          Expanded(child: Text(title, style: AppTextStyles.sectionHeading)),
           if (trailing != null) Text(trailing!, style: AppTextStyles.caption),
         ],
       );

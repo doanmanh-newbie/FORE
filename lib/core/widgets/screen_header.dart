@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../theme/theme_mode_toggle.dart';
 
-/// Đầu trang của màn phụ (đẩy lên từ tab): nút quay lại, tiêu đề chữ có chân, dòng mô tả.
+/// Đầu trang của màn phụ (đẩy lên từ tab): nền rêu bo góc dưới, nút quay lại,
+/// tiêu đề trắng, dòng mô tả trắng mờ. Màu cố định ở cả hai chế độ.
 class ScreenHeader extends StatelessWidget {
   const ScreenHeader(
       {super.key,
@@ -22,14 +24,15 @@ class ScreenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+        decoration: const BoxDecoration(
+          color: AppColors.moss,
+          borderRadius:
+              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
         ),
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 6, 20, 14),
+            padding: const EdgeInsets.fromLTRB(4, 6, 12, 18),
             child: _Constrain(
                 maxWidth: maxContentWidth,
                 child: Row(
@@ -39,8 +42,8 @@ class ScreenHeader extends StatelessWidget {
                       tooltip: 'Quay lại',
                       onPressed:
                           onBack ?? () => Navigator.of(context).maybePop(),
-                      icon:
-                          Icon(Icons.arrow_back_rounded, color: AppColors.ink),
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: AppColors.white),
                     ),
                     Expanded(
                       child: Padding(
@@ -48,16 +51,24 @@ class ScreenHeader extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(title, style: AppTextStyles.headline),
+                            Text(title,
+                                style: AppTextStyles.panelTitle
+                                    .copyWith(fontSize: 22, height: 1.2)),
                             if (subtitle != null) ...[
                               const SizedBox(height: 4),
-                              Text(subtitle!, style: AppTextStyles.caption),
+                              Text(subtitle!,
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.body,
+                                    fontSize: 13,
+                                    color: AppColors.onDarkMuted,
+                                    height: 1.4,
+                                  )),
                             ],
                           ],
                         ),
                       ),
                     ),
-                    ThemeModeToggle(color: AppColors.ink),
+                    const ThemeModeToggle(color: AppColors.white),
                   ],
                 )),
           ),

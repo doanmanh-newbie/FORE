@@ -5,6 +5,7 @@ import '../../../core/errors/failure_messages.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/notify.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../application/waste_controller.dart';
@@ -71,7 +72,7 @@ class _WasteScreenState extends State<WasteScreen> {
           onRetry: _c.load);
     }
     return LazyListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       children: [
         IngredientField(
             options: _c.ingredients,
@@ -86,7 +87,7 @@ class _WasteScreenState extends State<WasteScreen> {
           onChanged: _c.setQuantityText,
         ),
         const SizedBox(height: 18),
-        Text('Lý do', style: AppTextStyles.bodyStrong),
+        Text('Lý do', style: AppTextStyles.fieldLabel),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -97,11 +98,13 @@ class _WasteScreenState extends State<WasteScreen> {
                 label: Text(t.label),
                 selected: _c.type?.code == t.code,
                 onSelected: (_) => _c.selectType(t),
-                selectedColor: AppColors.ink,
+                selectedColor: AppColors.accent,
                 showCheckmark: false,
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: _c.type?.code == t.code ? AppColors.onInk : AppColors.ink,
+                  color: _c.type?.code == t.code
+                      ? AppColors.onAccent
+                      : AppColors.ink,
                 ),
               ),
           ],
@@ -123,9 +126,11 @@ class _WasteScreenState extends State<WasteScreen> {
           ),
         ),
         const SizedBox(height: 18),
-        FilledButton(
-            onPressed: _c.canSubmit ? _save : null,
-            child: const Text('Lưu hao hụt')),
+        ForeButton(
+          label: 'Lưu hao hụt',
+          icon: Icons.delete_outline_rounded,
+          onPressed: _c.canSubmit ? _save : null,
+        ),
       ],
     );
   }

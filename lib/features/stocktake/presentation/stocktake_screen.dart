@@ -6,6 +6,8 @@ import '../../../core/errors/failure_messages.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/notify.dart';
 import '../../../core/widgets/screen_header.dart';
@@ -121,45 +123,62 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             sliver: SliverToBoxAdapter(
-              child: ForeCard(
-                radius: 20,
-                padding: const EdgeInsets.all(16),
+              // Thẻ tiến độ nền rêu, thanh mù tạt: nhìn lướt là biết còn bao nhiêu.
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.moss,
+                  borderRadius: BorderRadius.circular(AppSizes.radiusCard),
+                ),
+                child: Padding(
+                padding: const EdgeInsets.all(18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Expanded(
+                        const Expanded(
                             child: Text('Tiến độ',
-                                style: AppTextStyles.bodyStrong)),
+                                style: TextStyle(
+                                  fontFamily: AppFonts.body,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.white,
+                                ))),
                         Text('Đã đếm ${_c.dailyCounted}/${_c.dailyTotal}',
-                            style: AppTextStyles.captionStrong),
+                            style: const TextStyle(
+                              fontFamily: AppFonts.body,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.mustard,
+                            )),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(999),
                       child: LinearProgressIndicator(
                         value: progress,
-                        minHeight: 8,
-                        backgroundColor: AppColors.surfaceTint,
-                        color: AppColors.ink,
+                        minHeight: 10,
+                        backgroundColor:
+                            AppColors.white.withValues(alpha: 0.15),
+                        color: AppColors.mustard,
                       ),
                     ),
                   ],
+                ),
                 ),
               ),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             sliver: SliverToBoxAdapter(
-                child: Text('Cần đếm', style: AppTextStyles.headline)),
+                child: Text('Cần đếm', style: AppTextStyles.sectionHeading)),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _row(dailyItems[index]),
@@ -169,12 +188,13 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
           ),
           if (weeklyItems.isNotEmpty) ...[
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Kiểm theo tuần', style: AppTextStyles.headline),
+                    Text('Kiểm theo tuần',
+                        style: AppTextStyles.sectionHeading),
                     const SizedBox(height: 2),
                     Text('Không bắt buộc đếm lúc cuối ca.',
                         style: AppTextStyles.caption),
@@ -183,7 +203,7 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => _row(weeklyItems[index]),
@@ -218,16 +238,23 @@ class _StocktakeScreenState extends State<StocktakeScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowMedium.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: FilledButton(
-              onPressed: _c.hasPending && !_c.busy ? _save : null,
-              child: Text(_c.hasPending
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            child: ForeButton(
+              label: _c.hasPending
                   ? 'Lưu ${_c.pendingCount} dòng'
-                  : 'Nhập số để lưu'),
+                  : 'Nhập số để lưu',
+              onPressed: _c.hasPending && !_c.busy ? _save : null,
             ),
           ),
         ),
@@ -268,9 +295,22 @@ class _CountRowState extends State<_CountRow> {
     final item = widget.item;
     return ForeCard(
       radius: 18,
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Row(
         children: [
+          // Nguyên liệu quan trọng: icon đỏ; đã đếm: icon xanh; còn lại: xanh lá.
+          ForeIconBadge(
+            icon: widget.needsInput
+                ? Icons.inventory_2_outlined
+                : Icons.check_rounded,
+            size: 36,
+            color: !widget.needsInput
+                ? AppColors.statusHealthy
+                : item.important
+                    ? AppColors.statusCritical
+                    : AppColors.brandAccent,
+          ),
+          const SizedBox(width: 10),
           Expanded(
             flex: 5,
             child: Column(
@@ -324,9 +364,20 @@ class _CountRowState extends State<_CountRow> {
                         severity: StatusSeverity.healthy,
                         compact: true,
                       ),
-                      TextButton(
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: TextButton(
                           onPressed: widget.enabled ? widget.onRecount : null,
-                          child: const Text('Đếm lại')),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.brand,
+                            backgroundColor: AppColors.navIndicator,
+                            shape: const StadiumBorder(),
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          child: const Text('Đếm lại'),
+                        ),
+                      ),
                     ],
                   ),
           ),

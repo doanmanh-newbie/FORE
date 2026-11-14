@@ -32,7 +32,7 @@ class AppSheet extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppSizes.radiusCard),
+              top: Radius.circular(AppRadius.panel),
             ),
           ),
           padding: EdgeInsets.fromLTRB(

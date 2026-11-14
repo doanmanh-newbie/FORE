@@ -23,13 +23,13 @@ class _TabEmpty extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: AppColors.tint,
-              child: Icon(icon, size: 26, color: AppColors.brand),
+            ForeIconBadge(
+              icon: icon,
+              size: 56,
+              background: AppColors.accentTint,
             ),
             const SizedBox(height: 12),
-            Text(title, style: AppTextStyles.title, textAlign: TextAlign.center),
+            Text(title, style: AppTextStyles.cardTitle.copyWith(fontSize: 16), textAlign: TextAlign.center),
             const SizedBox(height: 6),
             Text(body, style: AppTextStyles.body, textAlign: TextAlign.center),
           ],
@@ -157,7 +157,7 @@ class _ShortIngredientCard extends StatelessWidget {
                   item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.title,
+                  style: AppTextStyles.cardTitle.copyWith(fontSize: 16),
                 ),
               ),
               if (item.important) ...[
@@ -217,26 +217,36 @@ class _ShortIngredientCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 6),
-          InkWell(
-            onTap: onLedger,
-            borderRadius: BorderRadius.circular(AppSizes.radius),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Xem cách tính ${item.name}',
-                      style: TextStyle(
-                        color: AppColors.brand,
-                        fontSize: AppFontSizes.s14,
-                        fontWeight: FontWeight.w600,
+          const SizedBox(height: 4),
+          // Liên kết sang phiếu cách tính: viên thuốc nền rêu nhạt cho dễ bấm.
+          Material(
+            color: AppColors.navIndicator,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: InkWell(
+              onTap: onLedger,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.calculate_outlined,
+                        size: 18, color: AppColors.brand),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Xem cách tính ${item.name}',
+                        style: TextStyle(
+                          color: AppColors.brand,
+                          fontSize: AppFontSizes.s14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  Icon(Icons.arrow_forward_rounded,
-                      size: 18, color: AppColors.brand),
-                ],
+                    Icon(Icons.chevron_right_rounded,
+                        size: 20, color: AppColors.brand),
+                  ],
+                ),
               ),
             ),
           ),
@@ -344,7 +354,7 @@ class CashTab extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Đối chiếu két ca', style: AppTextStyles.title),
+                    child: Text('Đối chiếu két ca', style: AppTextStyles.cardTitle.copyWith(fontSize: 16)),
                   ),
                   StatusChip(
                     label: reconcileStatusLabel(cash.status),
@@ -447,7 +457,7 @@ class MovementsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Thu chi trong ca', style: AppTextStyles.sectionTitle),
+            Text('Thu chi trong ca', style: AppTextStyles.sectionHeading),
             const SizedBox(height: 8),
             if (movements.isEmpty)
               Text('Ca này không có thu chi.', style: AppTextStyles.body)
@@ -546,7 +556,7 @@ class WasteTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Hao hụt đã ghi nhận', style: AppTextStyles.sectionTitle),
+        Text('Hao hụt đã ghi nhận', style: AppTextStyles.sectionHeading),
         const SizedBox(height: 2),
         Text(
           '${report.waste.length} dòng ghi nhận trong ca · Chủ quán xem lại',
@@ -559,7 +569,7 @@ class WasteTab extends StatelessWidget {
             child: _WasteCard(waste: waste),
           ),
         if (report.wasteEntries.isNotEmpty) ...[
-          Text('Từng lần ghi', style: AppTextStyles.sectionTitle),
+          Text('Từng lần ghi', style: AppTextStyles.sectionHeading),
           const SizedBox(height: 8),
           ForeCard(
             padding: const EdgeInsets.all(16),
@@ -626,7 +636,7 @@ class _WasteCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(waste.name, style: AppTextStyles.title),
+                  child: Text(waste.name, style: AppTextStyles.cardTitle.copyWith(fontSize: 16)),
                 ),
                 Text(
                   reconcileQty(waste.qty, waste.unit),
@@ -696,14 +706,26 @@ class _WasteEntryRow extends StatelessWidget {
         if (onEdit != null)
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: onEdit,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.brand,
-                minimumSize: const Size(0, 36),
-                padding: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              // Viên thuốc nhỏ nền rêu nhạt: đủ 40px để bấm, không lấn nút chính.
+              child: TextButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Sửa số lượng'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.brand,
+                  backgroundColor: AppColors.navIndicator,
+                  shape: const StadiumBorder(),
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  textStyle: const TextStyle(
+                    fontFamily: AppFonts.body,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: const Text('Sửa số lượng'),
             ),
           ),
       ],

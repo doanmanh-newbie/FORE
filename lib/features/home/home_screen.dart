@@ -8,7 +8,6 @@ import '../../app/app_routes.dart';
 import '../../core/data/rpc_client.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/errors/failure_messages.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/adaptive_nav.dart';
 import '../../core/widgets/fore_header.dart';
@@ -196,9 +195,8 @@ class _HomeScreenState extends State<OpsHomeScreen>
         final hasShift = _shift.hasOpenShift;
         final ready = _shift.phase == OpsShiftPhase.ready;
         final tab = hasShift || _tab == 4 ? _tab : 0;
-        Widget icon(String asset, bool enabled) => ForeIcon(asset,
-            size: 22,
-            color: enabled ? AppColors.brand : AppColors.textSecondary);
+        // Màu icon do theme thanh điều hướng quyết định (chọn / chưa chọn / khóa).
+        Widget icon(String asset, bool enabled) => ForeIcon(asset, size: 22);
         return AdaptiveNavScaffold(
           selected: tab,
           onSelect: _select,

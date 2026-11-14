@@ -8,6 +8,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/ops_icon.dart';
 import '../../../core/widgets/notify.dart';
@@ -59,7 +60,7 @@ class TakeawayView extends StatelessWidget {
             onRefresh: c.load,
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
               itemCount: c.orders.isEmpty ? 2 : c.orders.length + 1,
               itemBuilder: (context, index) {
                 if (index == 0) {
@@ -73,22 +74,19 @@ class TakeawayView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Đơn chưa xong',
-                                  style: AppTextStyles.headline),
+                                  style: AppTextStyles.sectionHeading),
                               const SizedBox(height: 2),
                               Text('Cũ nhất ở trên',
                                   style: AppTextStyles.caption),
                             ],
                           ),
                         ),
-                        FilledButton.icon(
+                        ForeButton(
+                          label: 'Tạo đơn',
+                          icon: Icons.add_rounded,
+                          expand: false,
+                          height: 48,
                           onPressed: c.busy ? null : () => _create(context),
-                          icon: ForeIcon(ForeIcons.plus,
-                              size: 18, color: AppColors.onInk),
-                          label: const Text('Tạo đơn'),
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(0, 48),
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                          ),
                         ),
                       ],
                     ),
@@ -159,6 +157,11 @@ class _OrderCard extends StatelessWidget {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                ForeIconBadge(
+                  icon: Icons.shopping_bag_outlined,
+                  size: 36,
+                  background: AppColors.accentTint,
+                ),
                 Text(
                   formatClock(order.openedAt),
                   style: TextStyle(
@@ -207,15 +210,16 @@ class _OrderCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
+                // Nút phụ (nền rêu nhạt): mỗi thẻ một nút, không tranh với "Tạo đơn".
                 Align(
                   alignment: Alignment.centerRight,
-                  child: FilledButton(
+                  child: ForeButton(
+                    label: 'Xong',
+                    icon: Icons.check_rounded,
+                    variant: ForeButtonVariant.tonal,
+                    expand: false,
+                    height: 48,
                     onPressed: busy ? null : onDone,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(92, 48),
-                      padding: const EdgeInsets.symmetric(horizontal: 22),
-                    ),
-                    child: const Text('Xong'),
                   ),
                 ),
               ],

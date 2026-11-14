@@ -21,12 +21,16 @@ class ForeIcon extends StatelessWidget {
   final double size;
   final Color? color;
 
+  /// Không truyền `color` thì lấy màu icon của theme hiện tại (vd thanh điều hướng
+  /// tự đổi màu tab đang chọn / chưa chọn / bị khóa).
   @override
-  Widget build(BuildContext context) => SvgPicture.asset(
-        asset,
-        width: size,
-        height: size,
-        colorFilter:
-            color == null ? null : ColorFilter.mode(color!, BlendMode.srcIn),
-      );
+  Widget build(BuildContext context) {
+    final tint = color ?? IconTheme.of(context).color;
+    return SvgPicture.asset(
+      asset,
+      width: size,
+      height: size,
+      colorFilter: tint == null ? null : ColorFilter.mode(tint, BlendMode.srcIn),
+    );
+  }
 }

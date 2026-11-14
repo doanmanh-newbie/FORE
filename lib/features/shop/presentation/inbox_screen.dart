@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fore/core/theme/theme_mode_toggle.dart';
 
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/design/colors.dart';
 import 'invite_list.dart';
 
 /// Hộp thư của thành viên: lời mời vào quán khác (người làm nhiều quán).
@@ -12,10 +12,8 @@ class InboxScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('Hộp thư', style: AppTextStyles.heading),
-        actions: const [ThemeModeToggle()],
+        title: const Text('Hộp thư'),
+        actions: const [ThemeModeToggle(color: AppColors.white)],
       ),
       body: const InviteListView(
         emptyText:

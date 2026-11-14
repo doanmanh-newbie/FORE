@@ -22,6 +22,19 @@ String _minimumStock(Map<String, dynamic> ingredient, OwnerDashboardData data) {
   return ' · Ngưỡng ${formatQuantity(threshold, unit: '${ingredient['unit'] ?? ''}')}';
 }
 
+/// Mức tồn 0..1 để vẽ thanh: tồn âm = 0; có ngưỡng thì so với gấp đôi ngưỡng
+/// (đúng ngưỡng = nửa thanh); không có ngưỡng (chưa dưới ngưỡng) = đầy.
+double _stockLevel(Map<String, dynamic> ingredient, OwnerDashboardData data) {
+  final quantity = _number(ingredient['expected_qty']);
+  if (quantity <= 0) return 0;
+  final matching = data.lowStock
+      .where((item) => item['ingredient_id'] == ingredient['ingredient_id']);
+  final threshold =
+      matching.isEmpty ? 0 : _number(matching.first['minimum_qty']);
+  if (threshold <= 0) return 1;
+  return (quantity / (threshold * 2)).clamp(0.0, 1.0).toDouble();
+}
+
 bool _isBelowThreshold(
   Map<String, dynamic> ingredient,
   OwnerDashboardData data,

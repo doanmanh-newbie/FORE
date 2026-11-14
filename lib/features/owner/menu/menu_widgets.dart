@@ -5,6 +5,7 @@ import '../../../core/design/colors.dart';
 import '../../../core/design/spacing.dart';
 import '../../../core/design/typography.dart';
 import '../../../core/widgets/content_width.dart';
+import '../../../core/widgets/fore_card.dart' show ForeIconBadge;
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/errors/network_errors.dart';
@@ -163,22 +164,29 @@ class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(
+        // Thanh trên rêu tràn mép (kể cả vùng thanh trạng thái); thân giữ trong SafeArea.
+        body: Column(
+          children: [
+            MenuTopBar(
+                onBack: showBack
+                    ? (onBack ?? () => Navigator.of(context).maybePop())
+                    : null),
+            Expanded(
+              child: SafeArea(
+          top: false,
           child: ContentWidth(
               child: Column(
             children: [
-              MenuTopBar(
-                  onBack: showBack
-                      ? (onBack ?? () => Navigator.of(context).maybePop())
-                      : null),
               Expanded(
                 child: LazyListView(
                   padding: const EdgeInsets.fromLTRB(
-                      AppSizes.pagePadding, 4, AppSizes.pagePadding, 24),
+                      AppSizes.screenGutter, 16, AppSizes.screenGutter, 24),
                   children: [
-                    Text(eyebrow, style: AppTextStyles.micro),
+                    Text(eyebrow,
+                        style: AppTextStyles.micro.copyWith(
+                            letterSpacing: 1.2, color: AppColors.brandAccent)),
                     const SizedBox(height: 4),
-                    Text(title, style: AppTextStyles.display),
+                    Text(title, style: AppTextStyles.screenHeading),
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
                       Text(subtitle!, style: AppTextStyles.caption),
@@ -191,13 +199,20 @@ class MenuPage extends StatelessWidget {
               if (primary != null || secondary != null)
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: AppColors.surface,
                     border:
                         Border(top: BorderSide(color: AppColors.cardBorder)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadowMedium.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSizes.pagePadding, 10, AppSizes.pagePadding, 10),
+                        AppSizes.screenGutter, 12, AppSizes.screenGutter, 12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -212,6 +227,9 @@ class MenuPage extends StatelessWidget {
             ],
           )),
         ),
+            ),
+          ],
+        ),
       );
 }
 
@@ -221,39 +239,56 @@ class MenuTopBar extends StatelessWidget {
   final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(8, 4, AppSizes.pagePadding, 4),
-        child: Row(
-          children: [
-            if (onBack != null)
-              IconButton(
-                tooltip: 'Quay lại',
-                onPressed: onBack,
-                icon: const Icon(Icons.arrow_back_rounded),
-                constraints:
-                    const BoxConstraints.tightFor(width: 48, height: 48),
-              )
-            else
-              const SizedBox(width: 8),
-            Text(
-              'Fore',
-              style: TextStyle(
-                fontFamily: AppFonts.display,
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: AppColors.brand,
-              ),
+  Widget build(BuildContext context) => DecoratedBox(
+        // Thanh rêu bo góc dưới như các màn con khác; màu cố định ở cả hai chế độ.
+        decoration: const BoxDecoration(
+          color: AppColors.moss,
+          borderRadius:
+              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding:
+                const EdgeInsets.fromLTRB(8, 6, AppSizes.screenGutter, 14),
+            child: Row(
+              children: [
+                if (onBack != null)
+                  IconButton(
+                    tooltip: 'Quay lại',
+                    onPressed: onBack,
+                    color: AppColors.white,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    constraints:
+                        const BoxConstraints.tightFor(width: 48, height: 48),
+                  )
+                else
+                  const SizedBox(width: 8),
+                const Text(
+                  'Fore',
+                  style: TextStyle(
+                    fontFamily: AppFonts.body,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.white,
+                  ),
+                ),
+                const Spacer(),
+                Flexible(
+                  child: Text(
+                    menuShopName(context),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.body,
+                      fontSize: 12,
+                      color: AppColors.onDarkMuted,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const Spacer(),
-            Flexible(
-              child: Text(
-                menuShopName(context),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.caption,
-              ),
-            ),
-          ],
+          ),
         ),
       );
 }
@@ -281,21 +316,34 @@ class MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: Material(
+        // Bo 20 và bóng rất nhẹ, cùng dáng với ForeCard ở các tab khác.
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSizes.radiusCard),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadowMedium.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
           color: color ?? AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radiusTile),
+          borderRadius: BorderRadius.circular(AppSizes.radiusCard),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppSizes.radiusTile),
+            borderRadius: BorderRadius.circular(AppSizes.radiusCard),
             child: Ink(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSizes.radiusTile),
+                borderRadius: BorderRadius.circular(AppSizes.radiusCard),
                 border: Border.all(color: borderColor ?? AppColors.cardBorder),
               ),
               padding: padding,
               child: child,
             ),
           ),
+        ),
         ),
       );
 }
@@ -321,7 +369,7 @@ class MenuBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final (bg, fg, icon) = switch (kind) {
       BannerKind.info => (
-          AppColors.tint,
+          AppColors.navIndicator,
           AppColors.textPrimary,
           Icons.info_outline_rounded
         ),
@@ -346,7 +394,7 @@ class MenuBanner extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(AppSizes.radiusTile),
+          borderRadius: BorderRadius.circular(AppRadius.roleCard),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -416,7 +464,7 @@ class MenuMarginHero extends StatelessWidget {
             children: [
               Text(label.toUpperCase(),
                   style: const TextStyle(
-                      color: AppColors.actionLime,
+                      color: AppColors.mustard,
                       fontSize: AppFontSizes.s12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.4)),
@@ -426,7 +474,7 @@ class MenuMarginHero extends StatelessWidget {
                     style: const TextStyle(
                         color: AppColors.white,
                         fontSize: 22,
-                        fontFamily: AppFonts.display)),
+                        fontFamily: AppFonts.body)),
                 const SizedBox(height: 6),
                 const Text(
                   'Vốn và lãi chưa xác định: công thức còn thiếu hoặc nguyên liệu chưa có giá.',
@@ -447,7 +495,7 @@ class MenuMarginHero extends StatelessWidget {
                           style: const TextStyle(
                               color: AppColors.white,
                               fontSize: 32,
-                              fontFamily: AppFonts.display,
+                              fontFamily: AppFonts.body,
                               fontFeatures: [FontFeature.tabularFigures()])),
                     ),
                     Text(
@@ -455,7 +503,7 @@ class MenuMarginHero extends StatelessWidget {
                       style: TextStyle(
                           color: low
                               ? AppColors.onDarkWarning
-                              : AppColors.actionLime,
+                              : AppColors.mustard,
                           fontWeight: FontWeight.w700,
                           fontSize: 14),
                     ),
@@ -503,16 +551,17 @@ class SizeTabs extends StatelessWidget {
                   selected: i == selected,
                   child: InkWell(
                     onTap: () => onChanged(i),
-                    borderRadius: BorderRadius.circular(AppSizes.radius),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    // Ô đang chọn: viên mù tạt chữ rêu, như mọi lựa chọn khác của app.
                     child: Ink(
                       height: 48,
                       decoration: BoxDecoration(
                         color:
-                            i == selected ? AppColors.brand : AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppSizes.radius),
+                            i == selected ? AppColors.accent : AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                         border: Border.all(
                             color: i == selected
-                                ? AppColors.brand
+                                ? AppColors.accent
                                 : AppColors.border),
                       ),
                       child: Center(
@@ -524,7 +573,7 @@ class SizeTabs extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                             color: i == selected
-                                ? AppColors.onInk
+                                ? AppColors.onAccent
                                 : AppColors.brand,
                           ),
                         ),
@@ -558,15 +607,16 @@ class OptionChip extends StatelessWidget {
         selected: selected,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSizes.radius),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          // Lựa chọn đang bật: viên mù tạt chữ rêu, như các viên chọn khác của app.
           child: Ink(
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: selected ? AppColors.brand : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSizes.radius),
+              color: selected ? AppColors.accent : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               border: Border.all(
-                  color: selected ? AppColors.brand : AppColors.border),
+                  color: selected ? AppColors.accent : AppColors.border),
             ),
             child: Center(
               child: Text(
@@ -574,7 +624,7 @@ class OptionChip extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
-                  color: selected ? AppColors.onInk : AppColors.brand,
+                  color: selected ? AppColors.onAccent : AppColors.brand,
                 ),
               ),
             ),
@@ -697,11 +747,16 @@ class MenuPrimaryButton extends StatelessWidget {
         width: double.infinity,
         child: FilledButton(
           onPressed: loading ? null : onPressed,
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(AppSizes.pillButtonHeight),
+            textStyle: AppTextStyles.pillButton,
+          ),
           child: loading
+              // Nút đang khóa có nền xám nhạt: vòng quay dùng màu chữ phụ (trước là trắng, khó thấy).
               ? SizedBox.square(
                   dimension: 18,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.onInk),
+                      strokeWidth: 2, color: AppColors.textSecondary),
                 )
               : Text(label),
         ),
@@ -742,7 +797,13 @@ class MenuActionRow extends StatelessWidget {
         onTap: onTap,
         child: Row(
           children: [
-            Icon(icon, color: AppColors.brand),
+            // Ô icon nền rêu nhạt; thao tác bị khóa thì icon xám.
+            ForeIconBadge(
+              icon: icon,
+              size: 40,
+              color: onTap == null ? AppColors.textSecondary : null,
+              background: onTap == null ? AppColors.tint : null,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -755,7 +816,7 @@ class MenuActionRow extends StatelessWidget {
               ),
             ),
             if (onTap != null)
-              Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+              Icon(Icons.chevron_right_rounded, color: AppColors.brand),
           ],
         ),
       );

@@ -13,6 +13,7 @@ import '../application/kho_format.dart';
 import '../domain/kho_models.dart';
 import '../domain/kho_repository.dart';
 import 'ingredient_screens.dart';
+import '../../../core/widgets/fore_card.dart';
 import 'kho_widgets.dart';
 import 'purchase_screens.dart';
 import 'shop_compare_sheet.dart';
@@ -25,10 +26,15 @@ import '../../../core/widgets/lazy_list_view.dart';
 /// Tab Kho của chủ quán: "Một vòng quanh kho" — tiền nằm trong kho, việc cần ưu tiên, lối vào
 /// nguyên liệu / nhà cung cấp / phiếu nhập / kiểm kê / hao hụt / tuần nhìn lại.
 class OwnerKhoHome extends StatefulWidget {
-  const OwnerKhoHome({super.key, required this.header, this.footer});
+  const OwnerKhoHome(
+      {super.key, required this.header, this.footer, this.headerBuilder});
 
   /// Thanh đầu trang chung của chủ quán (tên quán, chuông thông báo).
   final Widget header;
+
+  /// Có giá trị thì dựng header rêu từ số liệu kho (null khi chưa tải xong) thay cho
+  /// [header]: tiêu đề "Kho", giờ cập nhật và các chỉ số nhanh nằm trong header.
+  final Widget Function(InvOverview? overview)? headerBuilder;
   /// Khối thao tác cũ (Ghi hao hụt trong ca, Thu / chi) đặt dưới cùng.
   final Widget? footer;
 
@@ -57,27 +63,31 @@ class _OwnerKhoHomeState extends State<OwnerKhoHome> {
         listenable: _data,
         builder: (context, _) {
           final o = _data.data;
-          return RefreshIndicator(
+          // Header tràn mép (không nằm trong lề của danh sách).
+          final builder = widget.headerBuilder;
+          return Column(children: [
+            if (builder == null) widget.header else builder(o),
+            Expanded(child: RefreshIndicator(
             onRefresh: () => _data.load(silent: true),
             child: LazyListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
-                  AppSizes.pagePadding,
-                  AppSizes.pageTopPadding,
-                  AppSizes.pagePadding,
+                  AppSizes.screenGutter,
+                  AppSizes.pageTopPadding + 4,
+                  AppSizes.screenGutter,
                   AppSizes.pageBottomPadding),
               children: [
-                widget.header,
-                const SizedBox(height: 12),
-                Text('Kho', style: AppTextStyles.pageTitle),
-                const SizedBox(height: 2),
-                Text(
-                  o == null
-                      ? 'Một vòng quanh kho'
-                      : 'Cập nhật ${formatHm(o.updatedAt)} · ${formatDmy(o.updatedAt)}',
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: 16),
+                if (builder == null) ...[
+                  Text('Kho', style: AppTextStyles.pageTitle),
+                  const SizedBox(height: 2),
+                  Text(
+                    o == null
+                        ? 'Một vòng quanh kho'
+                        : 'Cập nhật ${formatHm(o.updatedAt)} · ${formatDmy(o.updatedAt)}',
+                    style: AppTextStyles.caption,
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (o == null && _data.failure != null)
                   KhoNote(_data.failure!.userMessage,
                       icon: Icons.cloud_off_outlined)
@@ -91,7 +101,8 @@ class _OwnerKhoHomeState extends State<OwnerKhoHome> {
                 ],
               ],
             ),
-          );
+          )),
+          ]);
         },
       );
 
@@ -206,38 +217,40 @@ class _OwnerKhoHomeState extends State<OwnerKhoHome> {
       ],
       const SizedBox(height: 16),
       const KhoSectionTitle('Quản lý'),
-      _MenuTile(
-        icon: Icons.inventory_2_outlined,
-        title: 'Nguyên liệu',
-        subtitle: '${o.ingredientCount} nguyên liệu · tồn, giá, lô hàng',
-        onTap: () => _go(const IngredientListScreen()),
-      ),
-      _MenuTile(
-        icon: Icons.local_shipping_outlined,
-        title: 'Nhà cung cấp',
-        subtitle: 'Người giao hàng, lịch giao, giá gần nhất',
-        onTap: () => _go(const SupplierListScreen()),
-      ),
-      _MenuTile(
-        icon: Icons.receipt_long_outlined,
-        title: 'Phiếu nhập hàng',
-        subtitle: o.draftOrderCount > 0
-            ? '${o.draftOrderCount} phiếu nháp đang chờ'
-            : 'Nhập mới, xem lại các phiếu đã ghi',
-        onTap: () => _go(const OrdersScreen()),
-      ),
-      _MenuTile(
-        icon: Icons.fact_check_outlined,
-        title: 'Kiểm kê',
-        subtitle: 'Đếm & đối chiếu, duyệt điều chỉnh',
-        onTap: () => _go(const StocktakeListScreen()),
-      ),
-      _MenuTile(
-        icon: Icons.auto_graph_rounded,
-        title: 'Nhìn lại tuần',
-        subtitle: 'Kho ổn, hao hụt, kiểm kê thường lệ',
-        onTap: () => _go(const WeekReviewScreen()),
-      ),
+      _MenuGrid(tiles: [
+        _MenuTile(
+          icon: Icons.inventory_2_outlined,
+          title: 'Nguyên liệu',
+          subtitle: '${o.ingredientCount} nguyên liệu · tồn, giá, lô hàng',
+          onTap: () => _go(const IngredientListScreen()),
+        ),
+        _MenuTile(
+          icon: Icons.local_shipping_outlined,
+          title: 'Nhà cung cấp',
+          subtitle: 'Người giao hàng, lịch giao, giá gần nhất',
+          onTap: () => _go(const SupplierListScreen()),
+        ),
+        _MenuTile(
+          icon: Icons.receipt_long_outlined,
+          title: 'Phiếu nhập hàng',
+          subtitle: o.draftOrderCount > 0
+              ? '${o.draftOrderCount} phiếu nháp đang chờ'
+              : 'Nhập mới, xem lại các phiếu đã ghi',
+          onTap: () => _go(const OrdersScreen()),
+        ),
+        _MenuTile(
+          icon: Icons.fact_check_outlined,
+          title: 'Kiểm kê',
+          subtitle: 'Đếm & đối chiếu, duyệt điều chỉnh',
+          onTap: () => _go(const StocktakeListScreen()),
+        ),
+        _MenuTile(
+          icon: Icons.auto_graph_rounded,
+          title: 'Nhìn lại tuần',
+          subtitle: 'Kho ổn, hao hụt, kiểm kê thường lệ',
+          onTap: () => _go(const WeekReviewScreen()),
+        ),
+      ]),
     ];
   }
 
@@ -297,10 +310,40 @@ class _PriorityTile extends StatelessWidget {
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary),
+                color: AppColors.brand),
           ]),
         ),
       );
+}
+
+/// Lưới thao tác nhanh 2 cột: mỗi ô là thẻ trắng bo góc, icon trong ô rêu nhạt.
+/// Các ô trong cùng một hàng cao bằng nhau.
+class _MenuGrid extends StatelessWidget {
+  const _MenuGrid({required this.tiles});
+
+  final List<Widget> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < tiles.length; i += 2) {
+      rows.add(Padding(
+        padding: const EdgeInsets.only(bottom: AppSizes.cardGap),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: tiles[i]),
+              const SizedBox(width: AppSizes.cardGap),
+              Expanded(
+                  child: i + 1 < tiles.length ? tiles[i + 1] : const SizedBox()),
+            ],
+          ),
+        ),
+      ));
+    }
+    return Column(children: rows);
+  }
 }
 
 class _MenuTile extends StatelessWidget {
@@ -316,40 +359,31 @@ class _MenuTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: KhoCard(
-          onTap: onTap,
-          child: Row(children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppColors.tint,
-                borderRadius: BorderRadius.circular(AppSizes.radiusTile),
-              ),
-              child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(icon, color: AppColors.brand)),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: '$title. $subtitle',
+        child: ExcludeSemantics(
+          child: ForeCard(
+            onTap: onTap,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ForeIconBadge(icon: icon, size: 40),
+                const SizedBox(height: 10),
+                Text(title, style: AppTextStyles.cardTitle),
+                const SizedBox(height: 2),
+                Text(subtitle,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTextStyles.cardTitle),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: AppTextStyles.caption),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary),
-          ]),
+          ),
         ),
       );
 }
 
-/// Danh sách yêu cầu sửa phiếu nhân viên gửi lên.
 class InventoryRequestsScreen extends StatefulWidget {
   const InventoryRequestsScreen({super.key});
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/format.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/fore_button.dart';
 import '../../../../core/widgets/fore_card.dart';
 import '../../../../core/widgets/ops_icon.dart';
 import '../../../../core/widgets/money_field.dart';
@@ -90,12 +91,14 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                   onRefresh: widget.shift.loadCloseStatus,
                   child: LazyListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                     children: [
                       Text('KẾT THÚC CA LÀM VIỆC',
-                          style: AppTextStyles.captionStrong),
+                          style: AppTextStyles.captionStrong.copyWith(
+                              letterSpacing: 1.2,
+                              color: AppColors.brandAccent)),
                       const SizedBox(height: 6),
-                      Text('Đóng ca', style: AppTextStyles.display),
+                      Text('Đóng ca', style: AppTextStyles.screenHeading),
                       const SizedBox(height: 8),
                       Text(
                         'Đếm tiền mặt thực tế trong két trước khi xác nhận.',
@@ -117,7 +120,8 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                         ),
                       ),
                       const SizedBox(height: 28),
-                      Text('Trước khi đóng ca', style: AppTextStyles.headline),
+                      Text('Trước khi đóng ca',
+                          style: AppTextStyles.sectionHeading),
                       const SizedBox(height: 12),
                       _CheckCard(
                         loading: status == null,
@@ -148,24 +152,30 @@ class _CloseShiftViewState extends State<CloseShiftView> {
                   ),
                 ),
               ),
+              // Thanh đáy cố định: nút chính viên thuốc, chữ nói rõ còn thiếu gì.
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: Border(top: BorderSide(color: AppColors.cardBorder)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.shadowMedium.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  child: FilledButton(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: ForeButton(
+                    label: !ready
+                        ? 'Hoàn tất các việc ở trên để đóng ca'
+                        : _value == null
+                            ? 'Nhập tiền đếm được'
+                            : 'Xác nhận đóng ca',
                     onPressed: ready && _value != null && !widget.shift.busy
                         ? _confirm
                         : null,
-                    child: Text(
-                      !ready
-                          ? 'Hoàn tất các việc ở trên để đóng ca'
-                          : _value == null
-                              ? 'Nhập tiền đếm được'
-                              : 'Xác nhận đóng ca',
-                    ),
                   ),
                 ),
               ),
@@ -244,7 +254,17 @@ class _CheckCard extends StatelessWidget {
             ),
           ),
           if (!loading && !ok)
-            TextButton(onPressed: onAction, child: Text(actionLabel)),
+            TextButton(
+              onPressed: onAction,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.brand,
+                backgroundColor: AppColors.navIndicator,
+                shape: const StadiumBorder(),
+                minimumSize: const Size(0, 40),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+              ),
+              child: Text(actionLabel),
+            ),
         ],
       ),
     );

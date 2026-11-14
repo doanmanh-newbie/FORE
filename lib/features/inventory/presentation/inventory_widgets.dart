@@ -167,11 +167,12 @@ class QuantityField extends StatelessWidget {
                   label: Text(c.label),
                   selected: unit?.label == c.label,
                   onSelected: (_) => onUnitChanged(c),
-                  selectedColor: AppColors.ink,
+                  selectedColor: AppColors.accent,
                   labelStyle: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color:
-                        unit?.label == c.label ? AppColors.onInk : AppColors.ink,
+                    color: unit?.label == c.label
+                        ? AppColors.onAccent
+                        : AppColors.ink,
                   ),
                   showCheckmark: false,
                 ),

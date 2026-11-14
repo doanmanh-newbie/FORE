@@ -4,6 +4,7 @@ import '../../core/design/app_sheet.dart';
 import '../../core/design/colors.dart';
 import '../../core/design/spacing.dart';
 import '../../core/design/typography.dart';
+import '../../core/widgets/fore_button.dart';
 import '../../core/widgets/fore_card.dart';
 import '../../core/widgets/page_scaffold.dart';
 import 'more_prefs.dart';
@@ -47,6 +48,7 @@ class OwnerMoreHub extends StatefulWidget {
     required this.onSwitchShop,
     required this.onSignOut,
     this.header,
+    this.showTitle = true,
     this.prefs,
   });
 
@@ -56,6 +58,10 @@ class OwnerMoreHub extends StatefulWidget {
   final VoidCallback onSwitchShop;
   final VoidCallback onSignOut;
   final Widget? header;
+
+  /// `false` khi [header] đã có tiêu đề "Chăm quán, từ những điều nhỏ" (header rêu
+  /// của chủ quán): thân trang bắt đầu ngay bằng thẻ hồ sơ, gọn hơn.
+  final bool showTitle;
 
   /// Cho test; để trống thì đọc từ bộ nhớ thiết bị.
   final MorePrefs? prefs;
@@ -127,15 +133,22 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
             if (searching && !e.matches(query)) continue;
             groups.putIfAbsent(e.group, () => []).add(e);
           }
-          return PageScaffold(
-            header: widget.header,
+          final page = PageScaffold(
+            padding: const EdgeInsets.fromLTRB(
+              AppSizes.screenGutter,
+              AppSizes.pageTopPadding + 4,
+              AppSizes.screenGutter,
+              AppSizes.pageBottomPadding,
+            ),
             children: [
+              if (widget.showTitle) ...[
               Text('Chăm quán, từ những điều nhỏ',
                   style: AppTextStyles.display),
               const SizedBox(height: 6),
               Text('Mọi thiết lập, gọn trong một cuốn sổ.',
                   style: AppTextStyles.caption),
               const SizedBox(height: 16),
+              ],
               ForeCard(
                 radius: AppSizes.radiusCard,
                 padding: const EdgeInsets.all(AppSizes.cardPadding),
@@ -168,9 +181,26 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
               if (!searching && pinned.isNotEmpty) ...[
                 Row(children: [
                   Expanded(
-                      child: Text('Đã ghim', style: AppTextStyles.headline)),
-                  TextButton(
-                      onPressed: _editPins, child: const Text('Chỉnh sửa')),
+                      child: Text('Đã ghim',
+                          style: AppTextStyles.sectionHeading)),
+                  // Viên mù tạt nhỏ: hành động sửa ghim nổi bật theo bộ màu.
+                  TextButton.icon(
+                    onPressed: _editPins,
+                    icon: const Icon(Icons.edit_outlined, size: 16),
+                    label: const Text('Chỉnh sửa'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.onAccent,
+                      backgroundColor: AppColors.accent,
+                      shape: const StadiumBorder(),
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      textStyle: const TextStyle(
+                        fontFamily: AppFonts.body,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ]),
                 const SizedBox(height: 8),
                 Row(children: [
@@ -193,7 +223,7 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
                       style: AppTextStyles.caption),
                 ),
               for (final g in groups.entries) ...[
-                Text(g.key, style: AppTextStyles.headline),
+                Text(g.key, style: AppTextStyles.sectionHeading),
                 const SizedBox(height: 8),
                 ForeCard(
                   radius: AppSizes.radiusCard,
@@ -222,19 +252,25 @@ class _OwnerMoreHubState extends State<OwnerMoreHub> {
                       contentPadding: EdgeInsets.zero,
                       value: _prefs.compact,
                       onChanged: _prefs.setCompact,
-                      title: const Text('Chế độ gọn'),
-                      subtitle:
-                          const Text('Ẩn dòng mô tả để trang Thêm ngắn lại'),
+                      title: Text('Chế độ gọn', style: AppTextStyles.title),
+                      subtitle: Text('Ẩn dòng mô tả để trang Thêm ngắn lại',
+                          style: AppTextStyles.caption),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                OutlinedButton(
-                    onPressed: widget.onSignOut,
-                    child: const Text('Đăng xuất')),
+                ForeButton(
+                  label: 'Đăng xuất',
+                  icon: Icons.logout_rounded,
+                  onPressed: widget.onSignOut,
+                ),
               ],
             ],
           );
+          final header = widget.header;
+          if (header == null) return page;
+          // Header tràn mép, cố định trên cùng; danh sách cuộn bên dưới.
+          return Column(children: [header, Expanded(child: page)]);
         },
       );
 }
@@ -256,7 +292,7 @@ class _ProfileRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(children: [
-        Icon(icon, color: AppColors.brand),
+        ForeIconBadge(icon: icon, size: 40),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -268,7 +304,18 @@ class _ProfileRow extends StatelessWidget {
           ),
         ),
         if (action != null)
-          TextButton(onPressed: onAction, child: Text(action!)),
+          // Nút phụ nhỏ: viên nền rêu nhạt như "Đếm lại", "Sửa số lượng".
+          TextButton(
+            onPressed: onAction,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.brand,
+              backgroundColor: AppColors.navIndicator,
+              shape: const StadiumBorder(),
+              minimumSize: const Size(0, 40),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+            ),
+            child: Text(action!),
+          ),
       ]);
 }
 
@@ -283,11 +330,17 @@ class _PinnedTile extends StatelessWidget {
         radius: AppSizes.radiusCard,
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         child: Column(children: [
-          Icon(entry.icon,
-              color: entry.onTap == null
-                  ? AppColors.textSecondary
-                  : AppColors.brand),
-          const SizedBox(height: 6),
+          ForeIconBadge(
+            icon: entry.icon,
+            size: 40,
+            color: entry.onTap == null
+                ? AppColors.textSecondary
+                : AppColors.brand,
+            background: entry.onTap == null
+                ? AppColors.tint
+                : AppColors.accentTint,
+          ),
+          const SizedBox(height: 8),
           Text(entry.title,
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -314,11 +367,14 @@ class _EntryRow extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(children: [
-              Icon(entry.icon,
-                  color: entry.onTap == null
-                      ? AppColors.textSecondary
-                      : AppColors.brand),
-              const SizedBox(width: 14),
+              ForeIconBadge(
+                icon: entry.icon,
+                size: 38,
+                color: entry.onTap == null
+                    ? AppColors.textSecondary
+                    : AppColors.brand,
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,7 +388,9 @@ class _EntryRow extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  color: AppColors.textSecondary),
+                  color: entry.onTap == null
+                      ? AppColors.textSecondary
+                      : AppColors.brand),
             ]),
           ),
         ),

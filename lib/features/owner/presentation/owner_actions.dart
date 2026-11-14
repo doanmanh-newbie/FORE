@@ -12,7 +12,13 @@ extension _OwnerActions on _OwnerHomeContentState {
     const stockGroup = 'Kho và nhập hàng';
     const jumpGroup = 'Đi nhanh đến nghiệp vụ';
     return OwnerMoreHub(
-      header: _pageHeader(),
+      // Tiêu đề trang nằm trong header rêu; thân bắt đầu bằng thẻ hồ sơ.
+      header: _mossHeader(
+        title: 'Chăm quán, từ những điều nhỏ',
+        titleSize: 24,
+        caption: const Text('Mọi thiết lập, gọn trong một cuốn sổ.'),
+      ),
+      showTitle: false,
       personName: widget.profile.fullName,
       shopName: widget.profile.shopName,
       onSwitchShop: () => showShopSwitcher(context),

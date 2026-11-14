@@ -92,15 +92,16 @@ class _JoinedDialogState extends State<_JoinedDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DecoratedBox(
+              const DecoratedBox(
+                // Vòng mù tạt, dấu tích rêu (7,0:1). Trước là mực tối trên xanh lá (~2,4:1).
                 decoration: BoxDecoration(
-                  color: AppColors.brandAccent,
+                  color: AppColors.mustard,
                   shape: BoxShape.circle,
                 ),
-                child: const SizedBox.square(
+                child: SizedBox.square(
                   dimension: 88,
                   child:
-                      Icon(Icons.check_rounded, color: AppColors.onLime, size: 52),
+                      Icon(Icons.check_rounded, color: AppColors.moss, size: 52),
                 ),
               ),
               const SizedBox(height: 20),

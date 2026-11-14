@@ -34,6 +34,7 @@ class _InfoCard extends StatelessWidget {
     this.iconColor,
     this.status,
     this.showArrow = false,
+    this.level,
   });
   final IconData icon;
   final String title;
@@ -42,6 +43,9 @@ class _InfoCard extends StatelessWidget {
   final Color? iconColor;
   final Widget? status;
   final bool showArrow;
+
+  /// Thanh mức tồn (0..1) ở cuối thẻ, cùng màu với icon; null thì không vẽ.
+  final double? level;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +65,21 @@ class _InfoCard extends StatelessWidget {
             ],
             const SizedBox(height: 4),
             Text(body, style: AppTextStyles.caption),
+            if (level != null) ...[
+              const SizedBox(height: 10),
+              Semantics(
+                label: 'Mức tồn ${(level! * 100).round()}%',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: level,
+                    minHeight: 8,
+                    backgroundColor: AppColors.tint,
+                    color: iconColor ?? AppColors.brandAccent,
+                  ),
+                ),
+              ),
+            ],
           ]),
         ),
         if (showArrow) ...[
@@ -218,6 +237,7 @@ class _StockActionButton extends StatelessWidget {
           onPressed: enabled ? onTap : null,
           icon: Icon(icon, size: 19),
           label: Text(title, maxLines: 2, textAlign: TextAlign.center),
+          // Giữ màu mù tạt của theme (chủ quán chọn giữ kiểu này cho hai thao tác kho).
           style: FilledButton.styleFrom(
             minimumSize: const Size(48, 48),
             padding: const EdgeInsets.symmetric(horizontal: 10),

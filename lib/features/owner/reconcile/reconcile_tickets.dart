@@ -24,7 +24,7 @@ List<Widget> ingredientTicket(
       .where((entry) => reconcileKey(entry.name) == reconcileKey(item.name))
       .toList(growable: false);
   return [
-    Text(item.name, style: AppTextStyles.display),
+    Text(item.name, style: AppTextStyles.screenHeading),
     const SizedBox(height: 4),
     Text(
       '${report.title} · ${reconcileShiftTime(report.openedAt, report.closedAt)}',
@@ -81,7 +81,7 @@ List<Widget> ingredientTicket(
     ],
     if (purchases.isNotEmpty) ...[
       const SizedBox(height: 16),
-      Text('Phiếu nhập trong ca', style: AppTextStyles.sectionTitle),
+      Text('Phiếu nhập trong ca', style: AppTextStyles.sectionHeading),
       const SizedBox(height: 8),
       ForeCard(
         padding: const EdgeInsets.all(16),
@@ -111,7 +111,7 @@ List<Widget> cashTicket(
 }) {
   final cash = report.cash;
   return [
-    Text('Phiếu tiền mặt', style: AppTextStyles.display),
+    Text('Phiếu tiền mặt', style: AppTextStyles.screenHeading),
     const SizedBox(height: 4),
     Text(
       '${report.title} · ${reconcileShiftTime(report.openedAt, report.closedAt)}',
@@ -219,7 +219,7 @@ Future<void> showCancelledBillsSheet(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Bill đã thu rồi hủy', style: AppTextStyles.headline),
+              Text('Bill đã thu rồi hủy', style: AppTextStyles.sectionHeading),
               const SizedBox(height: 4),
               Text(
                 'Hủy bill đã thu tiền cần chủ quán nhập PIN duyệt.',
@@ -318,14 +318,26 @@ class _PurchaseRow extends StatelessWidget {
         if (onEdit != null)
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: onEdit,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.brand,
-                minimumSize: const Size(0, 36),
-                padding: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              // Viên thuốc nhỏ nền rêu nhạt: đủ 40px để bấm, không lấn nút chính.
+              child: TextButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Sửa số lượng nhập'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.brand,
+                  backgroundColor: AppColors.navIndicator,
+                  shape: const StadiumBorder(),
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  textStyle: const TextStyle(
+                    fontFamily: AppFonts.body,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: const Text('Sửa số lượng nhập'),
             ),
           ),
       ],

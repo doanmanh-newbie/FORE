@@ -8,6 +8,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/ops_icon.dart';
 import '../../../core/widgets/fore_sheet.dart';
@@ -107,7 +108,7 @@ class _TablesViewState extends State<TablesView> {
                 if (c.failure != null)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                       child: Text(
                         'Đang hiện dữ liệu cũ vì mất kết nối. Kéo xuống để thử lại.',
                         style: TextStyle(
@@ -118,7 +119,7 @@ class _TablesViewState extends State<TablesView> {
                   ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
                     child: SectionHeader(
                       title: c.isSearching ? 'Kết quả tìm' : area.name,
                       trailing: c.isSearching
@@ -140,7 +141,7 @@ class _TablesViewState extends State<TablesView> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     sliver: SliverGrid.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
@@ -164,7 +165,7 @@ class _TablesViewState extends State<TablesView> {
       );
 
   Widget _filters(TableMapController c) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -237,18 +238,19 @@ class _AreaChip extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.center,
+              // Khu đang chọn: viên mù tạt chữ rêu, như tab đang chọn ở thanh dưới.
               decoration: BoxDecoration(
-                color: selected ? AppColors.ink : AppColors.surface,
+                color: selected ? AppColors.accent : AppColors.surface,
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                    color: selected ? AppColors.ink : AppColors.border),
+                    color: selected ? AppColors.accent : AppColors.border),
               ),
               child: Text(
                 label,
                 style: TextStyle(
                   fontSize: AppFontSizes.s15,
                   fontWeight: FontWeight.w700,
-                  color: selected ? AppColors.onInk : AppColors.ink,
+                  color: selected ? AppColors.onAccent : AppColors.ink,
                 ),
               ),
             ),
@@ -292,7 +294,15 @@ class _TableCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: busy ? AppColors.ink : AppColors.surface,
               borderRadius: BorderRadius.circular(20),
-              border: busy ? null : Border.all(color: AppColors.hairline),
+              border: busy ? null : Border.all(color: AppColors.cardBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadowMedium
+                      .withValues(alpha: busy ? 0.18 : 0.06),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,6 +310,11 @@ class _TableCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
+                    // Bàn đang dùng: icon mù tạt trên nền rêu; bàn trống: icon xanh lá.
+                    Icon(Icons.table_restaurant_outlined,
+                        size: 20,
+                        color: busy ? AppColors.accent : AppColors.brandAccent),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         slot.tableName,
@@ -358,7 +373,8 @@ class _GuestsFormState extends State<_GuestsForm> {
         children: [
           Row(
             children: [
-              Expanded(child: Text('Số khách', style: AppTextStyles.title)),
+              Expanded(
+                  child: Text('Số khách', style: AppTextStyles.cardTitle)),
               _RoundIcon(
                 icon: Icons.remove_rounded,
                 onTap: _guests > 0 ? () => setState(() => _guests--) : null,
@@ -378,9 +394,9 @@ class _GuestsFormState extends State<_GuestsForm> {
             ],
           ),
           const SizedBox(height: 20),
-          FilledButton(
+          ForeButton(
+            label: 'Mở bàn',
             onPressed: () => Navigator.of(context).pop(_guests),
-            child: const Text('Mở bàn'),
           ),
         ],
       );

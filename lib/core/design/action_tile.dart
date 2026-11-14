@@ -31,12 +31,15 @@ class ActionTile extends StatelessWidget {
           child: ForeCard(
             onTap: onTap,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            radius: AppSizes.radiusTile,
+            radius: AppSizes.radiusCard,
             child: Row(
               children: [
+                // Ô icon nền rêu nhạt (mờ đi khi mục bị khóa).
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.tint,
+                    color: onTap == null
+                        ? AppColors.tint
+                        : AppColors.navIndicator,
                     borderRadius: BorderRadius.circular(AppSizes.radiusTile),
                   ),
                   child: SizedBox(
@@ -68,7 +71,9 @@ class ActionTile extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary),
+                    color: onTap == null
+                        ? AppColors.textSecondary
+                        : AppColors.brand),
               ],
             ),
           ),

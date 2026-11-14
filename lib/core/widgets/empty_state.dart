@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'ops_icon.dart';
 
-/// Trạng thái rỗng: icon, tiêu đề chữ có chân, mô tả, và (tùy chọn) một nút.
+/// Trạng thái rỗng: icon trong ô mù tạt nhạt, tiêu đề Inter, mô tả, và (tùy chọn) một nút.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -28,10 +28,20 @@ class EmptyState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ForeIcon(icon, size: 34, color: AppColors.ink),
+              Container(
+                width: 72,
+                height: 72,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.accentTint,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: ForeIcon(icon, size: 32, color: AppColors.ink),
+              ),
               const SizedBox(height: 18),
               Text(title,
-                  style: AppTextStyles.headline, textAlign: TextAlign.center),
+                  style: AppTextStyles.sectionHeading.copyWith(fontSize: 20),
+                  textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(message,
                   style: AppTextStyles.body, textAlign: TextAlign.center),
@@ -59,8 +69,17 @@ class ErrorRetry extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ForeIcon(ForeIcons.warning,
-                  size: 34, color: AppColors.statusWatchBright),
+              Container(
+                width: 72,
+                height: 72,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.statusAttentionTint,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: ForeIcon(ForeIcons.warning,
+                    size: 32, color: AppColors.statusWatchBright),
+              ),
               const SizedBox(height: 14),
               Text(message,
                   style: AppTextStyles.body, textAlign: TextAlign.center),

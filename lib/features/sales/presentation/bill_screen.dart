@@ -8,11 +8,14 @@ import '../../../core/design/skeleton_box.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/ops_icon.dart';
 import '../../../core/widgets/fore_sheet.dart';
 import '../../../core/widgets/money_field.dart';
 import '../../../core/widgets/notify.dart';
+import '../../../core/widgets/pill_segmented.dart';
 import '../../../core/widgets/pressable_scale.dart';
 import '../../../core/widgets/qty_stepper.dart';
 import '../application/bill_controller.dart';
@@ -198,7 +201,7 @@ class _BillScreenState extends State<BillScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: _Segmented(
             labels: ['Gọi món', 'Bill (${bill.portions})'],
             selected: _tab,
@@ -237,28 +240,37 @@ class _BillScreenState extends State<BillScreen> {
             textAlign: TextAlign.center, style: AppTextStyles.bodyStrong),
       );
     } else if (_c.cartPortions > 0) {
-      action = FilledButton(
+      action = ForeButton(
+        label:
+            'Thêm ${formatServings(_c.cartPortions, widget.servingLabel)} · ${formatVnd(_c.cartTotal)}',
+        icon: Icons.add_shopping_cart_rounded,
         onPressed: _c.busy ? null : _submitCart,
-        child: Text(
-            'Thêm ${formatServings(_c.cartPortions, widget.servingLabel)} · ${formatVnd(_c.cartTotal)}'),
       );
     } else {
-      action = FilledButton(
-        onPressed: _c.canPay && !_c.busy ? _pay : null,
-        child: Text(_c.canPay
+      action = ForeButton(
+        label: _c.canPay
             ? 'Thanh toán · ${formatVnd(bill.payable)}'
-            : 'Chọn món để bắt đầu'),
+            : 'Chọn món để bắt đầu',
+        onPressed: _c.canPay && !_c.busy ? _pay : null,
       );
     }
+    // Thanh đáy cố định: một nút chính viên thuốc mù tạt, bóng nhẹ phía trên.
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.cardBorder)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowMedium.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12), child: action),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12), child: action),
       ),
     );
   }

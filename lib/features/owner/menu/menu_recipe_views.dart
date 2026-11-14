@@ -912,14 +912,14 @@ class _RecipeConfirmPageState extends State<RecipeConfirmPage> {
               children: [
                 Text('v$nextNo đã lưu trên hệ thống',
                     style: const TextStyle(
-                        color: AppColors.actionLime, fontWeight: FontWeight.w700)),
+                        color: AppColors.mustard, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 10),
                 Text(formatDmy(at),
                     style: const TextStyle(
-                        color: AppColors.white, fontSize: 30, fontFamily: AppFonts.display)),
+                        color: AppColors.white, fontSize: 30, fontFamily: AppFonts.body)),
                 Text('Lúc ${formatHm(at)}',
                     style: const TextStyle(
-                        color: AppColors.white, fontSize: 26, fontFamily: AppFonts.display)),
+                        color: AppColors.white, fontSize: 26, fontFamily: AppFonts.body)),
                 const SizedBox(height: 8),
                 const Text('Tự áp dụng từ giờ đã hẹn, theo giờ Việt Nam.',
                     style: TextStyle(color: AppColors.onDarkMuted, fontSize: 12)),

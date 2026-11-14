@@ -146,10 +146,8 @@ class _TeamScreenState extends State<TeamScreen> {
     if (_accessError != null) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text('Nhân viên', style: AppTextStyles.heading),
-          actions: const [ThemeModeToggle()],
+          title: const Text('Nhân viên'),
+          actions: const [ThemeModeToggle(color: AppColors.white)],
         ),
         body: ErrorRetry(
           message: _accessError!,
@@ -165,14 +163,14 @@ class _TeamScreenState extends State<TeamScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('Nhân viên', style: AppTextStyles.heading),
-        actions: const [ThemeModeToggle()],
+        title: const Text('Nhân viên'),
+        actions: const [ThemeModeToggle(color: AppColors.white)],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.brand,
-        foregroundColor: AppColors.onInk,
+        // Nút nổi = hành động chính của màn: viên thuốc mù tạt.
+        backgroundColor: AppColors.accent,
+        foregroundColor: AppColors.onAccent,
+        shape: const StadiumBorder(),
         onPressed: () => _openInvite(context),
         icon: const Icon(Icons.person_add_alt_1_outlined),
         label: const Text('Thêm nhân viên'),

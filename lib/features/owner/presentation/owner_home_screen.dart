@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../../app/app_routes.dart';
 import '../../../core/format.dart';
-import '../../../core/design/app_header.dart';
 import '../../../core/design/hero_card.dart';
 import '../../../core/design/skeleton_box.dart';
 import '../../../core/design/typography.dart';
@@ -13,6 +12,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/adaptive_nav.dart';
+import '../../../core/widgets/fore_app_bar.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/fore_action_icons.dart';
 import '../../../core/widgets/page_scaffold.dart';
@@ -156,9 +157,20 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
   Future<void> _refresh() =>
       context.read<OwnerDashboardController>().load(refresh: true);
 
-  Widget _pageHeader() {
+  /// Header của các tab Thực đơn, Kho, Thêm: header rêu không tiêu đề (tiêu đề nằm trong thân).
+  Widget _pageHeader() => _mossHeader();
+
+  /// Header rêu tràn mép (bộ "Rêu & Mù tạt") cho các tab đã làm mới giao diện.
+  /// Cùng dữ liệu với [_pageHeader]: tên quán, đổi quán, chuông và số chưa đọc.
+  Widget _mossHeader({
+    String? title,
+    Widget? caption,
+    Widget? titleAction,
+    Widget? bottom,
+    double titleSize = 28,
+  }) {
     final data = context.watch<OwnerDashboardController>().data;
-    return AppHeader(
+    return ForeAppBar(
       shopName:
           widget.profile.shopName.isEmpty ? 'Fore' : widget.profile.shopName,
       subtitle: 'Chủ quán · ${widget.profile.fullName}',
@@ -166,6 +178,11 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
       onNotifications: data == null ? null : () => _openNotifications(data),
       unreadCount:
           data?.notifications.where((notice) => !notice.read).length ?? 0,
+      title: title,
+      caption: caption,
+      titleAction: titleAction,
+      bottom: bottom,
+      titleSize: titleSize,
     );
   }
 

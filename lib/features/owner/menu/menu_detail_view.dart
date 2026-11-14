@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/design/colors.dart';
 import '../../../core/design/typography.dart';
 import '../../../core/format.dart';
 import '../../../core/widgets/status_chip.dart';
@@ -169,7 +170,11 @@ class _MenuDetailPageState extends State<MenuDetailPage> {
                           : selling
                               ? '✓ Đang bán'
                               : '— Ngừng bán',
-                      style: AppTextStyles.caption,
+                      // Trạng thái bán: xanh khi đang bán, xám khi nháp/ngừng.
+                      style: AppTextStyles.captionStrong.copyWith(
+                          color: selling
+                              ? AppColors.statusHealthy
+                              : AppColors.textSecondary),
                     ),
                   ],
                 ),

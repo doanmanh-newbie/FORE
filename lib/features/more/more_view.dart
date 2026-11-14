@@ -90,7 +90,7 @@ class MoreView extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 24),
-          Text('Quản lý quán', style: AppTextStyles.headline),
+          Text('Quản lý quán', style: AppTextStyles.sectionHeading),
           const SizedBox(height: 12),
           ActionTile(
             icon: Icon(Icons.mail_outline_rounded, color: AppColors.ink),
@@ -117,7 +117,7 @@ class MoreView extends StatelessWidget {
             ],
           ],
           const SizedBox(height: 24),
-          Text('Tài khoản', style: AppTextStyles.headline),
+          Text('Tài khoản', style: AppTextStyles.sectionHeading),
           const SizedBox(height: 12),
           ForeCard(
             radius: 20,

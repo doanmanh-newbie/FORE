@@ -6,6 +6,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/page_scaffold.dart';
 import '../../../core/widgets/status_chip.dart';
@@ -22,14 +23,19 @@ class ReconcileListView extends StatefulWidget {
     required this.controller,
     required this.onOpen,
     required this.onOpenOverview,
+    this.titleInHeader = false,
   });
 
+  /// Đầu trang, đặt tràn mép (không có lề hai bên), vd `ForeAppBar`.
   final Widget header;
   final ReconcileListController controller;
   final ValueChanged<ReconcileReport> onOpen;
 
   /// "Xem ca đang mở" và "Về tổng quan": ca đang mở được theo dõi ở Tổng quan.
   final VoidCallback onOpenOverview;
+
+  /// `true` khi [header] đã có tiêu đề "Đối soát ca": không in lại tiêu đề trong thân.
+  final bool titleInHeader;
 
   @override
   State<ReconcileListView> createState() => _ReconcileListViewState();
@@ -61,17 +67,33 @@ class _ReconcileListViewState extends State<ReconcileListView> {
         listenable: widget.controller,
         builder: (context, _) {
           final controller = widget.controller;
+          final content = <Widget>[
+            if (!widget.titleInHeader) ...[
+              Text('Đối soát ca',
+                  style: AppTextStyles.appBarTitle
+                      .copyWith(color: AppColors.brand, fontSize: 26)),
+              const SizedBox(height: 12),
+            ],
+            _Filters(controller: controller, onPickDate: _pickDate),
+            const SizedBox(height: 18),
+            ..._body(controller),
+          ];
           return RefreshIndicator(
             onRefresh: () => controller.reload(silent: true),
+            color: AppColors.brand,
             child: PageScaffold(
-              header: widget.header,
               physics: const AlwaysScrollableScrollPhysics(),
+              padding:
+                  const EdgeInsets.only(bottom: AppSizes.pageBottomPadding),
               children: [
-                Text('Đối soát ca', style: AppTextStyles.display),
-                const SizedBox(height: 12),
-                _Filters(controller: controller, onPickDate: _pickDate),
-                const SizedBox(height: 14),
-                ..._body(controller),
+                widget.header,
+                const SizedBox(height: 16),
+                for (final child in content)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSizes.screenGutter),
+                    child: child,
+                  ),
               ],
             ),
           );
@@ -129,17 +151,20 @@ class _ReconcileListViewState extends State<ReconcileListView> {
     }
     return [
       Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
           Expanded(
             child: Text(
               '${controller.items.length} ca đã đóng${controller.hasMore ? '+' : ''}',
-              style: AppTextStyles.bodyStrong,
+              style: AppTextStyles.appBarTitle
+                  .copyWith(color: AppColors.brand, fontSize: 17),
             ),
           ),
           Text('Ước tính ảnh hưởng', style: AppTextStyles.caption),
         ],
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 12),
       ..._groupedCards(controller.items),
       if (controller.moreFailure != null)
         Padding(
@@ -151,17 +176,15 @@ class _ReconcileListViewState extends State<ReconcileListView> {
           ),
         ),
       if (controller.hasMore)
-        OutlinedButton(
+        ForeButton(
+          label: 'Xem thêm ca cũ',
+          loadingLabel: 'Đang tải ca cũ…',
+          icon: Icons.history_rounded,
+          loading: controller.loadingMore,
           onPressed: controller.loadingMore ? null : controller.loadMore,
-          child: controller.loadingMore
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Xem thêm ca cũ'),
         ),
       Padding(
-        padding: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.only(top: 14),
         child: Text(
           'Số "≈" là ước tính theo giá bán trung bình, không phải kết luận mất mát.',
           textAlign: TextAlign.center,
@@ -172,6 +195,7 @@ class _ReconcileListViewState extends State<ReconcileListView> {
   }
 }
 
+/// Hàng lọc: viên chọn ngày (giãn) + viên bộ lọc. Cả hai là viên thuốc trắng viền mảnh.
 class _Filters extends StatelessWidget {
   const _Filters({required this.controller, required this.onPickDate});
 
@@ -190,11 +214,12 @@ class _Filters extends StatelessWidget {
             child: ExcludeSemantics(
               child: InkWell(
                 onTap: onPickDate,
-                borderRadius: BorderRadius.circular(AppSizes.radius),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 child: _Pill(
                   icon: Icons.calendar_month_outlined,
                   label: date == null ? 'Gần đây' : formatDmy(date),
                   trailing: Icons.expand_more_rounded,
+                  active: date != null,
                 ),
               ),
             ),
@@ -213,6 +238,10 @@ class _Filters extends StatelessWidget {
           tooltip: 'Lọc ca',
           initialValue: controller.filter,
           onSelected: controller.setFilter,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.roleCard),
+          ),
+          color: AppColors.surface,
           itemBuilder: (context) => [
             for (final option in const [
               ReconcileFilter.all,
@@ -225,6 +254,7 @@ class _Filters extends StatelessWidget {
             icon: Icons.tune_rounded,
             label: controller.filter.label,
             trailing: Icons.expand_more_rounded,
+            active: controller.filter != ReconcileFilter.all,
           ),
         ),
       ],
@@ -232,38 +262,48 @@ class _Filters extends StatelessWidget {
   }
 }
 
+/// Viên thuốc lọc. `active`: đang lọc khác mặc định thì nền rêu, chữ trắng.
 class _Pill extends StatelessWidget {
-  const _Pill(
-      {required this.icon, required this.label, required this.trailing});
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.trailing,
+    this.active = false,
+  });
 
   final IconData icon;
   final String label;
   final IconData trailing;
+  final bool active;
 
   @override
-  Widget build(BuildContext context) => Container(
-        constraints: const BoxConstraints(minHeight: 48),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radius),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20, color: AppColors.brand),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(label,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyStrong),
-            ),
-            const SizedBox(width: 4),
-            Icon(trailing, size: 20, color: AppColors.textSecondary),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final fg = active ? AppColors.onInk : AppColors.brand;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 48),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: active ? AppColors.brand : AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: active ? AppColors.brand : AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: fg),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyStrong.copyWith(color: fg)),
+          ),
+          const SizedBox(width: 4),
+          Icon(trailing,
+              size: 20, color: active ? fg : AppColors.textSecondary),
+        ],
+      ),
+    );
+  }
 }
 
 class _ListSkeleton extends StatelessWidget {
@@ -274,15 +314,16 @@ class _ListSkeleton extends StatelessWidget {
         children: [
           SkeletonBox(height: 20, width: 140),
           SizedBox(height: 14),
-          SkeletonBox(height: 112),
+          SkeletonBox(height: 120, radius: AppSizes.radiusCard),
           SizedBox(height: 12),
-          SkeletonBox(height: 112),
+          SkeletonBox(height: 120, radius: AppSizes.radiusCard),
           SizedBox(height: 12),
-          SkeletonBox(height: 112),
+          SkeletonBox(height: 120, radius: AppSizes.radiusCard),
         ],
       );
 }
 
+/// Trạng thái trống / lỗi: icon lớn trong ô nhạt, tiêu đề, mô tả, nút viên thuốc.
 class _ListMessage extends StatelessWidget {
   const _ListMessage({
     required this.icon,
@@ -305,42 +346,50 @@ class _ListMessage extends StatelessWidget {
   final VoidCallback? onSecondary;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+  Widget build(BuildContext context) => ForeCard(
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 36,
-                    backgroundColor: AppColors.tint,
-                    child: Icon(icon, size: 32, color: AppColors.brand),
+                  ForeIconBadge(
+                    icon: icon,
+                    size: 72,
+                    background: AppColors.accentTint,
                   ),
                   if (badge != null) ...[
-                    const SizedBox(height: 8),
-                    Text(badge!, style: AppTextStyles.caption),
+                    const SizedBox(height: 10),
+                    StatusChip(
+                      label: badge!,
+                      severity: StatusSeverity.neutral,
+                      compact: true,
+                    ),
                   ],
                 ],
               ),
             ),
             const SizedBox(height: 16),
             Text(title,
-                textAlign: TextAlign.center, style: AppTextStyles.headline),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.appBarTitle
+                    .copyWith(color: AppColors.brand, fontSize: 20)),
             const SizedBox(height: 8),
             Text(body, textAlign: TextAlign.center, style: AppTextStyles.body),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
             if (primaryLabel != null && onPrimary != null)
-              FilledButton(
+              ForeButton(
+                label: primaryLabel!,
                 onPressed: () => onPrimary!(),
-                child: Text(primaryLabel!),
               ),
             if (secondaryLabel != null && onSecondary != null) ...[
-              const SizedBox(height: 8),
-              OutlinedButton(
+              const SizedBox(height: 10),
+              ForeButton(
+                label: secondaryLabel!,
+                variant: ForeButtonVariant.secondary,
+                height: AppSizes.controlHeight,
                 onPressed: onSecondary,
-                child: Text(secondaryLabel!),
               ),
             ],
           ],
@@ -365,15 +414,23 @@ extension on _ReconcileListViewState {
     final urgent = items.where(_needsActionNow).toList();
     if (urgent.isEmpty) return [for (final r in items) card(r)];
     final rest = items.where((r) => !_needsActionNow(r)).toList();
-    Widget header(String text) => Padding(
-          padding: const EdgeInsets.only(bottom: 8, top: 4),
-          child: Text(text, style: AppTextStyles.captionStrong),
+    Widget header(String text, Color dot) => Padding(
+          padding: const EdgeInsets.only(bottom: 10, top: 6),
+          child: Row(children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 8),
+            Text(text, style: AppTextStyles.captionStrong),
+          ]),
         );
     return [
-      header('Cần xử lý ngay · ${urgent.length}'),
+      header('Cần xử lý ngay · ${urgent.length}', AppColors.statusCritical),
       for (final r in urgent) card(r),
       if (rest.isNotEmpty) ...[
-        header('Các ca còn lại · ${rest.length}'),
+        header('Các ca còn lại · ${rest.length}', AppColors.textSecondary),
         for (final r in rest) card(r),
       ],
     ];
@@ -402,11 +459,21 @@ class ReconcileShiftCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icon ca nhuộm theo mức độ: nhìn lướt là biết ca nào cần xem.
+              ForeIconBadge(
+                icon: Icons.receipt_long_outlined,
+                color: severity == StatusSeverity.neutral
+                    ? AppColors.brandAccent
+                    : severityForeground(severity),
+                size: 40,
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(report.title, style: AppTextStyles.title),
+                    Text(report.title,
+                        style: AppTextStyles.cardTitle.copyWith(fontSize: 16)),
                     const SizedBox(height: 2),
                     Text(
                       reconcileShiftTime(report.openedAt, report.closedAt),
@@ -437,7 +504,9 @@ class ReconcileShiftCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+          Divider(height: 1, color: AppColors.cardBorder),
+          const SizedBox(height: 12),
           Row(
             children: [
               StatusChip(
@@ -455,7 +524,7 @@ class ReconcileShiftCard extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  size: 22, color: AppColors.textSecondary),
+                  size: 22, color: AppColors.brand),
             ],
           ),
           if (streaks.isNotEmpty) ...[
@@ -472,6 +541,7 @@ class ReconcileShiftCard extends StatelessWidget {
   }
 }
 
+/// "Đã xử lý" / "Chưa xử lý": viên nhỏ, xanh khi đã xử lý.
 class _HandledBadge extends StatelessWidget {
   const _HandledBadge({required this.handled});
 
@@ -480,24 +550,31 @@ class _HandledBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = handled ? AppColors.statusHealthy : AppColors.textSecondary;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          handled ? Icons.done_all_rounded : Icons.schedule_rounded,
-          size: 14,
-          color: color,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          handled ? 'Đã xử lý' : 'Chưa xử lý',
-          style: TextStyle(
-            fontSize: AppFontSizes.s12,
-            fontWeight: FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: handled ? AppColors.statusHealthyTint : AppColors.tint,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            handled ? Icons.done_all_rounded : Icons.schedule_rounded,
+            size: 14,
             color: color,
           ),
-        ),
-      ],
+          const SizedBox(width: 4),
+          Text(
+            handled ? 'Đã xử lý' : 'Chưa xử lý',
+            style: TextStyle(
+              fontSize: AppFontSizes.s12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

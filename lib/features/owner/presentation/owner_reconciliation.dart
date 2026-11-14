@@ -4,7 +4,12 @@ part of 'owner_home_screen.dart';
 /// file này chỉ nối dữ liệu của dashboard và các thao tác (lưu xử lý, mở thực đơn).
 extension _OwnerReconciliation on _OwnerHomeContentState {
   Widget _reconcileList() => ReconcileListView(
-        header: _pageHeader(),
+        header: _mossHeader(
+          title: 'Đối soát ca',
+          caption: const Text(
+              'So doanh thu với nguyên liệu và tiền đếm cuối ca.'),
+        ),
+        titleInHeader: true,
         controller: _reconcile,
         onOpen: (report) => _updateState(() => _selectedReport = report.source),
         onOpenOverview: () => _updateState(() {
@@ -16,7 +21,7 @@ extension _OwnerReconciliation on _OwnerHomeContentState {
   Widget _reconcileDetail(OwnerShiftReport report) => ReconcileDetailView(
         key: ValueKey<String>('reconcile-${report.shift['id']}'),
         report: ReconcileReport.fromOwner(report),
-        header: _pageHeader(),
+        header: _mossHeader(),
         onBack: () => _updateState(() => _selectedReport = null),
         onSaveReview: (handled, note) =>
             _saveShiftReview(report, handled, note),

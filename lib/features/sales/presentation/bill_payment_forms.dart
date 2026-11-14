@@ -39,9 +39,9 @@ class _PayFormState extends State<_PayForm> {
             ],
           ),
           const SizedBox(height: 20),
-          FilledButton(
+          ForeButton(
+            label: 'Thu ${formatVnd(widget.amount)}',
             onPressed: () => Navigator.of(context).pop(_method),
-            child: Text('Thu ${formatVnd(widget.amount)}'),
           ),
           const SizedBox(height: 4),
           Text(
@@ -74,10 +74,11 @@ class _MethodTile extends StatelessWidget {
               height: 64,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selected ? AppColors.ink : AppColors.surface,
+                // Phương thức đang chọn: ô mù tạt chữ rêu.
+                color: selected ? AppColors.accent : AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                    color: selected ? AppColors.ink : AppColors.border,
+                    color: selected ? AppColors.accent : AppColors.border,
                     width: 1.5),
               ),
               child: Text(
@@ -85,7 +86,7 @@ class _MethodTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: AppFontSizes.s16,
                   fontWeight: FontWeight.w700,
-                  color: selected ? AppColors.onInk : AppColors.ink,
+                  color: selected ? AppColors.onAccent : AppColors.ink,
                 ),
               ),
             ),
@@ -158,19 +159,21 @@ class _DiscountFormState extends State<_DiscountForm> {
             ),
           ),
           const SizedBox(height: 14),
-          FilledButton(
+          ForeButton(
+            label: 'Áp dụng giảm giá',
             onPressed: _valid
                 ? () => Navigator.of(context)
                     .pop(_DiscountResult(_value!, _reason.text.trim()))
                 : null,
-            child: const Text('Áp dụng giảm giá'),
           ),
           if (widget.current > 0) ...[
             const SizedBox(height: 8),
-            OutlinedButton(
+            ForeButton(
+              label: 'Bỏ giảm giá',
+              variant: ForeButtonVariant.secondary,
+              height: AppSizes.controlHeight,
               onPressed: () =>
                   Navigator.of(context).pop(const _DiscountResult(0, '')),
-              child: const Text('Bỏ giảm giá'),
             ),
           ],
         ],

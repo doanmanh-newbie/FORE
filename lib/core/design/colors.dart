@@ -170,7 +170,8 @@ class AppPalette {
     shadowStrong: Color(0xE6000000),
     accent: Color(0xFFE4BD5A),
     onAccent: Color(0xFF0D3B2E),
-    accentTint: Color(0xFF3A3018),
+    // Mù tạt 22% trên nền thẻ tối #12241D: ô liu ngả xanh, hợp nền rêu (bản cũ #3A3018 lên màu nâu đục).
+    accentTint: Color(0xFF41452A),
     leaf: Color(0xFF2D7A5E),
     textHint: Color(0xFF9DB3A8),
   );

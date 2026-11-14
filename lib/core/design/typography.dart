@@ -4,6 +4,8 @@ import 'colors.dart';
 
 abstract final class AppFonts {
   static const body = 'ForeInter';
+
+  /// Font chữ có chân, vẫn khai báo trong pubspec nhưng không còn kiểu chữ nào dùng.
   static const display = 'ForeNewsreader';
 }
 
@@ -31,42 +33,47 @@ abstract final class AppFontSizes {
 /// Vai trò chữ và kích thước trung tâm. Màn hình dùng các kiểu này thay vì
 /// tự đặt cỡ chữ và fontFamily.
 abstract final class AppTextStyles {
-  static const serifFamily = AppFonts.display;
+  /// Bộ "Rêu & Mù tạt" dùng Inter cho mọi chữ, kể cả tiêu đề (trước là Newsreader).
+  /// Giữ tên cũ để nơi gọi không phải đổi.
+  static const serifFamily = AppFonts.body;
   static const sansFamily = AppFonts.body;
 
   static TextStyle get display => TextStyle(
-    fontFamily: AppFonts.display,
+    fontFamily: AppFonts.body,
     fontSize: 26,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 32 / 26,
+    letterSpacing: -0.3,
   );
   static TextStyle get headline => TextStyle(
-    fontFamily: AppFonts.display,
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
+    fontFamily: AppFonts.body,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 1.2,
   );
   static TextStyle get pageTitle => TextStyle(
-    fontFamily: AppFonts.display,
+    fontFamily: AppFonts.body,
     fontSize: 26,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 32 / 26,
+    letterSpacing: -0.3,
   );
   static TextStyle get kpi => TextStyle(
-    fontFamily: AppFonts.display,
+    fontFamily: AppFonts.body,
     fontSize: 32,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 36 / 32,
     fontFeatures: const [FontFeature.tabularFigures()],
+    letterSpacing: -0.3,
   );
   static TextStyle get sectionTitle => TextStyle(
-    fontFamily: AppFonts.display,
+    fontFamily: AppFonts.body,
     fontSize: 18,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 24 / 18,
   );
@@ -116,17 +123,19 @@ abstract final class AppTextStyles {
   );
   static const button = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
   static TextStyle get wordmark => TextStyle(
-    fontFamily: AppFonts.display,
+    fontFamily: AppFonts.body,
     fontSize: 28,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.brand,
     height: 1.1,
+    letterSpacing: -0.3,
   );
 
   // Existing call sites retained while the rest of the app migrates by screen.
   static TextStyle get screenTitle => pageTitle;
   static TextStyle get heading => headline;
-  static TextStyle get title => sectionTitle;
+  /// Tiêu đề một mục trong danh sách/thẻ (16/600). Trước là `sectionTitle` (18 serif).
+  static TextStyle get title => cardTitle.copyWith(fontSize: 16);
   static TextStyle get numberXL => kpi;
   static TextStyle get metricXL => kpi;
   static TextStyle get number => TextStyle(
@@ -227,6 +236,25 @@ abstract final class AppTextStyles {
     decoration: TextDecoration.underline,
     decorationColor: AppColors.brand,
     height: 1.54,
+  );
+
+  /// Tiêu đề màn con trên nền kem (vd tên ca, tên phiếu): Inter 24/700, mực rêu.
+  static TextStyle get screenHeading => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    color: AppColors.brand,
+    height: 1.2,
+    letterSpacing: -0.3,
+  );
+
+  /// Tiêu đề phần / thẻ lớn: Inter 18/700, mực rêu (thay cho Newsreader `sectionTitle`).
+  static TextStyle get sectionHeading => TextStyle(
+    fontFamily: AppFonts.body,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.brand,
+    height: 1.3,
   );
 
   /// Nhãn dưới vòng bước (12/600).
