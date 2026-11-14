@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/theme/app_theme.dart';
+import '../core/theme/theme_mode_toggle.dart';
 import '../core/design/palette_sync.dart';
 import '../core/data/rpc_client.dart';
 import '../features/auth/application/session_controller.dart';
@@ -92,15 +93,18 @@ class ForeApp extends StatelessWidget {
           },
         ),
       ],
-      child: MaterialApp(
-        title: 'Fore',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
-        themeMode: ThemeMode.system,
-        builder: (context, child) => AppPaletteSync(child: child!),
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: AppRoutes.generate,
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: themeModeNotifier,
+        builder: (context, mode, _) => MaterialApp(
+          title: 'Fore',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: mode,
+          builder: (context, child) => AppPaletteSync(child: child!),
+          initialRoute: AppRoutes.splash,
+          onGenerateRoute: AppRoutes.generate,
+        ),
       ),
     );
   }

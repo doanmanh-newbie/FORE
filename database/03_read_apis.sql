@@ -639,3 +639,21 @@ end $$;
 
 revoke all on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) from public, anon;
 grant execute on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) to authenticated;
+
+-- Bill đã thu trong ca đang mở (mới nhất trước): thu nhầm thì hủy bằng cancel_paid_bill + PIN chủ.
+create or replace function paid_bills() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare v_shift uuid;
+begin
+  perform _require_staff();
+  select id into v_shift from shifts where status = 'open' and shop_id = app_shop_id();
+  if v_shift is null then return '[]'::jsonb; end if;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+             'bill_id', b.id, 'bill_no', b.bill_no, 'paid_at', b.paid_at, 'total', b.total_amount,
+             'method', b.payment_method, 'table_name', t.name) order by b.paid_at desc)
+      from bills b left join dining_tables t on t.id = b.table_id
+     where b.shift_id = v_shift and b.status = 'paid'), '[]'::jsonb);
+end $$;
+revoke all on function paid_bills() from public, anon;
+grant execute on function paid_bills() to authenticated;

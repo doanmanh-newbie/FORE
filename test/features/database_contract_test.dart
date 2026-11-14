@@ -25,7 +25,7 @@ dynamic fixture(String name) =>
 const expectedCalls = <String, List<String>>{
   'add_bill_line': ['p_bill', 'p_qty', 'p_size'],
   'add_cash_movement': ['p_amount', 'p_direction', 'p_note'],
-  'add_waste': ['p_ingredient', 'p_note', 'p_qty', 'p_type'],
+  'inv_waste_add': ['p_ingredient', 'p_note', 'p_qty', 'p_type'],
   'bill_detail': ['p_bill'],
   'cancel_open_bill': ['p_bill', 'p_reason'],
   'close_shift': ['p_closing_cash'],
@@ -73,7 +73,7 @@ void main() {
       'pay_bill': 65000,
       'mark_prep_done': null,
       'submit_stock_count': 'x',
-      'add_waste': 'x',
+      'inv_waste_add': 'x',
       'add_cash_movement': 'x',
     });
   });

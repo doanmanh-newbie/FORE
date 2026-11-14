@@ -9,7 +9,9 @@ String formatVnd(int amount) =>
 String formatQuantity(int amount, {String? unit}) {
   final value = formatThousands(amount);
   final suffix = unit?.trim();
-  return suffix == null || suffix.isEmpty ? value : '$value $suffix';
+  if (suffix == null || suffix.isEmpty) return value;
+  // Database lưu đơn vị đếm là 'piece'; người dùng đọc là "cái".
+  return '$value ${suffix == 'piece' ? 'cái' : suffix}';
 }
 
 /// Số có dấu chấm ngăn nghìn, không có chữ "đ" (ví dụ 500.000).

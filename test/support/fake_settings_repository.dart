@@ -11,14 +11,57 @@ class FakeSettingsRepository implements SettingsRepository {
 
   static final _defaultTeam = TeamOverview.fromJson({
     'members': [
-      {'staff_id': 'o', 'full_name': 'Minh Anh', 'role': 'owner', 'job_role': 'staff', 'active': true, 'is_me': true, 'has_pin': false},
-      {'staff_id': 'a', 'full_name': 'Ngọc Lan', 'role': 'staff', 'job_role': 'cashier', 'active': true, 'phone': '0901234567', 'has_pin': true, 'on_shift': true},
-      {'staff_id': 'b', 'full_name': 'Văn Hải', 'role': 'staff', 'job_role': 'manager', 'active': true, 'has_pin': true},
-      {'staff_id': 'c', 'full_name': 'Thu Hà', 'role': 'staff', 'job_role': 'staff', 'active': false, 'has_pin': true},
+      {
+        'staff_id': 'o',
+        'full_name': 'Minh Anh',
+        'role': 'owner',
+        'job_role': 'staff',
+        'active': true,
+        'is_me': true,
+        'has_pin': false
+      },
+      {
+        'staff_id': 'a',
+        'full_name': 'Ngọc Lan',
+        'role': 'staff',
+        'job_role': 'cashier',
+        'active': true,
+        'phone': '0901234567',
+        'has_pin': true,
+        'on_shift': true
+      },
+      {
+        'staff_id': 'b',
+        'full_name': 'Văn Hải',
+        'role': 'staff',
+        'job_role': 'manager',
+        'active': true,
+        'has_pin': true
+      },
+      {
+        'staff_id': 'c',
+        'full_name': 'Thu Hà',
+        'role': 'staff',
+        'job_role': 'staff',
+        'active': false,
+        'has_pin': true
+      },
     ],
     'invites': [
-      {'id': 'i1', 'full_name': 'Bảo Trân', 'phone': '0911222333', 'job_role': 'staff', 'expired': false},
-      {'id': 'i2', 'full_name': 'Đức Anh', 'phone': '0911000111', 'job_role': 'cashier', 'expired': true},
+      {
+        'id': 'i1',
+        'full_name': 'Bảo Trân',
+        'phone': '0911222333',
+        'job_role': 'staff',
+        'expired': false
+      },
+      {
+        'id': 'i2',
+        'full_name': 'Đức Anh',
+        'phone': '0911000111',
+        'job_role': 'cashier',
+        'expired': true
+      },
     ],
   });
 
@@ -33,7 +76,8 @@ class FakeSettingsRepository implements SettingsRepository {
   Future<TeamOverview> team() async => teamData;
 
   @override
-  Future<void> revokeMember(String staffId) async => calls.add('revoke:$staffId');
+  Future<void> revokeMember(String staffId) async =>
+      calls.add('revoke:$staffId');
 
   @override
   Future<void> setMemberRole(String staffId, JobRole role) async =>
@@ -46,7 +90,35 @@ class FakeSettingsRepository implements SettingsRepository {
   }
 
   @override
-  Future<void> cancelInvite(String inviteId) async => calls.add('cancel:$inviteId');
+  Future<void> cancelInvite(String inviteId) async =>
+      calls.add('cancel:$inviteId');
+
+  @override
+  Future<ShopProfile> shopProfile() async => ShopProfile.fromJson({
+        'id': 's1',
+        'code': 'QA',
+        'name': 'Quán QA',
+        'address': '1 Nguyễn Du',
+        'can_edit': true,
+      });
+
+  @override
+  Future<AuditFeed> auditFeed(DateTime from, DateTime to,
+          {String? actorId}) async =>
+      const AuditFeed(actors: [], events: []);
+
+  @override
+  Future<RoleConfig> roleConfig(JobRole role) async =>
+      RoleConfig(role: role, members: const [], permissions: const {});
+
+  @override
+  Future<List<Branch>> branches() async => const [];
+
+  @override
+  Future<List<FloorArea>> floor() async => const [];
+
+  @override
+  Future<List<SupportTicket>> supportTickets() async => const [];
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

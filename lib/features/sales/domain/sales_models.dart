@@ -271,3 +271,31 @@ class BillView {
       ? 'Mang đi ${formatBillNo(billNo)}'
       : (tableName ?? 'Bill ${formatBillNo(billNo)}');
 }
+
+/// Bill đã thu trong ca đang mở (để hủy khi thu nhầm, cần PIN chủ).
+class PaidBill {
+  const PaidBill({
+    required this.billId,
+    required this.billNo,
+    required this.paidAt,
+    required this.total,
+    required this.method,
+    required this.tableName,
+  });
+
+  factory PaidBill.fromRow(Map<String, dynamic> row) => PaidBill(
+        billId: row.str('bill_id'),
+        billNo: row.integer('bill_no'),
+        paidAt: row.time('paid_at'),
+        total: row.integer('total'),
+        method: row.str('method'),
+        tableName: row.strOrNull('table_name'),
+      );
+
+  final String billId;
+  final int billNo;
+  final DateTime paidAt;
+  final int total;
+  final String method;
+  final String? tableName;
+}

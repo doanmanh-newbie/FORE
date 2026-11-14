@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_text_styles.dart';
 import 'package:fore/core/design/colors.dart';
@@ -115,6 +116,67 @@ class _ReasonFormState extends State<_ReasonForm> {
                 : null,
             onPressed: _valid
                 ? () => Navigator.of(context).pop(_controller.text.trim())
+                : null,
+            child: Text(widget.confirmLabel),
+          ),
+        ],
+      );
+}
+
+/// Hỏi mã PIN 4–6 chữ số (ẩn khi gõ). Trả về PIN, hoặc `null` nếu người dùng đóng.
+Future<String?> askPin(
+  BuildContext context, {
+  required String title,
+  String? subtitle,
+  String confirmLabel = 'Xác nhận',
+}) =>
+    showForeSheet<String>(
+      context,
+      title: title,
+      subtitle: subtitle,
+      builder: (_) => _PinForm(confirmLabel: confirmLabel),
+    );
+
+class _PinForm extends StatefulWidget {
+  const _PinForm({required this.confirmLabel});
+
+  final String confirmLabel;
+
+  @override
+  State<_PinForm> createState() => _PinFormState();
+}
+
+class _PinFormState extends State<_PinForm> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  bool get _valid => RegExp(r'^[0-9]{4,6}$').hasMatch(_controller.text);
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(labelText: 'Mã PIN (4–6 chữ số)'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _valid
+                ? () => Navigator.of(context).pop(_controller.text)
                 : null,
             child: Text(widget.confirmLabel),
           ),

@@ -28,8 +28,8 @@ extension _OwnerActions on _OwnerHomeContentState {
               : 'Mở ca để dùng',
           keywords: const ['hao hut', 'do bo'],
           onTap: hasShift
-              ? () => push(WasteScreen(
-                  repository: context.read<InventoryRepository>()))
+              ? () => push(
+                  WasteScreen(repository: context.read<InventoryRepository>()))
               : null,
         ),
         MoreEntry(
@@ -244,12 +244,14 @@ extension _OwnerActions on _OwnerHomeContentState {
     final source = context.read<OwnerDashboardDataSource>();
     final dashboard = context.read<OwnerDashboardController>();
     final messenger = ScaffoldMessenger.of(context);
+    var saved = false;
     try {
       if (kind == CorrectionKind.waste) {
         await source.correctWaste(id, newQty, reason);
       } else {
         await source.correctPurchase(id, newQty, reason);
       }
+      saved = true;
       final fresh = await source.loadShiftReport('${report.shift['id']}');
       if (!mounted) return true;
       _updateState(() {
@@ -264,18 +266,26 @@ extension _OwnerActions on _OwnerHomeContentState {
       _reconcile.reload(silent: true);
       dashboard.load(refresh: true);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Đã lưu số lượng mới. Báo cáo được tính lại.')),
+        const SnackBar(
+            content: Text('Đã lưu số lượng mới. Báo cáo được tính lại.')),
       );
       return true;
     } on PostgrestException catch (error) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(databaseMessages[error.message] ?? _errorMessage(error)),
+          content:
+              Text(databaseMessages[error.message] ?? _errorMessage(error)),
         ),
       );
       return false;
     } catch (_) {
-      return false;
+      // Đã lưu mà tải lại lỗi thì báo đã lưu, để chủ không bấm sửa lần nữa
+      messenger.showSnackBar(SnackBar(
+        content: Text(saved
+            ? 'Đã lưu số lượng mới nhưng chưa tải lại được báo cáo. Mở lại báo cáo để xem số mới.'
+            : 'Không lưu được số lượng mới. Kiểm tra kết nối rồi thử lại.'),
+      ));
+      return saved;
     }
   }
 

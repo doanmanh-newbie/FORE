@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/theme_mode_toggle.dart';
 
 /// Đầu trang của màn phụ (đẩy lên từ tab): nút quay lại, tiêu đề chữ có chân, dòng mô tả.
 class ScreenHeader extends StatelessWidget {
@@ -56,6 +57,7 @@ class ScreenHeader extends StatelessWidget {
                         ),
                       ),
                     ),
+                    ThemeModeToggle(color: AppColors.ink),
                   ],
                 )),
           ),

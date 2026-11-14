@@ -42,9 +42,8 @@ class _RolesScreenState extends State<RolesScreen> {
     setState(() => _loading = true);
     final cfg = await guarded(context, () => _repo.roleConfig(_role));
     if (!mounted) return; // rời màn hình: `context` không còn dùng được
-    final branches = _branches.isEmpty
-        ? await guarded(context, _repo.branches)
-        : _branches;
+    final branches =
+        _branches.isEmpty ? await guarded(context, _repo.branches) : _branches;
     if (!mounted) return;
     setState(() {
       _config = cfg;
@@ -148,21 +147,25 @@ class _RolesScreenState extends State<RolesScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: KhoCard(
-                        child: SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          value: _draft[p.key] ?? false,
-                          onChanged: (v) => _toggle(p, v),
-                          title: Row(children: [
-                            Flexible(child: Text(p.label)),
-                            if (p.sensitive) ...[
-                              const SizedBox(width: 8),
-                              const StatusChip(
-                                  label: 'Nhạy cảm',
-                                  severity: StatusSeverity.attention,
-                                  compact: true),
-                            ],
-                          ]),
-                          subtitle: Text(p.hint),
+                        // Material riêng để hiệu ứng chạm của ListTile không bị nền thẻ che.
+                        child: Material(
+                          color: Colors.transparent,
+                          child: SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _draft[p.key] ?? false,
+                            onChanged: (v) => _toggle(p, v),
+                            title: Row(children: [
+                              Flexible(child: Text(p.label)),
+                              if (p.sensitive) ...[
+                                const SizedBox(width: 8),
+                                const StatusChip(
+                                    label: 'Nhạy cảm',
+                                    severity: StatusSeverity.attention,
+                                    compact: true),
+                              ],
+                            ]),
+                            subtitle: Text(p.hint),
+                          ),
                         ),
                       ),
                     ),

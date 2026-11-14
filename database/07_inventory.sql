@@ -279,6 +279,12 @@ $$;
 create or replace function _vn_day(p_ts timestamptz) returns date
 language sql immutable as $$ select (p_ts at time zone 'Asia/Ho_Chi_Minh')::date $$;
 
+-- Ngày kinh doanh bắt đầu 06:00 giờ Việt Nam (khớp màn Tổng quan): 02:00 sáng thuộc ngày hôm trước
+create or replace function _biz_day(p_ts timestamptz) returns date
+language sql immutable as $$ select ((p_ts at time zone 'Asia/Ho_Chi_Minh') - interval '6 hours')::date $$;
+create or replace function _biz_start(p_day date) returns timestamptz
+language sql immutable as $$ select (p_day + time '06:00') at time zone 'Asia/Ho_Chi_Minh' $$;
+
 create or replace function _inv_status(p_stock integer, p_min integer) returns text
 language sql immutable as $$
   select case when p_stock <= 0 then 'out'
@@ -603,7 +609,7 @@ begin
               from stock_ledger l
              where l.ingredient_id = p_id and l.shop_id = v_shop and l.kind in ('sale', 'void_sale')
                and (p_kind is null or p_kind = 'sale')
-             group by _vn_day(l.at)
+             group by _biz_day(l.at)
           ) x
          order by x.at desc limit v_lim) q), '[]'::jsonb),
     'price_events', coalesce((
@@ -1224,14 +1230,14 @@ begin
   perform _require_perm('inventory.costs'); v_shop := app_shop_id();
   if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 366 then raise exception 'DATE_RANGE_INVALID'; end if;
   v_days := p_to - p_from + 1; v_prev_from := p_from - v_days;
-  v_from_ts := (p_from::timestamp at time zone 'Asia/Ho_Chi_Minh');
-  v_to_ts := ((p_to + 1)::timestamp at time zone 'Asia/Ho_Chi_Minh');
+  v_from_ts := _biz_start(p_from);
+  v_to_ts := _biz_start(p_to + 1);
   return (
     with w as (
       select w.id, w.code, w.ingredient_id, w.reason_type, w.qty, w.entered_at, i.name, i.unit, i.unit_cost,
              round(w.qty * coalesce(i.unit_cost, 0))::bigint as value
         from waste_logs w join ingredients i on i.id = w.ingredient_id
-       where w.shop_id = v_shop and w.entered_at >= (v_prev_from::timestamp at time zone 'Asia/Ho_Chi_Minh') and w.entered_at < v_to_ts),
+       where w.shop_id = v_shop and w.entered_at >= _biz_start(v_prev_from) and w.entered_at < v_to_ts),
     cur as (select * from w where entered_at >= v_from_ts),
     prv as (select * from w where entered_at < v_from_ts)
     select jsonb_build_object(
@@ -1255,7 +1261,7 @@ begin
       'daily', coalesce((
         select jsonb_agg(jsonb_build_object('date', d.day, 'value', coalesce(x.v, 0)) order by d.day)
           from (select p_from + g as day from generate_series(0, p_to - p_from) g) d
-          left join (select _vn_day(c.entered_at) as day, sum(c.value) as v from cur c group by 1) x on x.day = d.day), '[]'::jsonb)));
+          left join (select _biz_day(c.entered_at) as day, sum(c.value) as v from cur c group by 1) x on x.day = d.day), '[]'::jsonb)));
 end $$;
 
 -- ======================================================================
@@ -1333,11 +1339,11 @@ begin
   perform _require_owner(); v_shop := app_shop_id();
   if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 62 then raise exception 'DATE_RANGE_INVALID'; end if;
   v_days := p_to - p_from + 1;
-  v_from_ts := (p_from::timestamp at time zone 'Asia/Ho_Chi_Minh');
-  v_to_ts := ((p_to + 1)::timestamp at time zone 'Asia/Ho_Chi_Minh');
+  v_from_ts := _biz_start(p_from);
+  v_to_ts := _biz_start(p_to + 1);
   -- một ngày "kho ổn" = mọi ca đóng trong ngày đó không có nguyên liệu lệch vàng/đỏ khi đối soát
   for r in
-    select _vn_day(s.closed_at) as day,
+    select _biz_day(s.closed_at) as day,
            bool_and(not exists (select 1 from reconcile_shift(s.id) x where x.status in ('warn', 'alert'))) as ok
       from shifts s
      where s.shop_id = v_shop and s.status = 'closed' and s.closed_at >= v_from_ts and s.closed_at < v_to_ts
@@ -1563,6 +1569,6 @@ grant execute on function
 -- Hàm nội bộ: không ai gọi trực tiếp từ app
 revoke all on function
   _inv_code(text), _inv_stock_all(uuid), _inv_stock(uuid), _inv_daily_use(uuid, integer), _inv_lots_all(uuid),
-  _vn_day(timestamptz), _inv_status(integer, integer), _inv_apply_cost(uuid, numeric, integer, integer, timestamptz, uuid, uuid),
+  _vn_day(timestamptz), _biz_day(timestamptz), _biz_start(date), _inv_status(integer, integer), _inv_apply_cost(uuid, numeric, integer, integer, timestamptz, uuid, uuid),
   _po_json(uuid, boolean), _po_apply(uuid, uuid), _inv_shop_numbers(uuid), inv_seed_trg(), inv_lock_confirmed()
   from public, anon, authenticated;

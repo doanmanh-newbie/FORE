@@ -26,6 +26,7 @@ void main() {
       expect(formatQuantity(20000, unit: 'ml'), '20.000 ml');
       expect(formatQuantity(-2680, unit: 'g'), '-2.680 g');
       expect(formatQuantity(0, unit: 'cái'), '0 cái');
+      expect(formatQuantity(149, unit: 'piece'), '149 cái');
       expect(formatServings(1000, 'ly'), '1.000 ly');
     });
   });

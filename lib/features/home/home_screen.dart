@@ -25,6 +25,9 @@ import '../sales/application/table_map_controller.dart';
 import '../sales/application/takeaway_controller.dart';
 import '../sales/data/rpc_sales_repository.dart';
 import '../sales/presentation/bill_screen.dart';
+import '../sales/presentation/paid_bills_screen.dart';
+import '../../core/widgets/fore_sheet.dart';
+import '../../core/widgets/notify.dart';
 import '../sales/presentation/tables_view.dart';
 import '../sales/presentation/takeaway_view.dart';
 import '../shift/operations/application/ops_shift_controller.dart';
@@ -153,6 +156,19 @@ class _HomeScreenState extends State<OpsHomeScreen>
     _shift.loadCloseStatus();
   }
 
+  Future<void> _setPin(String staffId) async {
+    final pin = await askPin(context,
+        title: 'Mã PIN duyệt',
+        subtitle: 'Dùng để duyệt hủy bill đã thu trên máy nhân viên.',
+        confirmLabel: 'Lưu PIN');
+    if (pin == null || !mounted) return;
+    final ok = await guarded(context, () async {
+      await _rpc.call('set_staff_pin', {'p_staff': staffId, 'p_pin': pin});
+      return true;
+    });
+    if (ok == true && mounted) showNotice(context, 'Đã lưu mã PIN.');
+  }
+
   Future<void> _openCount(CountKind kind) async {
     await _push(StocktakeScreen(repository: _stockRepo, kind: kind));
     if (mounted) _shift.loadCloseStatus();
@@ -269,6 +285,10 @@ class _HomeScreenState extends State<OpsHomeScreen>
       isOwner: profile?.role.isOwner ?? false,
       onWaste: () => _push(WasteScreen(repository: _inventoryRepo)),
       onCash: () => _push(CashScreen(repository: _inventoryRepo)),
+      onPaidBills: () => _push(PaidBillsScreen(repository: _salesRepo)),
+      onSetPin: profile != null && profile.role.isOwner
+          ? () => _setPin(profile.staffId)
+          : null,
       onSwitchShop: () => showShopSwitcher(context),
       onInbox: () => Navigator.of(context).pushNamed(AppRoutes.inbox),
       onTeam: () => Navigator.of(context).pushNamed(AppRoutes.team),

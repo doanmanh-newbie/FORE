@@ -26,4 +26,9 @@ abstract interface class SalesRepository {
   Future<int> pay(String billId, PaymentMethod method);
 
   Future<void> markPrepDone(String billId);
+
+  Future<List<PaidBill>> paidBills();
+
+  /// Hủy bill đã thu, cần PIN chủ. Trả 'OK', 'WRONG_PIN' hoặc 'PIN_LOCKED'.
+  Future<String> cancelPaidBill(String billId, String ownerPin, String reason);
 }

@@ -268,6 +268,8 @@ create table stock_counts (                               -- kiểm kê (đếm 
   counted_at     timestamptz not null default now()
 );
 create index stock_counts_lookup on stock_counts (shift_id, ingredient_id, kind, counted_at desc);
+-- tồn hiện tại = lần đếm gần nhất của nguyên liệu (_inv_stock, v_expected_stock)
+create index stock_counts_latest on stock_counts (ingredient_id, counted_at desc);
 
 -- ---------- Cấu hình: công thức nằm trong code, CON SỐ nằm ở đây để chủ quán chỉnh ----------
 create table app_settings (
@@ -1437,11 +1439,12 @@ declare v_me uuid := _require_owner(); v_shift uuid; v_ing uuid; v_cur integer; 
 begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
   if p_new_qty < 0 then raise exception 'QTY_INVALID'; end if;
-  select shift_id, ingredient_id into v_shift, v_ing from purchases where id = p_purchase and shop_id = app_shop_id();
+  select shift_id, ingredient_id into v_shift, v_ing from purchases where id = p_purchase and shop_id = app_shop_id() for update;
   if v_shift is null then   -- dòng phiếu nhập PN: lấy ca từ dòng sổ kho gốc
     select sl.shift_id, sl.ingredient_id into v_shift, v_ing
       from stock_ledger sl join purchase_order_lines pl on pl.id = sl.ref_id
-     where sl.ref_id = p_purchase and sl.kind = 'purchase' and not sl.is_correction and sl.shop_id = app_shop_id();
+     where sl.ref_id = p_purchase and sl.kind = 'purchase' and not sl.is_correction and sl.shop_id = app_shop_id()
+       for update of pl;   -- hai máy sửa cùng lúc thì máy sau chờ, không cộng chênh lệch hai lần
   end if;
   if v_shift is null then raise exception 'NOT_FOUND'; end if;
 
@@ -1462,7 +1465,7 @@ declare v_me uuid := _require_owner(); v_shift uuid; v_ing uuid; v_cur integer; 
 begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
   if p_new_qty < 0 then raise exception 'QTY_INVALID'; end if;
-  select shift_id, ingredient_id into v_shift, v_ing from waste_logs where id = p_waste and shop_id = app_shop_id();
+  select shift_id, ingredient_id into v_shift, v_ing from waste_logs where id = p_waste and shop_id = app_shop_id() for update;
   if v_shift is null then raise exception 'NOT_FOUND'; end if;
 
   select coalesce(-sum(qty_delta), 0) into v_cur from stock_ledger where kind = 'waste' and ref_id = p_waste;
@@ -2620,6 +2623,24 @@ end $$;
 
 revoke all on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) from public, anon;
 grant execute on function owner_shift_list(timestamptz, timestamptz, text, integer, timestamptz) to authenticated;
+
+-- Bill đã thu trong ca đang mở (mới nhất trước): thu nhầm thì hủy bằng cancel_paid_bill + PIN chủ.
+create or replace function paid_bills() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare v_shift uuid;
+begin
+  perform _require_staff();
+  select id into v_shift from shifts where status = 'open' and shop_id = app_shop_id();
+  if v_shift is null then return '[]'::jsonb; end if;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+             'bill_id', b.id, 'bill_no', b.bill_no, 'paid_at', b.paid_at, 'total', b.total_amount,
+             'method', b.payment_method, 'table_name', t.name) order by b.paid_at desc)
+      from bills b left join dining_tables t on t.id = b.table_id
+     where b.shift_id = v_shift and b.status = 'paid'), '[]'::jsonb);
+end $$;
+revoke all on function paid_bills() from public, anon;
+grant execute on function paid_bills() to authenticated;
 
 -- >>> SOURCE: database/04_membership_sessions.sql
 -- Fore · 04_membership_sessions.sql
@@ -4894,6 +4915,12 @@ $$;
 create or replace function _vn_day(p_ts timestamptz) returns date
 language sql immutable as $$ select (p_ts at time zone 'Asia/Ho_Chi_Minh')::date $$;
 
+-- Ngày kinh doanh bắt đầu 06:00 giờ Việt Nam (khớp màn Tổng quan): 02:00 sáng thuộc ngày hôm trước
+create or replace function _biz_day(p_ts timestamptz) returns date
+language sql immutable as $$ select ((p_ts at time zone 'Asia/Ho_Chi_Minh') - interval '6 hours')::date $$;
+create or replace function _biz_start(p_day date) returns timestamptz
+language sql immutable as $$ select (p_day + time '06:00') at time zone 'Asia/Ho_Chi_Minh' $$;
+
 create or replace function _inv_status(p_stock integer, p_min integer) returns text
 language sql immutable as $$
   select case when p_stock <= 0 then 'out'
@@ -5218,7 +5245,7 @@ begin
               from stock_ledger l
              where l.ingredient_id = p_id and l.shop_id = v_shop and l.kind in ('sale', 'void_sale')
                and (p_kind is null or p_kind = 'sale')
-             group by _vn_day(l.at)
+             group by _biz_day(l.at)
           ) x
          order by x.at desc limit v_lim) q), '[]'::jsonb),
     'price_events', coalesce((
@@ -5839,14 +5866,14 @@ begin
   perform _require_perm('inventory.costs'); v_shop := app_shop_id();
   if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 366 then raise exception 'DATE_RANGE_INVALID'; end if;
   v_days := p_to - p_from + 1; v_prev_from := p_from - v_days;
-  v_from_ts := (p_from::timestamp at time zone 'Asia/Ho_Chi_Minh');
-  v_to_ts := ((p_to + 1)::timestamp at time zone 'Asia/Ho_Chi_Minh');
+  v_from_ts := _biz_start(p_from);
+  v_to_ts := _biz_start(p_to + 1);
   return (
     with w as (
       select w.id, w.code, w.ingredient_id, w.reason_type, w.qty, w.entered_at, i.name, i.unit, i.unit_cost,
              round(w.qty * coalesce(i.unit_cost, 0))::bigint as value
         from waste_logs w join ingredients i on i.id = w.ingredient_id
-       where w.shop_id = v_shop and w.entered_at >= (v_prev_from::timestamp at time zone 'Asia/Ho_Chi_Minh') and w.entered_at < v_to_ts),
+       where w.shop_id = v_shop and w.entered_at >= _biz_start(v_prev_from) and w.entered_at < v_to_ts),
     cur as (select * from w where entered_at >= v_from_ts),
     prv as (select * from w where entered_at < v_from_ts)
     select jsonb_build_object(
@@ -5870,7 +5897,7 @@ begin
       'daily', coalesce((
         select jsonb_agg(jsonb_build_object('date', d.day, 'value', coalesce(x.v, 0)) order by d.day)
           from (select p_from + g as day from generate_series(0, p_to - p_from) g) d
-          left join (select _vn_day(c.entered_at) as day, sum(c.value) as v from cur c group by 1) x on x.day = d.day), '[]'::jsonb)));
+          left join (select _biz_day(c.entered_at) as day, sum(c.value) as v from cur c group by 1) x on x.day = d.day), '[]'::jsonb)));
 end $$;
 
 -- ======================================================================
@@ -5948,11 +5975,11 @@ begin
   perform _require_owner(); v_shop := app_shop_id();
   if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 62 then raise exception 'DATE_RANGE_INVALID'; end if;
   v_days := p_to - p_from + 1;
-  v_from_ts := (p_from::timestamp at time zone 'Asia/Ho_Chi_Minh');
-  v_to_ts := ((p_to + 1)::timestamp at time zone 'Asia/Ho_Chi_Minh');
+  v_from_ts := _biz_start(p_from);
+  v_to_ts := _biz_start(p_to + 1);
   -- một ngày "kho ổn" = mọi ca đóng trong ngày đó không có nguyên liệu lệch vàng/đỏ khi đối soát
   for r in
-    select _vn_day(s.closed_at) as day,
+    select _biz_day(s.closed_at) as day,
            bool_and(not exists (select 1 from reconcile_shift(s.id) x where x.status in ('warn', 'alert'))) as ok
       from shifts s
      where s.shop_id = v_shop and s.status = 'closed' and s.closed_at >= v_from_ts and s.closed_at < v_to_ts
@@ -6178,7 +6205,7 @@ grant execute on function
 -- Hàm nội bộ: không ai gọi trực tiếp từ app
 revoke all on function
   _inv_code(text), _inv_stock_all(uuid), _inv_stock(uuid), _inv_daily_use(uuid, integer), _inv_lots_all(uuid),
-  _vn_day(timestamptz), _inv_status(integer, integer), _inv_apply_cost(uuid, numeric, integer, integer, timestamptz, uuid, uuid),
+  _vn_day(timestamptz), _biz_day(timestamptz), _biz_start(date), _inv_status(integer, integer), _inv_apply_cost(uuid, numeric, integer, integer, timestamptz, uuid, uuid),
   _po_json(uuid, boolean), _po_apply(uuid, uuid), _inv_shop_numbers(uuid), inv_seed_trg(), inv_lock_confirmed()
   from public, anon, authenticated;
 

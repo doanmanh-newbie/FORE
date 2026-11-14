@@ -15,6 +15,11 @@ import 'package:fore/features/owner/presentation/owner_home_screen.dart';
 
 import '../../support/fake_menu_repository.dart';
 import '../../support/fake_kho_repository.dart';
+import '../../support/fake_settings_repository.dart';
+import '../../support/fake_shop_repository.dart';
+import 'package:fore/app/app_routes.dart';
+import 'package:fore/features/shop/domain/shop_repository.dart';
+import 'package:fore/features/settings/domain/settings_repository.dart';
 import 'package:fore/features/inventory/domain/kho_repository.dart';
 
 void main() {
@@ -26,8 +31,7 @@ void main() {
     (tab: 'Thêm', content: 'Chăm quán, từ những điều nhỏ'),
   ];
 
-  testWidgets('so doanh thu với hôm qua tính đến cùng giờ',
-      (tester) async {
+  testWidgets('so doanh thu với hôm qua tính đến cùng giờ', (tester) async {
     final inventory = _FakeInventoryRepository();
     await tester.pumpWidget(
       MultiProvider(
@@ -241,7 +245,7 @@ void main() {
             Provider<InventoryRepository>.value(value: inventory),
             Provider<CashRepository>.value(value: inventory),
             Provider<MenuRepository>.value(value: FakeMenuRepository()),
-          Provider<KhoRepository>.value(value: FakeKhoRepository()),
+            Provider<KhoRepository>.value(value: FakeKhoRepository()),
           ],
           child: const MaterialApp(
             home: OwnerHomeScreen(profile: _ownerProfile),
@@ -393,6 +397,79 @@ void main() {
     }
   });
 
+  // Smoke test luồng chủ quán: mỗi mục trong tab Thêm mở được, không lỗi dựng, rồi quay lại.
+  const moreEntries = [
+    'Hồ sơ và thông tin quán',
+    'Khu vực và bàn',
+    'Quản lý chi nhánh',
+    'Nhân sự',
+    'Vai trò và phân quyền',
+    'Nhà cung cấp',
+    'Phiếu nhập hàng',
+    'Nguyên liệu',
+    'Kiểm kê',
+    'Nhật ký và dữ liệu',
+    'Hỗ trợ và cập nhật',
+    'Hộp thư',
+    'Ghi hao hụt',
+    'Thu / chi tiền mặt',
+  ];
+  for (final entry in moreEntries) {
+    testWidgets('tab Thêm: mở "$entry" không lỗi và quay lại được',
+        (tester) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final inventory = _FakeInventoryRepository();
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            Provider<OwnerDashboardDataSource>.value(
+              // Có ca đang mở để bấm được Ghi hao hụt và Thu / chi.
+              value: _FakeOwnerDashboardDataSource(
+                openShift: const {
+                  'id': 'shift-open',
+                  'opened_by_name': 'Ngọc Lan',
+                  'opened_at': '2026-11-14T06:30:00+07:00',
+                },
+              ),
+            ),
+            Provider<InventoryRepository>.value(value: inventory),
+            Provider<CashRepository>.value(value: inventory),
+            Provider<MenuRepository>.value(value: FakeMenuRepository()),
+            Provider<KhoRepository>.value(value: FakeKhoRepository()),
+            Provider<SettingsRepository>.value(value: FakeSettingsRepository()),
+            Provider<ShopRepository>.value(value: FakeShopRepository()),
+          ],
+          child: const MaterialApp(
+            home: OwnerHomeScreen(profile: _ownerProfile),
+            onGenerateRoute: AppRoutes.generate,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Thêm').last);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text(entry), 200,
+          scrollable: find.byType(Scrollable).at(0));
+      await tester.ensureVisible(find.text(entry).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(entry).last);
+      await tester.pumpAndSettle();
+      // Màn mới đẩy lên navigator gốc nên che thanh tab dưới.
+      expect(find.text('Tổng quan'), findsNothing,
+          reason: '"$entry" phải mở màn mới');
+
+      await tester
+          .state<NavigatorState>(find.byType(Navigator).first)
+          .maybePop();
+      await tester.pumpAndSettle();
+      expect(find.text('Tổng quan'), findsOneWidget);
+    });
+  }
+
   testWidgets('đối soát mở chi tiết, lưu ghi chú và đổi trạng thái xử lý',
       (tester) async {
     tester.view.physicalSize = const Size(400, 1600);
@@ -501,8 +578,10 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
     this.loadGate,
     this.lowStock = const [],
     this.pendingOverride,
+    this.openShift,
   });
 
+  final Map<String, dynamic>? openShift;
   final List<OwnerShiftReport> reports;
   final bool failReviewSave;
   final bool newShop;
@@ -520,7 +599,7 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
     return OwnerDashboardData(
       shifts: reports.map((report) => report.shift).toList(),
       reports: reports,
-      openShift: null,
+      openShift: openShift,
       cashSales: 29000,
       transferSales: 0,
       yesterdaySales: 100000,
@@ -552,8 +631,7 @@ class _FakeOwnerDashboardDataSource implements OwnerDashboardDataSource {
       pendingReviewCount: pendingOverride ??
           reports
               .where((report) =>
-                  ['warn', 'alert'].contains(report.overall) &&
-                  !report.handled)
+                  ['warn', 'alert'].contains(report.overall) && !report.handled)
               .length,
       missingRecipeCount: 0,
       notifications: const [],
@@ -632,7 +710,12 @@ const _handledOkReport = OwnerShiftReport(
   report: {
     'summary': {'overall': 'ok'},
     'ingredients': [],
-    'cash': {'status': 'ok', 'expected_cash': 1, 'closing_cash': 1, 'variance': 0},
+    'cash': {
+      'status': 'ok',
+      'expected_cash': 1,
+      'closing_cash': 1,
+      'variance': 0
+    },
   },
   review: {'handled': true, 'note': ''},
 );

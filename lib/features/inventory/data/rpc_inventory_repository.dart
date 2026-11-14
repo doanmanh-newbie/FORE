@@ -40,7 +40,8 @@ class RpcInventoryRepository implements InventoryRepository, CashRepository {
     required String typeCode,
     String? note,
   }) async {
-    await _rpc.call('add_waste', {
+    // inv_waste_add: cùng luồng với Kho (mã HH-, theo quyền inventory.record)
+    await _rpc.call('inv_waste_add', {
       'p_ingredient': ingredientId,
       'p_qty': qty,
       'p_type': typeCode,

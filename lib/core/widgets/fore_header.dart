@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'brand_logo.dart';
+import '../theme/theme_mode_toggle.dart';
 import 'status_chip.dart';
 
 /// Đầu trang chung của mọi màn trong ca: tên quán, "Nhân viên · tên", logo và (tùy chọn) nhãn trạng thái ca.
@@ -79,6 +80,7 @@ class ForeHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
+                    const ThemeModeToggle(),
                     if (onBack != null) ...[
                       IconButton(
                         tooltip: 'Về màn quản lý',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fore/core/theme/theme_mode_toggle.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -59,6 +60,7 @@ class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
         backgroundColor: AppColors.surface,
         title: Text('Thông báo', style: AppTextStyles.headline),
         actions: [
+          const ThemeModeToggle(),
           if (unread.isNotEmpty)
             TextButton(
               onPressed: _marking ? null : () => _markRead(unread),

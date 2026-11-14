@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
+import 'core/theme/theme_mode_toggle.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/data/supabase_auth_repository.dart';
 import 'features/shift/data/supabase_shift_repository.dart';
@@ -33,6 +34,7 @@ Future<void> main() async {
     return;
   }
 
+  await loadThemeMode();
   final client = Supabase.instance.client;
   runApp(ForeApp(
     authRepository: SupabaseAuthRepository(client),

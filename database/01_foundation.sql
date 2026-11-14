@@ -252,6 +252,8 @@ create table stock_counts (                               -- kiểm kê (đếm 
   counted_at     timestamptz not null default now()
 );
 create index stock_counts_lookup on stock_counts (shift_id, ingredient_id, kind, counted_at desc);
+-- tồn hiện tại = lần đếm gần nhất của nguyên liệu (_inv_stock, v_expected_stock)
+create index stock_counts_latest on stock_counts (ingredient_id, counted_at desc);
 
 -- ---------- Cấu hình: công thức nằm trong code, CON SỐ nằm ở đây để chủ quán chỉnh ----------
 create table app_settings (

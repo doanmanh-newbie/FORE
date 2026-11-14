@@ -437,11 +437,12 @@ declare v_me uuid := _require_owner(); v_shift uuid; v_ing uuid; v_cur integer; 
 begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
   if p_new_qty < 0 then raise exception 'QTY_INVALID'; end if;
-  select shift_id, ingredient_id into v_shift, v_ing from purchases where id = p_purchase and shop_id = app_shop_id();
+  select shift_id, ingredient_id into v_shift, v_ing from purchases where id = p_purchase and shop_id = app_shop_id() for update;
   if v_shift is null then   -- dòng phiếu nhập PN: lấy ca từ dòng sổ kho gốc
     select sl.shift_id, sl.ingredient_id into v_shift, v_ing
       from stock_ledger sl join purchase_order_lines pl on pl.id = sl.ref_id
-     where sl.ref_id = p_purchase and sl.kind = 'purchase' and not sl.is_correction and sl.shop_id = app_shop_id();
+     where sl.ref_id = p_purchase and sl.kind = 'purchase' and not sl.is_correction and sl.shop_id = app_shop_id()
+       for update of pl;   -- hai máy sửa cùng lúc thì máy sau chờ, không cộng chênh lệch hai lần
   end if;
   if v_shift is null then raise exception 'NOT_FOUND'; end if;
 
@@ -462,7 +463,7 @@ declare v_me uuid := _require_owner(); v_shift uuid; v_ing uuid; v_cur integer; 
 begin
   if coalesce(btrim(p_reason), '') = '' then raise exception 'REASON_REQUIRED'; end if;
   if p_new_qty < 0 then raise exception 'QTY_INVALID'; end if;
-  select shift_id, ingredient_id into v_shift, v_ing from waste_logs where id = p_waste and shop_id = app_shop_id();
+  select shift_id, ingredient_id into v_shift, v_ing from waste_logs where id = p_waste and shop_id = app_shop_id() for update;
   if v_shift is null then raise exception 'NOT_FOUND'; end if;
 
   select coalesce(-sum(qty_delta), 0) into v_cur from stock_ledger where kind = 'waste' and ref_id = p_waste;

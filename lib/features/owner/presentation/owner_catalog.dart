@@ -51,7 +51,7 @@ extension _OwnerCatalog on _OwnerHomeContentState {
                               compact: true,
                             ),
                       body: row['expected_qty'] == null
-                          ? 'Chưa có lần kiểm kê · ${row['unit'] ?? ''}'
+                          ? 'Chưa có lần kiểm kê · ${row['unit'] == 'piece' ? 'cái' : row['unit'] ?? ''}'
                           : _number(row['expected_qty']) < 0
                               ? 'Tồn dự kiến âm '
                                   '${formatQuantity(_number(row['expected_qty']).abs(), unit: '${row['unit'] ?? ''}')}. Cần kiểm tra kiểm kê và hao hụt.'

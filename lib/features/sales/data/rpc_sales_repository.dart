@@ -84,6 +84,25 @@ class RpcSalesRepository implements SalesRepository {
     await _rpc.call('mark_prep_done', {'p_bill': billId});
   }
 
+  @override
+  Future<List<PaidBill>> paidBills() => _parse(() async => [
+        for (final r in asRows(await _rpc.call('paid_bills')))
+          PaidBill.fromRow(r),
+      ]);
+
+  @override
+  Future<String> cancelPaidBill(
+          String billId, String ownerPin, String reason) =>
+      _parse(() async {
+        final result = await _rpc.call('cancel_paid_bill',
+            {'p_bill': billId, 'p_owner_pin': ownerPin, 'p_reason': reason});
+        if (result is! String) {
+          throw FormatException(
+              'cancel_paid_bill cần trả mã kết quả, nhận: $result');
+        }
+        return result;
+      });
+
   Future<T> _parse<T>(Future<T> Function() read) async {
     try {
       return await read();

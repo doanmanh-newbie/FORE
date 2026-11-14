@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fore/core/theme/theme_mode_toggle.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
@@ -148,6 +149,7 @@ class _TeamScreenState extends State<TeamScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text('Nhân viên', style: AppTextStyles.heading),
+          actions: const [ThemeModeToggle()],
         ),
         body: ErrorRetry(
           message: _accessError!,
@@ -166,6 +168,7 @@ class _TeamScreenState extends State<TeamScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Nhân viên', style: AppTextStyles.heading),
+        actions: const [ThemeModeToggle()],
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.brand,

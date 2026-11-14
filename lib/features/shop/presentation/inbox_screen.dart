@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fore/core/theme/theme_mode_toggle.dart';
 
 import '../../../core/theme/app_text_styles.dart';
 import 'invite_list.dart';
@@ -14,6 +15,7 @@ class InboxScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Hộp thư', style: AppTextStyles.heading),
+        actions: const [ThemeModeToggle()],
       ),
       body: const InviteListView(
         emptyText:

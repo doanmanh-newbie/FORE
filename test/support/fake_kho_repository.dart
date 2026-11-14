@@ -15,8 +15,16 @@ class FakeKhoRepository implements KhoRepository {
 
   @override
   Future<List<CatalogItem>> catalog(
-          {String? group, String? search, bool includeInactive = false}) async =>
+          {String? group,
+          String? search,
+          bool includeInactive = false}) async =>
       const [];
+
+  @override
+  Future<List<PoSummary>> orders({String? status}) async => const [];
+
+  @override
+  Future<List<StocktakeSummary>> stocktakes({String? status}) async => const [];
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

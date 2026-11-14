@@ -20,6 +20,8 @@ class MoreView extends StatelessWidget {
     required this.isOwner,
     required this.onWaste,
     required this.onCash,
+    this.onPaidBills,
+    this.onSetPin,
     required this.onSwitchShop,
     required this.onInbox,
     required this.onTeam,
@@ -36,6 +38,12 @@ class MoreView extends StatelessWidget {
   final bool isOwner;
   final VoidCallback onWaste;
   final VoidCallback onCash;
+
+  /// Bill đã thu trong ca (hủy bill thu nhầm bằng PIN chủ).
+  final VoidCallback? onPaidBills;
+
+  /// Chủ quán đặt mã PIN duyệt.
+  final VoidCallback? onSetPin;
   final VoidCallback onSwitchShop;
   final VoidCallback onInbox;
   final VoidCallback onTeam;
@@ -64,13 +72,23 @@ class MoreView extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ActionTile(
-            icon:
-                Icon(ForeActionIcons.cashMovement, color: AppColors.ink),
+            icon: Icon(ForeActionIcons.cashMovement, color: AppColors.ink),
             title: 'Thu / chi tiền mặt',
             subtitle:
                 hasOpenShift ? 'Mua đá, chủ rút tiền...' : 'Mở ca để dùng',
             onTap: hasOpenShift ? onCash : null,
           ),
+          if (onPaidBills != null) ...[
+            const SizedBox(height: 12),
+            ActionTile(
+              icon: Icon(Icons.receipt_long_outlined, color: AppColors.ink),
+              title: 'Bill đã thu',
+              subtitle: hasOpenShift
+                  ? 'Hủy bill thu nhầm (cần PIN chủ quán)'
+                  : 'Mở ca để dùng',
+              onTap: hasOpenShift ? onPaidBills : null,
+            ),
+          ],
           const SizedBox(height: 24),
           Text('Quản lý quán', style: AppTextStyles.headline),
           const SizedBox(height: 12),
@@ -88,6 +106,15 @@ class MoreView extends StatelessWidget {
               subtitle: 'Thêm và quản lý nhân viên',
               onTap: onTeam,
             ),
+            if (onSetPin != null) ...[
+              const SizedBox(height: 12),
+              ActionTile(
+                icon: Icon(Icons.pin_outlined, color: AppColors.ink),
+                title: 'Mã PIN duyệt',
+                subtitle: 'Duyệt hủy bill đã thu trên máy nhân viên',
+                onTap: onSetPin,
+              ),
+            ],
           ],
           const SizedBox(height: 24),
           Text('Tài khoản', style: AppTextStyles.headline),

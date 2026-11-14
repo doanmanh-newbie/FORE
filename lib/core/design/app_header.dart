@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'spacing.dart';
 import 'typography.dart';
 import '../widgets/brand_logo.dart';
+import '../theme/theme_mode_toggle.dart';
 
 /// Header cho không gian chủ quán: tên quán luôn một dòng, có chọn quán và chuông.
 class AppHeader extends StatelessWidget {
@@ -74,6 +75,7 @@ class AppHeader extends StatelessWidget {
                   ),
                 ),
               ),
+              const ThemeModeToggle(),
               if (onNotifications != null)
                 IconButton(
                   tooltip: unreadCount > 0

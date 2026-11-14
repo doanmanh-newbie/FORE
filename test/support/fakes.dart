@@ -253,6 +253,22 @@ class FakeSalesRepository with FakeBase implements SalesRepository {
         if (o.billId != id) o
     ];
   }
+
+  List<PaidBill> paid = [];
+  String cancelResult = 'OK';
+
+  @override
+  Future<List<PaidBill>> paidBills() async {
+    await enter('paidBills');
+    return List.of(paid);
+  }
+
+  @override
+  Future<String> cancelPaidBill(String id, String ownerPin, String reason) async {
+    await enter('cancelPaidBill', '$id:$ownerPin:$reason');
+    if (cancelResult == 'OK') paid = [for (final b in paid) if (b.billId != id) b];
+    return cancelResult;
+  }
 }
 
 class FakeStocktakeRepository with FakeBase implements StocktakeRepository {

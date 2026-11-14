@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fore/core/theme/theme_mode_toggle.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -87,6 +88,7 @@ class _CreateShopScreenState extends State<CreateShopScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: canPop,
+        actions: const [ThemeModeToggle()],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
