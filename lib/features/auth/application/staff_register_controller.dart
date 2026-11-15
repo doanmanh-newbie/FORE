@@ -1,22 +1,18 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
 import '../../../core/application/notify_when_alive.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
 
-/// Tạo tài khoản nhân viên; chỉ hoàn tất khi người dùng xác minh OTP.
+/// Tạo tài khoản nhân viên bằng số điện thoại hoặc email, tên, ngày sinh và mật khẩu.
+/// Tạo xong là đăng nhập luôn (không còn bước xác nhận OTP).
 class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
-  StaffRegisterController(
-    this._repository, {
-    this.resendDelay = const Duration(seconds: 60),
-  });
+  StaffRegisterController(this._repository);
 
   final AuthRepository _repository;
-  final Duration resendDelay;
 
   ContactKind _kind = ContactKind.phone;
   ContactKind get kind => _kind;
@@ -24,31 +20,17 @@ class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
   bool _loading = false;
   bool get loading => _loading;
 
-  bool _otpRequested = false;
-  bool get otpRequested => _otpRequested;
-
-  int _resendSeconds = 0;
-  int get resendSeconds => _resendSeconds;
-  bool get canResend => _otpRequested && !_loading && _resendSeconds == 0;
-
   String? contactError;
   String? nameError;
   String? birthDateError;
-  String? otpError;
+  String? passwordError;
+  String? confirmError;
   String? formError;
-
-  StaffContact? _challengeContact;
-  String? _fullName;
-  DateTime? _birthDate;
-  Timer? _resendTimer;
 
   void setKind(ContactKind kind) {
     if (_loading || kind == _kind) return;
     _kind = kind;
-    _challengeContact = null;
-    _otpRequested = false;
-    _clearTimer();
-    contactError = otpError = formError = null;
+    contactError = formError = null;
     notifyListeners();
   }
 
@@ -70,11 +52,13 @@ class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
     notifyListeners();
   }
 
-  /// Gửi OTP đăng ký. Trả về true chỉ khi mã được gửi, chưa phải tài khoản đã đăng nhập.
+  /// Trả về true khi đã tạo tài khoản và đăng nhập.
   Future<bool> submit({
     required String contactText,
     required String fullName,
     required DateTime? birthDate,
+    required String password,
+    required String confirm,
     DateTime? now,
   }) async {
     final today = now ?? DateTime.now();
@@ -89,30 +73,16 @@ class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
         : birthDate.isAfter(today)
             ? 'Ngày sinh không được ở tương lai.'
             : null;
-    otpError = formError = null;
+    passwordError = password.length < AppConfig.minPasswordLength
+        ? 'Mật khẩu cần ít nhất ${AppConfig.minPasswordLength} ký tự.'
+        : null;
+    confirmError = confirm == password ? null : 'Hai mật khẩu chưa giống nhau.';
+    formError = null;
 
-    if (contact == null || nameError != null || birthDateError != null) {
-      notifyListeners();
-      return false;
-    }
-
-    _challengeContact = contact;
-    _fullName = name;
-    _birthDate = birthDate;
-    return _requestOtp(createUser: true);
-  }
-
-  Future<bool> verifyOtp(String rawToken) async {
-    final contact = _challengeContact;
-    final token = rawToken.trim();
-    otpError = formError = null;
-    if (contact == null) {
-      formError = 'Hãy yêu cầu mã xác nhận trước.';
-      notifyListeners();
-      return false;
-    }
-    if (!RegExp(r'^\d{6}$').hasMatch(token)) {
-      otpError = 'Nhập mã xác nhận gồm 6 chữ số.';
+    if (contact == null ||
+        birthDate == null ||
+        [nameError, birthDateError, passwordError, confirmError]
+            .any((e) => e != null)) {
       notifyListeners();
       return false;
     }
@@ -120,77 +90,26 @@ class StaffRegisterController extends ChangeNotifier with NotifyWhenAlive {
     _loading = true;
     notifyListeners();
     try {
-      await _repository.verifyStaffOtp(contact, token);
-      _loading = false;
-      _clearTimer();
-      notifyListeners();
-      return true;
-    } on AppFailure catch (failure) {
-      otpError = failure.userMessage;
-      _loading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<void> resendOtp() async {
-    if (!canResend || _challengeContact == null) return;
-    await _requestOtp(createUser: true);
-  }
-
-  Future<bool> _requestOtp({required bool createUser}) async {
-    _loading = true;
-    notifyListeners();
-    try {
-      await _repository.requestStaffOtp(
-        _challengeContact!,
-        createUser: createUser,
-        fullName: _fullName,
-        birthDate: _birthDate,
+      await _repository.signUpStaff(
+        contact,
+        password,
+        fullName: name,
+        birthDate: birthDate,
       );
-      _otpRequested = true;
-      _startTimer();
       _loading = false;
       notifyListeners();
       return true;
     } on StaffAlreadyExistsFailure catch (failure) {
       contactError = failure.userMessage;
-      _loading = false;
-      notifyListeners();
-      return false;
+    } on WeakPasswordFailure catch (failure) {
+      passwordError = failure.userMessage;
+    } on ContactInvalidFailure catch (failure) {
+      contactError = failure.userMessage;
     } on AppFailure catch (failure) {
       formError = failure.userMessage;
-      _loading = false;
-      notifyListeners();
-      return false;
     }
-  }
-
-  void _startTimer() {
-    _clearTimer();
-    _resendSeconds = resendDelay.inSeconds;
-    if (_resendSeconds == 0) return;
-    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_resendSeconds <= 1) {
-        _resendSeconds = 0;
-        timer.cancel();
-        _resendTimer = null;
-      } else {
-        _resendSeconds--;
-      }
-      notifyListeners();
-    });
-  }
-
-  void _clearTimer() {
-    _resendTimer?.cancel();
-    _resendTimer = null;
-    _resendSeconds = 0;
-  }
-
-  @override
-  void dispose() {
-    _clearTimer();
-    super.dispose();
+    _loading = false;
+    notifyListeners();
+    return false;
   }
 }

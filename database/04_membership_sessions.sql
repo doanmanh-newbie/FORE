@@ -377,7 +377,6 @@ declare
   v_pending_invites integer := 0;
 begin
   if v_uid is null then raise exception 'NOT_LOGGED_IN'; end if;
-  if not validate_staff_device() then raise exception 'STAFF_DEVICE_UNTRUSTED'; end if;
 
   -- Client có thể gửi lần chọn gần nhất, nhưng chỉ membership đang hoạt động mới được dùng.
   if p_preferred_shop is not null and exists (
@@ -619,69 +618,21 @@ language sql stable security definer set search_path = public, auth as $$
   )
 $$;
 
+-- Nhân viên đăng nhập bằng mật khẩu, không còn OTP hay thiết bị tin cậy: chỉ cần đang đăng nhập.
+-- (Bảng staff_trusted_devices không còn dùng; giữ lại để không xóa dữ liệu trên DB đã cài.)
 create or replace function staff_device_is_trusted() returns boolean
-language sql stable security definer set search_path = public, auth, extensions as $$
-  select case
-    when auth.uid() is null then false
-    when not _auth_user_is_staff(auth.uid()) then true
-    else exists (
-      select 1
-        from staff_trusted_devices d
-       where d.user_id = auth.uid()
-         and d.session_id = nullif(auth.jwt()->>'session_id', '')::uuid
-         and d.secret_hash = extensions.digest(
-           coalesce(nullif(current_setting('request.headers', true), '')::jsonb
-             ->> 'x-fore-device-token', ''), 'sha256')
-         and d.expires_at > now()
-    )
-  end
-$$;
-
-create or replace function validate_staff_device() returns boolean
 language sql stable security definer set search_path = public, auth as $$
-  select staff_device_is_trusted()
+  select auth.uid() is not null
 $$;
 
-create or replace function register_staff_device(p_secret text) returns timestamptz
-language plpgsql security definer set search_path = public, auth, extensions as $$
-declare
-  v_uid uuid := auth.uid();
-  v_session uuid;
-  v_expires timestamptz := now() + interval '60 days';
-begin
-  if v_uid is null then raise exception 'NOT_LOGGED_IN'; end if;
-  if not _auth_user_is_staff(v_uid) then raise exception 'NOT_STAFF'; end if;
-  if p_secret is null or p_secret !~ '^[A-Za-z0-9_-]{40,100}$' then
-    raise exception 'DEVICE_TOKEN_INVALID';
-  end if;
-  if not exists (
-    select 1 from jsonb_array_elements(coalesce(auth.jwt()->'amr', '[]'::jsonb)) method
-     where method->>'method' in ('otp', 'signup')
-  ) then raise exception 'OTP_REQUIRED'; end if;
-  begin
-    v_session := nullif(auth.jwt()->>'session_id', '')::uuid;
-  exception when invalid_text_representation then
-    raise exception 'SESSION_INVALID';
-  end;
-  if v_session is null then raise exception 'SESSION_INVALID'; end if;
-
-  insert into staff_trusted_devices (user_id, session_id, secret_hash, expires_at)
-  values (v_uid, v_session, extensions.digest(p_secret, 'sha256'), v_expires)
-  on conflict (user_id, session_id) do update
-    set secret_hash = excluded.secret_hash,
-        created_at = now(),
-        expires_at = excluded.expires_at;
-  return v_expires;
-end $$;
-
--- Chỉ email/số đã được Supabase Auth xác nhận mới được dùng để nhận lời mời.
+-- Liên hệ dùng để khớp lời mời. Nhân viên không còn xác minh OTP: email do Supabase tự xác nhận khi
+-- đăng ký, số điện thoại nằm trong email giả p<số>@phone.fore-staff.app (xem _auth_phone).
 create or replace function _my_verified_contacts(out phone text, out email text)
 language plpgsql stable security definer set search_path = public, auth as $$
 begin
   if auth.uid() is null then raise exception 'NOT_LOGGED_IN'; end if;
-  if not staff_device_is_trusted() then raise exception 'STAFF_DEVICE_UNTRUSTED'; end if;
-  select case when u.phone_confirmed_at is not null then normalize_phone(u.phone) end,
-         case when u.email_confirmed_at is not null then lower(btrim(u.email)) end
+  select _auth_phone(u.phone::text, u.phone_confirmed_at, u.email::text),
+         _auth_email(u.email::text, u.email_confirmed_at)
     into phone, email
     from auth.users u
    where u.id = auth.uid();
@@ -699,6 +650,4 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 revoke all on function _auth_user_is_staff(uuid), staff_device_is_trusted() from public, anon, authenticated;
-revoke all on function validate_staff_device(), register_staff_device(text) from public, anon;
-grant execute on function validate_staff_device(), register_staff_device(text) to authenticated;
 

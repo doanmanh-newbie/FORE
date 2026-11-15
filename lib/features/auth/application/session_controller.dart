@@ -201,14 +201,6 @@ class SessionController extends ChangeNotifier {
     _knownUserId = user?.id;
     if (user == null) return const SessionSignedOut();
 
-    // Validate employee device proof before any RPC can return tenant data.
-    if (user.accountKind != AccountKind.owner &&
-        !await _repository.validateStaffDeviceTrust()) {
-      await _repository.signOut();
-      _knownUserId = null;
-      return const SessionSignedOut();
-    }
-
     final preferredShopId = await _repository.lastActiveShopId();
     final context = await _repository.fetchSessionContext(
       preferredShopId: preferredShopId,

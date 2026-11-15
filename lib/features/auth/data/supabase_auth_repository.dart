@@ -11,20 +11,13 @@ import '../../../core/errors/network_errors.dart';
 import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
-import 'staff_device_trust_store.dart';
 
 /// Cài đặt [AuthRepository] bằng Supabase. Là nơi duy nhất trong tính năng
 /// đăng nhập biết về Supabase và đổi lỗi của nó thành [AppFailure].
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(
-    this._client, {
-    StaffDeviceTrustStore? deviceTrustStore,
-  }) : _deviceTrustStore = deviceTrustStore ?? StaffDeviceTrustStore();
+  SupabaseAuthRepository(this._client);
 
   final SupabaseClient _client;
-  final StaffDeviceTrustStore _deviceTrustStore;
-
-  static const _deviceHeader = 'x-fore-device-token';
 
   @override
   AuthUser? get currentUser {
@@ -77,125 +70,52 @@ class SupabaseAuthRepository implements AuthRepository {
       });
 
   @override
-  Future<void> requestStaffOtp(
-    StaffContact contact, {
-    required bool createUser,
-    String? fullName,
-    DateTime? birthDate,
-  }) =>
+  Future<AuthUser> signInStaff(StaffContact contact, String password) =>
       _guard(() async {
-        try {
-          await _client.auth.signInWithOtp(
-            email: contact.email,
-            phone: contact.phone,
-            shouldCreateUser: createUser,
-            data: createUser
-                ? {
-                    'account_kind': 'staff',
-                    'full_name': fullName?.trim() ?? '',
-                    if (birthDate != null) 'birth_date': _dateOnly(birthDate),
-                  }
-                : null,
-          );
-        } on AuthException catch (e) {
-          if (createUser && _isAlreadyRegistered(e)) {
-            throw const StaffAlreadyExistsFailure();
-          }
-          if (!createUser &&
-              (_isInvalidLogin(e) || e.code == 'user_not_found')) {
-            // Supabase may distinguish missing accounts in its response; do not expose that fact.
-            throw const OtpSendFailure();
-          }
-          rethrow;
-        }
-      });
-
-  @override
-  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token) =>
-      _guard(() async {
-        final response = await _client.auth.verifyOTP(
-          email: contact.email,
-          phone: contact.phone,
-          token: token,
-          type: contact.kind == ContactKind.email ? OtpType.email : OtpType.sms,
-        );
-        final user = response.user;
-        if (user == null || response.session == null) {
-          throw const SessionExpiredFailure();
-        }
+        final res = await _client.auth
+            .signInWithPassword(email: contact.loginEmail, password: password);
+        final user = res.user;
+        if (user == null) throw const InvalidCredentialsFailure();
         final appUser = _toAuthUser(user);
+        // Chủ quán đăng nhập ở tab Chủ quán, không qua đường nhân viên.
         if (appUser.accountKind == AccountKind.owner) {
           await _client.auth.signOut();
           throw const InvalidCredentialsFailure();
         }
-
-        try {
-          final secret = await _deviceTrustStore.createSecret(user.id);
-          _setDeviceHeader(secret);
-          try {
-            await _client.rpc(
-              'register_staff_device',
-              params: {'p_secret': secret},
-            );
-          } on PostgrestException catch (e) {
-            if (e.code == 'PGRST202') {
-              throw const MissingRpcFailure('register_staff_device');
-            }
-            rethrow;
-          }
-          return appUser;
-        } catch (_) {
-          _removeDeviceHeader();
-          try {
-            await _deviceTrustStore.clearSecret(user.id);
-          } finally {
-            await _client.auth.signOut();
-          }
-          rethrow;
-        }
+        return appUser;
       });
 
   @override
-  Future<bool> validateStaffDeviceTrust() => _guard(() async {
-        final user = _client.auth.currentUser;
-        if (user == null) return false;
-        final kind = _toAuthUser(user).accountKind;
-        if (kind == AccountKind.owner) return true;
-
-        final secret = await _deviceTrustStore.readSecret(user.id);
-        if (secret == null || secret.isEmpty) {
-          _removeDeviceHeader();
-          if (kind == AccountKind.staff) return false;
-        } else {
-          _setDeviceHeader(secret);
+  Future<AuthUser> signUpStaff(
+    StaffContact contact,
+    String password, {
+    required String fullName,
+    required DateTime birthDate,
+  }) =>
+      _guard(() async {
+        final res = await _client.auth.signUp(
+          email: contact.loginEmail,
+          password: password,
+          data: {
+            'account_kind': 'staff',
+            'full_name': fullName.trim(),
+            'birth_date': _dateOnly(birthDate),
+          },
+        );
+        // Email đã đăng ký: Supabase trả user không có identities (không báo lỗi).
+        if (res.user?.identities?.isEmpty ?? false) {
+          throw const StaffAlreadyExistsFailure();
         }
-        try {
-          final result = await _client.rpc('validate_staff_device');
-          return result == true;
-        } on PostgrestException catch (e) {
-          if (e.code == 'PGRST202') {
-            throw const MissingRpcFailure('validate_staff_device');
-          }
-          rethrow;
+        final user = res.user;
+        if (user == null || res.session == null) {
+          // Dự án đang bắt xác nhận email nên chưa có phiên: báo rõ thay vì treo.
+          throw const EmailConfirmRequiredFailure();
         }
+        return _toAuthUser(user);
       });
 
   @override
-  Future<void> signOut() => _guard(() async {
-        final userId = _client.auth.currentUser?.id;
-        _removeDeviceHeader();
-        await _client.auth.signOut();
-        if (userId != null) await _deviceTrustStore.clearSecret(userId);
-      });
-
-  void _setDeviceHeader(String secret) {
-    _client.headers = {..._client.headers, _deviceHeader: secret};
-  }
-
-  void _removeDeviceHeader() {
-    final headers = {..._client.headers}..remove(_deviceHeader);
-    _client.headers = headers;
-  }
+  Future<void> signOut() => _guard(() => _client.auth.signOut());
 
   @override
   Future<void> sendPasswordReset(String email) =>
@@ -277,15 +197,6 @@ class SupabaseAuthRepository implements AuthRepository {
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
 
-  static bool _isInvalidLogin(AuthException e) =>
-      e.code == 'invalid_credentials' ||
-      e.message.toLowerCase().contains('invalid login credentials');
-
-  static bool _isAlreadyRegistered(AuthException e) =>
-      e.code == 'user_already_exists' ||
-      e.code == 'email_exists' ||
-      e.message.toLowerCase().contains('already registered');
-
   /// Bọc mọi lệnh gọi: lỗi của Supabase/mạng đổi thành [AppFailure].
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
@@ -330,24 +241,14 @@ class SupabaseAuthRepository implements AuthRepository {
       return const EmailAlreadyRegisteredFailure();
     }
     if (code == 'weak_password') return const WeakPasswordFailure();
-    if (code == 'otp_expired' ||
-        code == 'otp_disabled' ||
-        message.contains('token has expired') ||
-        message.contains('invalid') && message.contains('token')) {
-      return const InvalidOtpFailure();
-    }
-    if (code == 'over_sms_send_rate_limit' ||
+    if (code == 'over_request_rate_limit' ||
         code == 'over_email_send_rate_limit' ||
-        code == 'over_request_rate_limit' ||
         message.contains('rate limit') ||
         message.contains('for security purposes')) {
       return const TooManyRequestsFailure();
     }
-    if (code == 'sms_send_failed' ||
-        code == 'phone_provider_disabled' ||
-        code == 'validation_failed' ||
-        code == 'unexpected_failure' && message.contains('sms')) {
-      return const OtpSendFailure();
+    if (code == 'email_address_invalid' || code == 'validation_failed') {
+      return const ContactInvalidFailure();
     }
     if (code == 'email_not_confirmed') return const EmailNotConfirmedFailure();
     // Ghi nguyên nhân thật ra log (terminal của `flutter run` hoặc Console của trình duyệt).

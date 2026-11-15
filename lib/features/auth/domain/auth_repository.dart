@@ -35,20 +35,16 @@ abstract interface class AuthRepository {
   Future<String?> lastActiveShopId();
   Future<void> rememberShop(String shopId);
 
-  /// Gửi OTP tới email/số điện thoại thật; không tự động đăng nhập.
-  /// Khi [createUser] là false, không tạo tài khoản mới.
-  Future<void> requestStaffOtp(
-    StaffContact contact, {
-    required bool createUser,
-    String? fullName,
-    DateTime? birthDate,
+  /// Đăng nhập nhân viên bằng số điện thoại hoặc email cùng mật khẩu (không còn OTP).
+  Future<AuthUser> signInStaff(StaffContact contact, String password);
+
+  /// Tạo tài khoản nhân viên và đăng nhập luôn (Supabase tắt xác nhận email).
+  Future<AuthUser> signUpStaff(
+    StaffContact contact,
+    String password, {
+    required String fullName,
+    required DateTime birthDate,
   });
-
-  /// Xác minh OTP, đăng nhập và ghi nhận thiết bị hiện tại làm thiết bị tin cậy.
-  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token);
-
-  /// Xác minh bằng máy chủ rằng phiên nhân viên còn thiết bị tin cậy hợp lệ.
-  Future<bool> validateStaffDeviceTrust();
 
   Future<void> signOut();
 

@@ -20,11 +20,10 @@ extension FailureMessage on AppFailure {
         InviteExpiredFailure() =>
           'Lời mời đã hết hạn. Nhờ chủ quán gửi lời mời mới.',
         OwnerOnlyFailure() => 'Chỉ chủ quán làm được việc này.',
-        InvalidOtpFailure() => 'Mã chưa đúng hoặc đã hết hạn.',
         TooManyRequestsFailure() =>
           'Bạn thử quá nhiều lần. Đợi một chút rồi thử lại.',
-        OtpSendFailure() =>
-          'Không gửi được mã xác nhận. Kiểm tra số/email rồi thử lại.',
+        ContactInvalidFailure() =>
+          'Số điện thoại hoặc email này không dùng được. Hãy thử thông tin khác.',
         StaffAlreadyExistsFailure() =>
           'Đã có tài khoản với thông tin này. Hãy quay lại và đăng nhập.',
         EmailConfirmRequiredFailure() =>
@@ -81,8 +80,6 @@ String _missingRpcMessage(String rpcName) {
     'decline_invite',
     'cancel_invite',
     'owner_sales_trend',
-    'register_staff_device',
-    'validate_staff_device',
   }.contains(rpcName)) {
     return 'Database chưa có hàm $rpcName. Hãy cập nhật database/04_membership_sessions.sql trên Supabase.';
   }
@@ -116,10 +113,7 @@ String _missingRpcMessage(String rpcName) {
 const databaseMessages = <String, String>{
   'NOT_LOGGED_IN': 'Bạn chưa đăng nhập. Hãy đăng nhập lại.',
   'NOT_STAFF': 'Tài khoản này chưa được thêm vào quán.',
-  'STAFF_DEVICE_UNTRUSTED': 'Thiết bị này chưa được xác minh. Hãy đăng nhập lại bằng mã OTP.',
-  'DEVICE_TOKEN_INVALID': 'Không thể xác minh thiết bị này. Hãy gửi lại mã OTP.',
-  'OTP_REQUIRED': 'Hãy xác minh OTP trước khi ghi nhớ thiết bị.',
-  'SESSION_INVALID': 'Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại bằng OTP.',
+  'SESSION_INVALID': 'Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại.',
   'FILTER_INVALID': 'Bộ lọc không hợp lệ. Hãy tải lại trang và thử lại.',
   'OWNER_ONLY': 'Chỉ chủ quán mới làm được việc này.',
   'NO_OPEN_SHIFT': 'Chưa có ca đang mở. Hãy mở ca trước.',

@@ -33,21 +33,6 @@ void main() {
     expect(c.state, isA<SessionSignedOut>());
   });
 
-  test('nhân viên mất thiết bị tin cậy thì bị đăng xuất trước khi tải dữ liệu',
-      () async {
-    repo.user = const AuthUser(
-        id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);
-    repo.staffDeviceTrustValid = false;
-    final c = build();
-
-    await c.restore();
-
-    expect(repo.signOutCalls, 1);
-    expect(repo.fetchSessionContextCalls, 0);
-    expect(repo.user, isNull);
-    expect(c.state, isA<SessionSignedOut>());
-  });
-
   test('đăng nhập và có membership đang hoạt động -> Ready', () async {
     repo.user = const AuthUser(
         id: 'u1', email: 'an@quan.vn', accountKind: AccountKind.staff);

@@ -70,19 +70,14 @@ class OwnerOnlyFailure extends AppFailure {
   const OwnerOnlyFailure() : super('OWNER_ONLY');
 }
 
-/// Mã xác nhận (OTP) sai hoặc hết hạn.
-class InvalidOtpFailure extends AppFailure {
-  const InvalidOtpFailure() : super('OTP_INVALID');
-}
-
-/// Gửi mã quá nhiều lần trong thời gian ngắn.
+/// Thử quá nhiều lần trong thời gian ngắn.
 class TooManyRequestsFailure extends AppFailure {
   const TooManyRequestsFailure() : super('TOO_MANY_REQUESTS');
 }
 
-/// Không gửi được mã xác nhận (chưa bật nhà cung cấp SMS, số không nhận được...).
-class OtpSendFailure extends AppFailure {
-  const OtpSendFailure() : super('OTP_SEND_FAILED');
+/// Supabase từ chối số/email này (không đúng định dạng hoặc tên miền không nhận thư).
+class ContactInvalidFailure extends AppFailure {
+  const ContactInvalidFailure() : super('CONTACT_INVALID');
 }
 
 /// Tạo tài khoản nhân viên: số/email này đã có tài khoản.

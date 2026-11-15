@@ -13,7 +13,6 @@ class FakeAuthRepository implements AuthRepository {
   SessionContext? sessionContext;
   String? rememberedShopId;
   AppFailure? failure;
-  bool staffDeviceTrustValid = true;
 
   /// Lỗi riêng cho đăng xuất (ví dụ mất mạng lúc đăng xuất).
   AppFailure? signOutFailure;
@@ -71,59 +70,54 @@ class FakeAuthRepository implements AuthRepository {
     return false;
   }
 
-  /// Tài khoản nhân viên đã tạo, theo `StaffContact.value`.
-  final staffAccounts = <String>{};
-  int staffOtpRequestCount = 0;
-  int staffOtpVerifyCount = 0;
-  bool? lastStaffOtpCreateUser;
-  String? lastStaffOtpFullName;
-  String? lastStaffOtpContact;
-  String? lastStaffOtpBirthDate;
+  /// Tài khoản nhân viên đã tạo (`StaffContact.value` -> mật khẩu).
+  final staffAccounts = <String, String>{};
+  int staffSignUpCalls = 0;
+  String? lastStaffFullName;
+  String? lastStaffBirthDate;
 
   @override
-  Future<void> requestStaffOtp(
-    StaffContact contact, {
-    required bool createUser,
-    String? fullName,
-    DateTime? birthDate,
-  }) async {
-    staffOtpRequestCount++;
-    lastStaffOtpCreateUser = createUser;
-    lastStaffOtpFullName = fullName;
-    lastStaffOtpContact = contact.value;
-    lastStaffOtpBirthDate = birthDate == null
-        ? null
-        : '${birthDate.year.toString().padLeft(4, '0')}-'
-            '${birthDate.month.toString().padLeft(2, '0')}-'
-            '${birthDate.day.toString().padLeft(2, '0')}';
+  Future<AuthUser> signInStaff(StaffContact contact, String password) async {
     await _wait();
     if (failure != null) throw failure!;
-    if (createUser && staffAccounts.contains(contact.value)) {
-      throw const StaffAlreadyExistsFailure();
-    }
-    if (createUser) staffAccounts.add(contact.value);
-  }
-
-  @override
-  Future<AuthUser> verifyStaffOtp(StaffContact contact, String token) async {
-    staffOtpVerifyCount++;
-    await _wait();
-    if (failure != null) throw failure!;
-    if (token != '123456' || !staffAccounts.contains(contact.value)) {
-      throw const InvalidOtpFailure();
+    if (staffAccounts[contact.value] != password) {
+      throw const InvalidCredentialsFailure();
     }
     return user = AuthUser(
       id: 'staff-${contact.value}',
       email: contact.email ?? '',
       phone: contact.phone?.substring(1) ?? '',
-      displayName: lastStaffOtpFullName ?? '',
-      birthDate: lastStaffOtpBirthDate ?? '',
       accountKind: AccountKind.staff,
     );
   }
 
   @override
-  Future<bool> validateStaffDeviceTrust() async => staffDeviceTrustValid;
+  Future<AuthUser> signUpStaff(
+    StaffContact contact,
+    String password, {
+    required String fullName,
+    required DateTime birthDate,
+  }) async {
+    staffSignUpCalls++;
+    lastStaffFullName = fullName;
+    lastStaffBirthDate = '${birthDate.year.toString().padLeft(4, '0')}-'
+        '${birthDate.month.toString().padLeft(2, '0')}-'
+        '${birthDate.day.toString().padLeft(2, '0')}';
+    await _wait();
+    if (failure != null) throw failure!;
+    if (staffAccounts.containsKey(contact.value)) {
+      throw const StaffAlreadyExistsFailure();
+    }
+    staffAccounts[contact.value] = password;
+    return user = AuthUser(
+      id: 'staff-${contact.value}',
+      email: contact.email ?? '',
+      phone: contact.phone?.substring(1) ?? '',
+      displayName: fullName,
+      birthDate: lastStaffBirthDate!,
+      accountKind: AccountKind.staff,
+    );
+  }
 
   @override
   Future<void> signOut() async {

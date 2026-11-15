@@ -7,6 +7,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/design/spacing.dart';
 import '../../../core/widgets/brand_text_field.dart';
 import '../../../core/widgets/loading_button.dart';
@@ -33,7 +34,8 @@ class StaffRegisterScreen extends StatefulWidget {
 class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
   final _contact = TextEditingController();
   final _name = TextEditingController();
-  final _otp = TextEditingController();
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
   DateTime? _birthDate;
 
   /// Tài khoản đã tạo nhưng chưa tải được hồ sơ (mất mạng...): nút chính đổi thành "Thử lại".
@@ -44,22 +46,21 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
   void dispose() {
     _contact.dispose();
     _name.dispose();
-    _otp.dispose();
+    _password.dispose();
+    _confirm.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (_needsRetry) return _enterApp();
-    final controller = context.read<StaffRegisterController>();
-    final verifying = controller.otpRequested;
-    final ok = verifying
-        ? await controller.verifyOtp(_otp.text)
-        : await controller.submit(
-            contactText: _contact.text,
-            fullName: _name.text,
-            birthDate: _birthDate,
-          );
-    if (ok && verifying && mounted) await _enterApp();
+    final ok = await context.read<StaffRegisterController>().submit(
+          contactText: _contact.text,
+          fullName: _name.text,
+          birthDate: _birthDate,
+          password: _password.text,
+          confirm: _confirm.text,
+        );
+    if (ok && mounted) await _enterApp();
   }
 
   /// Đã có phiên: tải hồ sơ rồi đi tới màn của nhân viên.
@@ -114,7 +115,7 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
       top: AuthStepHeader(
         title: 'Tạo tài khoản mới',
         steps: _staffSteps,
-        current: c.otpRequested ? 1 : 0,
+        current: 0,
         onBack: busy ? null : () => Navigator.of(context).maybePop(),
       ),
       child: Column(
@@ -122,8 +123,7 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
         children: [
           PillSegmented<bool>(
             value: false,
-            // Đã gửi mã thì không đổi vai trò giữa chừng.
-            enabled: !busy && !c.otpRequested,
+            enabled: !busy,
             items: const [(true, 'Chủ quán'), (false, 'Nhân viên')],
             onChanged: (owner) {
               if (owner) {
@@ -134,89 +134,84 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
           ),
           const SizedBox(height: AppGaps.md),
           Text(
-            c.otpRequested
-                ? 'Mã xác nhận đã được gửi. Nhập mã 6 chữ số để hoàn tất tạo tài khoản.'
-                : 'Chỉ cần số điện thoại hoặc email. Chủ quán mời bạn bằng đúng số/email này, '
-                    'lời mời sẽ hiện trong hộp thư của bạn.',
+            'Chỉ cần số điện thoại hoặc email và một mật khẩu. Chủ quán mời bạn bằng đúng '
+            'số/email này, lời mời sẽ hiện trong hộp thư của bạn.',
             style: AppTextStyles.caption.copyWith(height: 1.5),
           ),
           const SizedBox(height: AppGaps.xl),
-          if (!c.otpRequested) ...[
-            ContactKindToggle(
-              kind: c.kind,
-              onChanged: c.setKind,
-              enabled: !busy,
-            ),
-            const SizedBox(height: AppGaps.md),
-            BrandTextField(
-              label: phone ? 'Số điện thoại' : 'Email',
-              hint: phone
-                  ? 'Số điện thoại (vd 0901 234 567)'
-                  : 'Địa chỉ email của bạn',
-              leadingAsset: phone ? null : AuthAssets.mail,
-              leadingIcon: phone ? Icons.phone_outlined : null,
-              controller: _contact,
-              errorText: c.contactError,
-              enabled: !busy,
-              onChanged: (_) => c.clearContactError(),
-              keyboardType:
-                  phone ? TextInputType.phone : TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              autofillHints: [
-                phone ? AutofillHints.telephoneNumber : AutofillHints.email,
-              ],
-            ),
-            const SizedBox(height: AppGaps.md),
-            BrandTextField(
-              label: 'Tên hiển thị',
-              hint: 'Tên hiển thị (vd: Lan)',
-              leadingAsset: AuthAssets.person,
-              controller: _name,
-              errorText: c.nameError,
-              enabled: !busy,
-              onChanged: (_) => c.clearNameError(),
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.name],
-            ),
-            const SizedBox(height: AppGaps.md),
-            _BirthDateField(
-              value: _birthDate,
-              errorText: c.birthDateError,
-              onTap: busy ? null : _pickBirthDate,
-            ),
-          ] else ...[
-            BrandTextField(
-              label: 'Mã xác nhận',
-              hint: 'Mã 6 chữ số',
-              leadingAsset: AuthAssets.lock,
-              controller: _otp,
-              errorText: c.otpError,
-              enabled: !busy,
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [AutofillHints.oneTimeCode],
-              onSubmitted: _submit,
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: c.canResend ? c.resendOtp : null,
-                child: Text(c.canResend
-                    ? 'Gửi lại mã'
-                    : 'Gửi lại mã sau ${c.resendSeconds} giây'),
-              ),
-            ),
-          ],
+          ContactKindToggle(
+            kind: c.kind,
+            onChanged: c.setKind,
+            enabled: !busy,
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: phone ? 'Số điện thoại' : 'Email',
+            hint: phone
+                ? 'Số điện thoại (vd 0901 234 567)'
+                : 'Địa chỉ email của bạn',
+            leadingAsset: phone ? null : AuthAssets.mail,
+            leadingIcon: phone ? Icons.phone_outlined : null,
+            controller: _contact,
+            errorText: c.contactError,
+            enabled: !busy,
+            onChanged: (_) => c.clearContactError(),
+            keyboardType:
+                phone ? TextInputType.phone : TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: [
+              phone ? AutofillHints.telephoneNumber : AutofillHints.email,
+            ],
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Tên hiển thị',
+            hint: 'Tên hiển thị (vd: Lan)',
+            leadingAsset: AuthAssets.person,
+            controller: _name,
+            errorText: c.nameError,
+            enabled: !busy,
+            onChanged: (_) => c.clearNameError(),
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.name],
+          ),
+          const SizedBox(height: AppGaps.md),
+          _BirthDateField(
+            value: _birthDate,
+            errorText: c.birthDateError,
+            onTap: busy ? null : _pickBirthDate,
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Mật khẩu',
+            hint: 'Mật khẩu (ít nhất ${AppConfig.minPasswordLength} ký tự)',
+            leadingAsset: AuthAssets.lock,
+            controller: _password,
+            errorText: c.passwordError,
+            enabled: !busy,
+            obscure: true,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.newPassword],
+          ),
+          const SizedBox(height: AppGaps.md),
+          BrandTextField(
+            label: 'Nhập lại mật khẩu',
+            hint: 'Nhập lại mật khẩu',
+            leadingAsset: AuthAssets.lock,
+            controller: _confirm,
+            errorText: c.confirmError,
+            enabled: !busy,
+            obscure: true,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.newPassword],
+            onSubmitted: _submit,
+          ),
           if (c.formError != null || _sessionError != null)
             AuthFormError(c.formError ?? _sessionError!),
           const SizedBox(height: AppGaps.xl),
           LoadingButton(
-            label: _needsRetry
-                ? 'Thử lại'
-                : c.otpRequested
-                    ? 'Xác nhận và tạo tài khoản'
-                    : 'Gửi mã xác nhận',
-            loadingLabel: c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
+            label: _needsRetry ? 'Thử lại' : 'Tạo tài khoản',
+            loadingLabel: 'Đang tạo tài khoản',
             loading: busy,
             onPressed: _submit,
             height: AppSizes.pillButtonHeight,
@@ -234,10 +229,10 @@ class _StaffRegisterScreenState extends State<StaffRegisterScreen> {
   }
 }
 
-/// Bước đăng ký của nhân viên: chọn vai trò + điền thông tin, xác minh mã, vào quán.
+/// Bước đăng ký của nhân viên: chọn vai trò + điền thông tin, đặt mật khẩu, vào quán.
 const _staffSteps = [
   AuthStep('Vai trò', AuthAssets.stepRole),
-  AuthStep('Xác minh', AuthAssets.stepSecurity),
+  AuthStep('Mật khẩu', AuthAssets.stepSecurity),
   AuthStep('Vào quán', AuthAssets.stepStore),
 ];
 

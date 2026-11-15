@@ -17,6 +17,13 @@ class StaffContact {
   String? get phone => kind == ContactKind.phone ? value : null;
   String? get email => kind == ContactKind.email ? value : null;
 
+  /// Email dùng để đăng nhập Supabase: email thật, hoặc email giả `p<số>@phone.fore-staff.app`
+  /// đại diện cho số điện thoại (server nhận ra dạng này khi khớp lời mời).
+  String get loginEmail =>
+      kind == ContactKind.email ? value : 'p${value.replaceAll('+', '')}@$phoneLoginDomain';
+
+  static const phoneLoginDomain = 'phone.fore-staff.app';
+
   /// Dạng dễ đọc để hiện cho người dùng (`0901 234 567` hoặc email).
   String get pretty => kind == ContactKind.phone ? Phone.pretty(value) : value;
 

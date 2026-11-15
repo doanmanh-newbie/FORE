@@ -11,9 +11,8 @@ import '../domain/staff_contact.dart';
 import 'contact_kind_toggle.dart';
 import 'widgets/auth_ui.dart';
 
-/// Đăng nhập của nhân viên: chọn số điện thoại hoặc email, nhập, bấm "Đăng nhập".
-/// Fore gửi mã xác nhận (OTP) rồi nhập mã. Chưa có tài khoản thì bấm "Tạo tài khoản".
-/// Đăng nhập xong gọi `onSignedIn` để màn cha chuyển trang.
+/// Đăng nhập của nhân viên: chọn số điện thoại hoặc email, nhập cùng mật khẩu, bấm "Đăng nhập".
+/// Chưa có tài khoản thì bấm "Tạo tài khoản". Đăng nhập xong gọi `onSignedIn` để màn cha chuyển trang.
 class StaffLoginPanel extends StatefulWidget {
   const StaffLoginPanel({super.key, required this.onSignedIn});
 
@@ -25,22 +24,20 @@ class StaffLoginPanel extends StatefulWidget {
 
 class _StaffLoginPanelState extends State<StaffLoginPanel> {
   final _contact = TextEditingController();
-  final _otp = TextEditingController();
+  final _password = TextEditingController();
 
   @override
   void dispose() {
     _contact.dispose();
-    _otp.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final controller = context.read<StaffLoginController>();
-    final verifying = controller.otpRequested;
-    final ok = verifying
-        ? await controller.verifyOtp(_otp.text)
-        : await controller.submit(_contact.text);
-    if (ok && verifying) await widget.onSignedIn();
+    final ok = await context
+        .read<StaffLoginController>()
+        .submit(_contact.text, _password.text);
+    if (ok) await widget.onSignedIn();
   }
 
   @override
@@ -50,63 +47,42 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!c.otpRequested) ...[
-          ContactKindToggle(
-            kind: c.kind,
-            onChanged: c.setKind,
-            enabled: !c.loading,
-          ),
-          const SizedBox(height: AppGaps.lg),
-          BrandTextField(
-            label: phone ? 'Số điện thoại' : 'Email',
-            controller: _contact,
-            hint: phone ? '0901 234 567' : 'Địa chỉ email của bạn',
-            errorText: c.contactError,
-            enabled: !c.loading,
-            keyboardType:
-                phone ? TextInputType.phone : TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            autofillHints: [
-              phone ? AutofillHints.telephoneNumber : AutofillHints.email,
-            ],
-            onSubmitted: _submit,
-          ),
-          const SizedBox(height: AppGaps.sm),
-          Text(
-            'Fore sẽ gửi mã xác nhận để bảo vệ tài khoản nhân viên.',
-            style: AppTextStyles.caption.copyWith(height: 1.5),
-          ),
-        ] else ...[
-          Text(
-            'Nếu thông tin có tài khoản, mã xác nhận đã được gửi. Nhập mã 6 chữ số để tiếp tục.',
-            style: AppTextStyles.body,
-          ),
-          const SizedBox(height: AppGaps.lg),
-          BrandTextField(
-            label: 'Mã xác nhận',
-            controller: _otp,
-            hint: '000000',
-            errorText: c.otpError,
-            enabled: !c.loading,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            onSubmitted: _submit,
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: c.canResend ? c.resendOtp : null,
-              child: Text(c.canResend
-                  ? 'Gửi lại mã'
-                  : 'Gửi lại mã sau ${c.resendSeconds} giây'),
-            ),
-          ),
-        ],
+        ContactKindToggle(
+          kind: c.kind,
+          onChanged: c.setKind,
+          enabled: !c.loading,
+        ),
+        const SizedBox(height: AppGaps.lg),
+        BrandTextField(
+          label: phone ? 'Số điện thoại' : 'Email',
+          controller: _contact,
+          hint: phone ? '0901 234 567' : 'Địa chỉ email của bạn',
+          errorText: c.contactError,
+          enabled: !c.loading,
+          keyboardType:
+              phone ? TextInputType.phone : TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: [
+            phone ? AutofillHints.telephoneNumber : AutofillHints.email,
+          ],
+        ),
+        const SizedBox(height: AppGaps.md),
+        BrandTextField(
+          label: 'Mật khẩu',
+          controller: _password,
+          hint: 'Mật khẩu của bạn',
+          errorText: c.passwordError,
+          enabled: !c.loading,
+          obscure: true,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          onSubmitted: _submit,
+        ),
         if (c.formError != null) AuthFormError(c.formError!),
         const SizedBox(height: AppGaps.xl),
         LoadingButton(
-          label: c.otpRequested ? 'Xác nhận mã' : 'Gửi mã đăng nhập',
-          loadingLabel: c.otpRequested ? 'Đang xác nhận' : 'Đang gửi mã',
+          label: 'Đăng nhập',
+          loadingLabel: 'Đang đăng nhập',
           loading: c.loading,
           onPressed: _submit,
           height: AppSizes.pillButtonHeight,
@@ -116,7 +92,7 @@ class _StaffLoginPanelState extends State<StaffLoginPanel> {
         AuthPromptLink(
           prompt: 'Chưa có tài khoản? ',
           action: 'Tạo tài khoản',
-          onTap: c.loading || c.otpRequested
+          onTap: c.loading
               ? null
               : () => Navigator.of(context).pushNamed(AppRoutes.registerStaff),
         ),

@@ -41,11 +41,13 @@ void main() {
   });
 
   test('StaffRegisterController', () async {
-    final c = StaffRegisterController(repo, resendDelay: Duration.zero);
+    final c = StaffRegisterController(repo);
     final pending = c.submit(
       contactText: '0901234567',
       fullName: 'Lan',
       birthDate: DateTime(2001, 5, 20),
+      password: 'matkhau123',
+      confirm: 'matkhau123',
     );
     c.dispose();
     await expectLater(pending, completes);
