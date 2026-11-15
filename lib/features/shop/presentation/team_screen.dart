@@ -16,6 +16,7 @@ import '../../auth/application/session_controller.dart';
 import '../application/team_controller.dart';
 import '../domain/shop_models.dart';
 import 'invite_list.dart' show timeAgo;
+import 'shop_join_code_card.dart';
 import '../../../core/widgets/lazy_list_view.dart';
 
 /// Chủ quán: nhân viên của quán và nút "Thêm nhân viên" bằng số điện thoại.
@@ -199,6 +200,8 @@ class _TeamScreenState extends State<TeamScreen> {
                 },
               )
             else ...[
+              const ShopJoinCodeCard(),
+              const SizedBox(height: 16),
               if (c.inviteHistory.isNotEmpty) ...[
                 const _SectionTitle('Lời mời nhân viên'),
                 for (final p in c.inviteHistory)

@@ -33,7 +33,7 @@ void main() {
     );
 
     expect(find.text('Quyền vào quán đã thay đổi'), findsOneWidget);
-    expect(find.textContaining('+84901234567'), findsOneWidget);
+    expect(find.textContaining('0901 234 567'), findsOneWidget);
     expect(find.text('Kiểm tra lại'), findsOneWidget);
     expect(find.text('Đăng xuất'), findsOneWidget);
 

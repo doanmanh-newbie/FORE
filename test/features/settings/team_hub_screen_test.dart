@@ -3,12 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fore/features/settings/domain/settings_models.dart';
 import 'package:fore/features/settings/domain/settings_repository.dart';
 import 'package:fore/features/settings/presentation/team_screens.dart';
+import 'package:fore/features/shop/domain/shop_repository.dart';
 import 'package:provider/provider.dart';
 
 import '../../support/fake_settings_repository.dart';
+import '../../support/fake_shop_repository.dart';
 
 Widget _app(FakeSettingsRepository repo) => MultiProvider(
-      providers: [Provider<SettingsRepository>.value(value: repo)],
+      providers: [
+        Provider<SettingsRepository>.value(value: repo),
+        Provider<ShopRepository>.value(value: FakeShopRepository()),
+      ],
       child: const MaterialApp(home: TeamHubScreen()),
     );
 

@@ -84,4 +84,24 @@ class FakeShopRepository implements ShopRepository {
 
   @override
   Future<void> cancelInvite(String inviteId) async {}
+
+  /// Mã quán hiện tại; nhập đúng mã này thì "vào quán".
+  String joinCode = 'ABC234';
+  final joinedCodes = <String>[];
+
+  @override
+  Future<void> joinShopByCode(String code) async {
+    if (failure != null) throw failure!;
+    if (code.trim().toUpperCase() != joinCode) {
+      throw const DatabaseFailure('SHOP_CODE_INVALID');
+    }
+    joinedCodes.add(code);
+  }
+
+  @override
+  Future<String> shopJoinCode({bool regenerate = false}) async {
+    if (failure != null) throw failure!;
+    if (regenerate) joinCode = 'XYZ789';
+    return joinCode;
+  }
 }

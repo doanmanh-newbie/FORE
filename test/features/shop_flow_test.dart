@@ -189,9 +189,12 @@ void main() {
       _pendingInvite('expired-1', status: 'expired'),
     ];
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => TeamController(repository)..load(),
-        child: const MaterialApp(home: TeamScreen()),
+      Provider<ShopRepository>.value(
+        value: repository,
+        child: ChangeNotifierProvider(
+          create: (_) => TeamController(repository)..load(),
+          child: const MaterialApp(home: TeamScreen()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -207,9 +210,12 @@ void main() {
       (tester) async {
     repository.failure = const OwnerOnlyFailure();
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => TeamController(repository)..load(),
-        child: const MaterialApp(home: TeamScreen()),
+      Provider<ShopRepository>.value(
+        value: repository,
+        child: ChangeNotifierProvider(
+          create: (_) => TeamController(repository)..load(),
+          child: const MaterialApp(home: TeamScreen()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -254,6 +260,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<SessionController>.value(value: session),
+          Provider<ShopRepository>.value(value: repository),
           ChangeNotifierProvider(
               create: (_) => TeamController(repository)..load()),
         ],
@@ -341,15 +348,18 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        ChangeNotifierProvider(
-          create: (_) => TeamController(repository)..load(),
-          child: MaterialApp(
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(scale)),
-              child: child!,
+        Provider<ShopRepository>.value(
+          value: repository,
+          child: ChangeNotifierProvider(
+            create: (_) => TeamController(repository)..load(),
+            child: MaterialApp(
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(scale)),
+                child: child!,
+              ),
+              home: const TeamScreen(),
             ),
-            home: const TeamScreen(),
           ),
         ),
       );

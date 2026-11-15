@@ -113,6 +113,8 @@ String _missingRpcMessage(String rpcName) {
 const databaseMessages = <String, String>{
   'NOT_LOGGED_IN': 'Bạn chưa đăng nhập. Hãy đăng nhập lại.',
   'NOT_STAFF': 'Tài khoản này chưa được thêm vào quán.',
+  'SHOP_CODE_INVALID': 'Mã quán không đúng hoặc đã được đổi. Hỏi lại chủ quán.',
+  'MEMBERSHIP_REVOKED': 'Bạn đã được cho nghỉ ở quán này. Nhờ chủ quán thêm lại.',
   'SESSION_INVALID': 'Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại.',
   'FILTER_INVALID': 'Bộ lọc không hợp lệ. Hãy tải lại trang và thử lại.',
   'OWNER_ONLY': 'Chỉ chủ quán mới làm được việc này.',

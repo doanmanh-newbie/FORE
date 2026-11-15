@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
+import '../../../core/design/spacing.dart';
 import '../../../core/errors/failure_messages.dart';
-import '../../../core/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/fade_slide_in.dart';
-import '../../../core/widgets/pulse_dot.dart';
+import '../../../core/widgets/adaptive_nav.dart';
+import '../../../core/widgets/fore_card.dart';
+import '../../../core/widgets/notify.dart';
+import '../../../core/widgets/ops_icon.dart';
+import '../../../core/widgets/page_scaffold.dart';
 import '../../auth/application/session_controller.dart';
 import '../../auth/domain/auth_models.dart';
 import '../../shift/application/shift_controller.dart';
+import '../application/inbox_controller.dart';
 import 'invite_list.dart';
+import 'join_by_code_card.dart';
 
-/// Không gian nhân viên khi CHƯA thuộc quán nào: không có dữ liệu, chỉ có hộp thư.
-/// Khi chủ quán thêm số điện thoại/email của mình, lời mời hiện ở đây (tự làm mới 15 giây/lần);
-/// chấp nhận thì tải dữ liệu quán và vào Trang chủ.
-class EmptySpaceScreen extends StatelessWidget {
+/// Giao diện nhân viên khi CHƯA thuộc quán nào. Vào thẳng app (không chờ ở màn ngoài):
+///   Trang chủ: vào quán bằng mã, hoặc gửi số của mình để chủ quán mời.
+///   Hộp thư: thông báo lời mời từ chủ quán (tự làm mới, có số đếm trên thanh điều hướng).
+///   Thêm: tài khoản, đăng xuất, tạo quán (nếu thật ra là chủ quán).
+/// Vào được quán (bằng mã hoặc nhận lời mời) thì chuyển sang giao diện làm việc của quán.
+class EmptySpaceScreen extends StatefulWidget {
   const EmptySpaceScreen({super.key});
 
-  Future<void> _signOut(BuildContext context) async {
+  @override
+  State<EmptySpaceScreen> createState() => _EmptySpaceScreenState();
+}
+
+class _EmptySpaceScreenState extends State<EmptySpaceScreen> {
+  int _tab = 0;
+
+  Future<void> _signOut() async {
     final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final shift = context.read<ShiftController>();
     final failure = await context.read<SessionController>().signOut();
     if (failure != null) {
-      messenger.showSnackBar(SnackBar(content: Text(failure.userMessage)));
+      if (mounted) showNotice(context, failure.userMessage);
       return;
     }
     shift.reset();
@@ -35,138 +49,190 @@ class EmptySpaceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SessionController>().state;
-    final contact = state is SessionAwaitingInvite ? state.user.contact : '';
-    final name = state is SessionAwaitingInvite ? state.user.displayName : '';
+    final user = state is SessionAwaitingInvite ? state.user : null;
+    final maybeOwner = state is SessionAwaitingInvite &&
+        state.context.accountKind == AccountKind.unknown;
+    final inviteCount = context.watch<InboxController>().invites.length;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: InviteListView(
-                emptyText: 'Chưa có lời mời nào.',
-                header: _Hero(name: name, contact: contact),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Column(
-                children: [
-                  if (state is SessionAwaitingInvite &&
-                      state.context.accountKind == AccountKind.unknown)
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed(AppRoutes.createShop),
-                      icon: const Icon(Icons.storefront_outlined),
-                      label: const Text('Tôi là chủ quán — tạo quán của tôi'),
-                    ),
-                  TextButton(
-                    onPressed: () => _signOut(context),
-                    child: const Text('Đăng xuất'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    Widget icon(Widget child, {int badge = 0}) =>
+        badge == 0 ? child : Badge(label: Text('$badge'), child: child);
+
+    return AdaptiveNavScaffold(
+      selected: _tab,
+      onSelect: (i) => setState(() => _tab = i),
+      items: [
+        AdaptiveNavItem(
+          label: 'Trang chủ',
+          icon: ForeIcon(ForeIcons.home, size: 22, color: AppColors.brand),
         ),
-      ),
+        AdaptiveNavItem(
+          label: 'Hộp thư',
+          icon: icon(Icon(Icons.mail_outline_rounded, color: AppColors.brand),
+              badge: inviteCount),
+        ),
+        AdaptiveNavItem(
+          label: 'Thêm',
+          icon: Icon(Icons.more_horiz_rounded, color: AppColors.brand),
+        ),
+      ],
+      body: switch (_tab) {
+        0 => _HomeTab(
+            name: user?.displayName ?? '',
+            contact: user?.contact ?? '',
+            inviteCount: inviteCount,
+            onOpenInbox: () => setState(() => _tab = 1),
+          ),
+        1 => const _InboxTab(),
+        _ => _MoreTab(
+            name: user?.displayName ?? '',
+            contact: user?.contact ?? '',
+            maybeOwner: maybeOwner,
+            onSignOut: _signOut,
+          ),
+      },
     );
   }
 }
 
-class _Hero extends StatelessWidget {
-  const _Hero({required this.name, required this.contact});
+class _HomeTab extends StatelessWidget {
+  const _HomeTab({
+    required this.name,
+    required this.contact,
+    required this.inviteCount,
+    required this.onOpenInbox,
+  });
 
   final String name;
   final String contact;
+  final int inviteCount;
+  final VoidCallback onOpenInbox;
 
   @override
-  Widget build(BuildContext context) {
-    return FadeSlideIn(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            const _BreathingMail(),
-            const SizedBox(height: 20),
-            Text(
-              name.isEmpty ? 'Chào bạn!' : 'Chào $name!',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.screenTitle,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Bạn chưa thuộc quán nào, nên chưa có dữ liệu.\n'
-              'Nhờ chủ quán thêm ${contact.isEmpty ? 'tài khoản này' : contact} '
-              'vào quán. Lời mời sẽ hiện ngay ở đây, bạn chấp nhận là vào quán.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body,
-            ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+  Widget build(BuildContext context) => PageScaffold(
+        children: [
+          Text(name.isEmpty ? 'Chào bạn!' : 'Chào $name!',
+              style: AppTextStyles.display),
+          const SizedBox(height: 6),
+          Text('Bạn chưa thuộc quán nào. Vào quán bằng một trong hai cách:',
+              style: AppTextStyles.body),
+          const SizedBox(height: AppGaps.lg),
+          const JoinByCodeCard(),
+          const SizedBox(height: AppGaps.md),
+          ForeCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                PulseDot(color: AppColors.brandAccent, pulsing: true),
-                const SizedBox(width: 8),
-                Text('Đang chờ lời mời', style: AppTextStyles.caption),
+                Text('Hoặc nhờ chủ quán mời', style: AppTextStyles.title),
+                const SizedBox(height: 4),
+                Text(
+                  'Gửi số/email này cho chủ quán. Lời mời sẽ hiện trong Hộp thư.',
+                  style: AppTextStyles.caption,
+                ),
+                if (contact.isNotEmpty) ...[
+                  const SizedBox(height: AppGaps.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SelectableText(contact,
+                            style: AppTextStyles.headline),
+                      ),
+                      IconButton(
+                        tooltip: 'Sao chép',
+                        icon: const Icon(Icons.copy_rounded),
+                        onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: contact));
+                          if (context.mounted) {
+                            showNotice(context, 'Đã sao chép $contact');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: AppGaps.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: onOpenInbox,
+                    icon: const Icon(Icons.mail_outline_rounded),
+                    label: Text(inviteCount == 0
+                        ? 'Mở hộp thư'
+                        : 'Mở hộp thư ($inviteCount lời mời)'),
+                  ),
+                ),
               ],
+            ),
+          ),
+        ],
+      );
+}
+
+class _InboxTab extends StatelessWidget {
+  const _InboxTab();
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text('Hộp thư', style: AppTextStyles.display),
+            ),
+            const Expanded(
+              child: InviteListView(
+                emptyText:
+                    'Chưa có thông báo nào.\nKhi chủ quán mời bạn, lời mời hiện ở đây.',
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
 }
 
-/// Biểu tượng thư nhấp nhô nhẹ. Tắt hoạt ảnh thì đứng yên.
-class _BreathingMail extends StatefulWidget {
-  const _BreathingMail();
+class _MoreTab extends StatelessWidget {
+  const _MoreTab({
+    required this.name,
+    required this.contact,
+    required this.maybeOwner,
+    required this.onSignOut,
+  });
+
+  final String name;
+  final String contact;
+  final bool maybeOwner;
+  final Future<void> Function() onSignOut;
 
   @override
-  State<_BreathingMail> createState() => _BreathingMailState();
-}
-
-class _BreathingMailState extends State<_BreathingMail>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2400),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (Motion.reduced(context)) {
-      _c.stop();
-    } else if (!_c.isAnimating) {
-      _c.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (_, child) => Transform.translate(
-        offset: Offset(0, -6 * Curves.easeInOut.transform(_c.value)),
-        child: child,
-      ),
-      child: DecoratedBox(
-        decoration:
-            BoxDecoration(color: AppColors.tint, shape: BoxShape.circle),
-        child: SizedBox.square(
-          dimension: 104,
-          child: Icon(Icons.mark_email_unread_outlined,
-              size: 48, color: AppColors.brand),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => PageScaffold(
+        children: [
+          Text('Thêm', style: AppTextStyles.display),
+          const SizedBox(height: AppGaps.lg),
+          ForeCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name.isEmpty ? 'Tài khoản' : name,
+                    style: AppTextStyles.title),
+                if (contact.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text('Nhân viên · $contact', style: AppTextStyles.caption),
+                ],
+                const SizedBox(height: AppGaps.md),
+                OutlinedButton(
+                    onPressed: onSignOut, child: const Text('Đăng xuất')),
+              ],
+            ),
+          ),
+          if (maybeOwner) ...[
+            const SizedBox(height: AppGaps.md),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.createShop),
+              icon: const Icon(Icons.storefront_outlined),
+              label: const Text('Tôi là chủ quán — tạo quán của tôi'),
+            ),
+          ],
+        ],
+      );
 }

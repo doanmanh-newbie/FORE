@@ -112,6 +112,20 @@ class SupabaseShopRepository implements ShopRepository {
         await _client.rpc('cancel_invite', params: {'p_invite': inviteId});
       });
 
+  @override
+  Future<void> joinShopByCode(String code) => _guard(() async {
+        await _client.rpc('join_shop_by_code', params: {'p_code': code.trim()});
+      });
+
+  @override
+  Future<String> shopJoinCode({bool regenerate = false}) =>
+      _guard(() async {
+        final code = await _client
+            .rpc('shop_join_code', params: {'p_regenerate': regenerate});
+        if (code is! String) throw const FormatException('shop_join_code');
+        return code;
+      });
+
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();

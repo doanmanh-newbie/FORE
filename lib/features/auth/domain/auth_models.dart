@@ -1,5 +1,7 @@
+import '../../../core/phone.dart';
+
 /// Tài khoản đăng nhập (Supabase Auth): id, email và/hoặc số điện thoại, tên hiển thị.
-/// Chủ quán đăng nhập bằng email + mật khẩu; nhân viên xác minh email/số điện thoại bằng OTP.
+/// Chủ quán và nhân viên đều đăng nhập bằng mật khẩu (nhân viên dùng số điện thoại hoặc email).
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -21,8 +23,16 @@ class AuthUser {
   final String birthDate;
   final AccountKind accountKind;
 
-  /// Cái để hiện cho người dùng nhận ra tài khoản của mình.
-  String get contact => phone.isNotEmpty ? '+$phone' : email;
+  /// Cái để hiện cho người dùng nhận ra tài khoản của mình. Tài khoản đăng ký bằng số điện thoại
+  /// có email nội bộ `p<số>@phone.fore-staff.app`: hiện lại số (0901 234 567), không hiện email đó.
+  String get contact {
+    if (phone.isNotEmpty) return Phone.pretty('+$phone');
+    final m = _phoneLoginEmail.firstMatch(email);
+    return m == null ? email : Phone.pretty('+${m[1]}');
+  }
+
+  static final _phoneLoginEmail =
+      RegExp(r'^p([0-9]{8,15})@phone\.fore-staff\.app$');
 }
 
 enum StaffRole {

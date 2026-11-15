@@ -6721,3 +6721,82 @@ revoke all on function
   _perm_keys(), _perm_default(text, text), _seed_role_permissions(uuid), roles_seed_trg(), app_can(text), _require_perm(text),
   _can_manage_member(staff), invite_check_expiry(), invite_apply_role()
   from public, anon, authenticated;
+
+-- ======================================================================
+-- 9) Mã quán: chủ đưa mã cho nhân viên, nhân viên nhập mã là vào quán (không cần lời mời).
+-- ======================================================================
+alter table shops add column if not exists join_code text;
+create unique index if not exists shops_join_code_uq on shops (join_code) where join_code is not null;
+
+-- 6 ký tự dễ đọc, bỏ 0/O/1/I/L để khỏi đọc nhầm; lấy từ bộ sinh ngẫu nhiên an toàn.
+create or replace function _new_join_code() returns text
+language sql volatile set search_path = public, extensions as $$
+  select string_agg(substr(x.alphabet, 1 + get_byte(x.bytes, i) % 31, 1), '' order by i)
+    from (select 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'::text as alphabet,
+                 extensions.gen_random_bytes(6) as bytes) x,
+         generate_series(0, 5) as i
+$$;
+
+-- Chủ (hoặc người có quyền quản lý thành viên) xem mã quán; lần đầu thì tạo. Đổi mã làm mã cũ hết dùng được.
+create or replace function shop_join_code(p_regenerate boolean default false) returns text
+language plpgsql security definer set search_path = public as $$
+declare v_shop uuid; v_code text;
+begin
+  perform _require_perm('members.manage');
+  v_shop := app_shop_id();
+  select join_code into v_code from shops where id = v_shop for update;
+  if v_code is null or coalesce(p_regenerate, false) then
+    loop
+      v_code := _new_join_code();
+      begin
+        update shops set join_code = v_code where id = v_shop;
+        exit;
+      exception when unique_violation then
+        null;   -- trùng mã quán khác (rất hiếm): sinh lại
+      end;
+    end loop;
+    perform _audit('join_code_rotate', 'shops', v_shop);
+  end if;
+  return v_code;
+end $$;
+
+-- Nhân viên nhập mã quán: thành nhân viên của quán đó và chuyển sang quán đó.
+-- Người đã bị chủ gỡ khỏi quán không tự vào lại bằng mã được.
+create or replace function join_shop_by_code(p_code text) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_shop uuid;
+  v_staff uuid;
+  v_active boolean;
+  v_name text;
+  v_birth_date date;
+begin
+  if v_uid is null then raise exception 'NOT_LOGGED_IN'; end if;
+  select id into v_shop from shops where join_code = upper(btrim(coalesce(p_code, '')));
+  if v_shop is null then raise exception 'SHOP_CODE_INVALID'; end if;
+
+  select id, active into v_staff, v_active from staff where shop_id = v_shop and auth_user_id = v_uid;
+  if v_staff is not null and not v_active then raise exception 'MEMBERSHIP_REVOKED'; end if;
+  if v_staff is null then
+    v_name := coalesce(nullif(btrim(auth.jwt() -> 'user_metadata' ->> 'full_name'), ''), 'Nhân viên');
+    begin
+      v_birth_date := nullif(auth.jwt() -> 'user_metadata' ->> 'birth_date', '')::date;
+    exception when invalid_datetime_format then
+      v_birth_date := null;
+    end;
+    insert into staff (shop_id, auth_user_id, full_name, birth_date, role)
+    values (v_shop, v_uid, v_name, v_birth_date, 'staff')
+    returning id into v_staff;
+    insert into audit_log (shop_id, actor, action, entity, entity_id, detail)
+    values (v_shop, v_staff, 'join_by_code', 'staff', v_staff, null);
+  end if;
+
+  insert into user_settings (auth_user_id, active_shop_id) values (v_uid, v_shop)
+    on conflict (auth_user_id) do update set active_shop_id = excluded.active_shop_id;
+  return v_shop;
+end $$;
+
+revoke all on function _new_join_code() from public, anon, authenticated;
+revoke all on function shop_join_code(boolean), join_shop_by_code(text) from public, anon;
+grant execute on function shop_join_code(boolean), join_shop_by_code(text) to authenticated;

@@ -15,6 +15,7 @@ import '../../inventory/application/async_data.dart';
 import '../../inventory/presentation/kho_widgets.dart';
 import '../domain/settings_models.dart';
 import '../domain/settings_repository.dart';
+import '../../shop/presentation/shop_join_code_card.dart';
 import '../../../core/widgets/lazy_list_view.dart';
 
 class _TeamData {
@@ -119,6 +120,10 @@ class _TeamHubScreenState extends State<TeamHubScreen> {
         (m.phone ?? '').replaceAll(' ', '').contains(q.replaceAll(' ', ''));
     final members = (_tab == 0 ? d.team.working : d.team.revoked).where(match);
     return [
+      if (d.me.isOwner) ...[
+        const ShopJoinCodeCard(),
+        const SizedBox(height: 12),
+      ],
       KhoSearchField(controller: _search, hint: 'Tìm tên hoặc số điện thoại…'),
       const SizedBox(height: 12),
       KhoChipBar(

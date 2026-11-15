@@ -86,7 +86,7 @@ void main() {
         id: 'u1', phone: '84901234567', accountKind: AccountKind.staff);
     final c = build();
     await c.restore();
-    expect((c.state as SessionAwaitingInvite).user.contact, '+84901234567');
+    expect((c.state as SessionAwaitingInvite).user.contact, '0901 234 567');
   });
 
   test('membership cũ đã bị thu hồi -> trạng thái rõ ràng kèm route riêng',

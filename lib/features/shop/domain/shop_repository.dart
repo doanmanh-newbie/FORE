@@ -20,6 +20,9 @@ abstract interface class ShopRepository {
 
   Future<void> declineInvite(String inviteId);
 
+  /// Vào quán bằng mã chủ quán đưa (không cần lời mời). Xong thì quán đó thành quán hiện tại.
+  Future<void> joinShopByCode(String code);
+
   // ---- Chủ quán ----
   Future<List<TeamMember>> team();
   Future<List<PendingInvite>> inviteHistory();
@@ -32,4 +35,7 @@ abstract interface class ShopRepository {
   });
 
   Future<void> cancelInvite(String inviteId);
+
+  /// Mã quán để nhân viên tự vào; `regenerate` đổi mã mới (mã cũ hết dùng được).
+  Future<String> shopJoinCode({bool regenerate = false});
 }
