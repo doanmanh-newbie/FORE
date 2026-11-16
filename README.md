@@ -1,35 +1,33 @@
 # Fore
 
-Ứng dụng quản lý quán bán, tập trung vào **đối soát nguyên liệu và phát hiện thất thoát**.
-Quán nước (trà sữa, cà phê) trước, sau đó mở rộng sang phở, cơm.
+Ứng dụng Flutter hỗ trợ quán đồ uống quản lý ca làm, bàn, hóa đơn, thực đơn, kho và đối soát.
 
-> Môn: Lập trình thiết bị di động · Công nghệ: Flutter (Dart) + Supabase (PostgreSQL)
+## Chạy ứng dụng
 
-## Vấn đề giải quyết
-Chủ quán khó biết nguyên liệu hao hụt có đúng với số ly đã bán hay không. Fore so sánh:
-- **Thực dùng** = tồn đầu + nhập − tồn cuối (nhân viên đếm mù)
-- **Lý thuyết** = Σ (số bán × định lượng công thức)
-- **Chênh lệch** = thực dùng − lý thuyết → quy ra số ly và doanh thu ước tính
+1. Cài Flutter SDK và Android Studio hoặc Chrome.
+2. Tạo `env.json` ở gốc repo với `SUPABASE_URL` và `SUPABASE_ANON_KEY`. App đọc cấu hình bằng Dart defines; file `.env` không được tự nạp. Không đưa khóa bí mật vào Git.
+3. Cài dependencies và chạy ứng dụng:
 
-## Cấu trúc
-```
-lib/          mã Dart (core/ dùng chung, features/ theo chức năng)
-test/         kiểm thử
-database/     sd supabase SQL: bảng, ràng buộc, hàm đối soát, dữ liệu thử
-docs/         tài liệu, báo cáo tuần, biên bản họp
+```bash
+flutter pub get
+flutter run --dart-define-from-file=env.json
 ```
 
-## Chạy dự án
-1. Cài Flutter, chạy `flutter doctor`.
-2. Lần đầu, tạo phần nền Android: `flutter create --project-name fore --platforms=android .`
-   (nếu `lib/main.dart` bị ghi đè: `git checkout lib/main.dart`)
-3. `flutter pub get`
-4. Lấy `SUPABASE_URL` và `SUPABASE_ANON_KEY` từ nhóm trưởng (xem `.env.example`).
-5. Chạy:
-   ```
-   flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
-   ```
-6. Database: chạy lần lượt các file trong `supabase/` trên SQL Editor của Supabase.
+Để chạy bản web:
 
-## Tiến độ
-Xem tab **Projects** (bảng việc), **Milestones** (8 tuần) và thư mục `docs/weekly/`.
+```bash
+flutter run -d chrome --dart-define-from-file=env.json
+```
+
+## Kiểm tra
+
+```bash
+flutter analyze
+flutter test
+```
+
+Hướng dẫn cài database Supabase nằm trong [`HUONG_DAN_NHIEU_QUAN.md`](HUONG_DAN_NHIEU_QUAN.md). Tám file SQL ở gốc `database/` là các module schema duy nhất. Chỉ chạy `database/dev/reset_schema.sql` trước khi cài lại nếu đã sao lưu hoặc chấp nhận xóa dữ liệu trong schema `public`. Các script trong `database/dev/` và `database/tests/` chỉ dành cho phát triển/kiểm tra. Lịch sử kiểm tra và phần còn thiếu nằm trong [`docs/audit.md`](docs/audit.md). Cấu hình mẫu Supabase nằm trong `.env.example`; không đưa khóa thật vào Git.
+
+Thiết lập OTP email/SMS và thiết bị nhân viên 60 ngày: [`docs/supabase-auth-setup.md`](docs/supabase-auth-setup.md).
+
+Kiến trúc thư mục và quy tắc phân lớp Dart được ghi trong [`docs/kien-truc-flutter.md`](docs/kien-truc-flutter.md).

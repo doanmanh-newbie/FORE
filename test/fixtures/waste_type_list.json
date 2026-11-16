@@ -1,0 +1,5 @@
+[{"code":"expired","label_vi":"Đổ bỏ (quá giờ/hết hạn)","requires_note":false}, 
+ {"code":"mistake","label_vi":"Làm sai, đổ ly","requires_note":false}, 
+ {"code":"staff_meal","label_vi":"Cho nhân viên dùng","requires_note":false}, 
+ {"code":"tasting","label_vi":"Thử vị","requires_note":false}, 
+ {"code":"other","label_vi":"Khác (ghi chú rõ)","requires_note":true}]

@@ -5,6 +5,6 @@ do $$ begin
     truncate sim_ground_truth;
   end if;
 end $$;
-truncate pin_attempts, audit_log, cash_movements, stock_ledger, waste_logs, stock_counts, purchases,
+truncate shop_invites, user_settings, pin_attempts, audit_log, cash_movements, stock_ledger, waste_logs, stock_counts, purchases,
          bill_lines, bills, shifts, recipe_lines, menu_sizes, menu_items, dining_tables, areas,
-         ingredients, staff restart identity cascade;
+         ingredients, staff, shops restart identity cascade;
