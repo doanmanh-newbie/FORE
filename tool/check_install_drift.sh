@@ -34,7 +34,8 @@ apply() { psql -X -v ON_ERROR_STOP=1 -d "$1" -f "$2" >/dev/null; }
 modules=(01_foundation.sql 02_operations_reconciliation.sql \
   03_read_apis.sql 04_membership_sessions.sql \
   05_menu_management.sql 06_menu_options.sql \
-  07_inventory.sql 08_settings.sql)
+  07_inventory.sql 08_settings.sql \
+  09_admin.sql)
 
 make_db "$SRC_DB"
 for source in "${modules[@]}"; do
@@ -57,4 +58,4 @@ dump_schema "$SRC_DB" "$TMP/modules"
 dump_schema "$REB_DB" "$TMP/rebuild"
 
 diff -u "$TMP/modules" "$TMP/rebuild"
-echo 'SQL MODULE DRIFT: PASS (tables, columns, constraints, indexes, RLS/policies, grants, triggers and functions match across the eight source modules and generated test rebuild)'
+echo 'SQL MODULE DRIFT: PASS (tables, columns, constraints, indexes, RLS/policies, grants, triggers and functions match across the numbered source modules and generated test rebuild)'

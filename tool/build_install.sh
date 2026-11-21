@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DB="$ROOT/database"
 
-# The eight numbered SQL modules are the only deployable schema sources.
+# The numbered SQL modules are the only deployable schema sources.
 modules=(
   01_foundation.sql
   02_operations_reconciliation.sql
@@ -14,6 +14,7 @@ modules=(
   06_menu_options.sql
   07_inventory.sql
   08_settings.sql
+  09_admin.sql
 )
 
 {
@@ -28,4 +29,4 @@ modules=(
 
 perl -0pi -e 's/(?:\r?\n)+\z/\n/' "$DB/dev/rebuild_test_database.sql"
 
-echo 'Generated database/dev/rebuild_test_database.sql from the eight numbered schema modules.'
+echo 'Generated database/dev/rebuild_test_database.sql from the numbered schema modules.'
