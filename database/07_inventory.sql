@@ -122,6 +122,9 @@ create table if not exists stock_lots (
   created_at     timestamptz not null default now(),
   unique (shop_id, id)
 );
+-- Thứ tự tạo lô: nhiều lô nhận cùng lúc (cùng phiếu/transaction) có received_at bằng nhau,
+-- id là UUID ngẫu nhiên nên không dùng để xếp được. FIFO xếp theo (received_at, seq).
+alter table stock_lots add column if not exists seq bigint generated always as identity;
 create index if not exists stock_lots_ing_idx on stock_lots (ingredient_id, received_at desc);
 
 create table if not exists ingredient_cost_events (
@@ -268,7 +271,7 @@ language sql stable security definer set search_path = public as $$
   with st as (select s.ingredient_id as iid, greatest(s.stock, 0) as stock from _inv_stock_all(p_shop) s),
   l as (
     select sl.id, sl.ingredient_id as iid, sl.code, sl.received_at, sl.expiry_date, sl.qty_received, sl.unit_cost,
-           sum(sl.qty_received) over (partition by sl.ingredient_id order by sl.received_at desc, sl.id desc) as cum
+           sum(sl.qty_received) over (partition by sl.ingredient_id order by sl.received_at desc, sl.seq desc) as cum
       from stock_lots sl where sl.shop_id = p_shop)
   select l.id, l.iid, l.code, l.received_at, l.expiry_date, l.qty_received,
          greatest(least(l.qty_received::bigint, st.stock - (l.cum - l.qty_received)), 0)::integer,
@@ -474,6 +477,7 @@ begin
     select * into v_old from ingredients where id = v_id and shop_id = v_shop;
     if not found then raise exception 'NOT_FOUND'; end if;
     if v_unit is not null and v_unit <> v_old.unit then
+      if v_unit not in ('ml', 'g', 'piece') then raise exception 'UNIT_INVALID'; end if;
       if exists (select 1 from stock_ledger where ingredient_id = v_id) or exists (select 1 from recipe_lines where ingredient_id = v_id) then
         raise exception 'UNIT_LOCKED';
       end if;
@@ -1521,10 +1525,16 @@ begin
       ('waste_logs', 'waste_logs_lot_same_shop_fk', 'shop_id, lot_id', 'stock_lots', 'shop_id, id')
     ) as constraints(table_name, constraint_name, source_columns, target_table, target_columns)
   loop
+    -- Bỏ qua nếu đã có ràng buộc cùng tên, HOẶC một khóa ngoại tương đương trên đúng các cột đó
+    -- (01_foundation đã tạo stock_ledger_created_by_same_shop_fk, waste_logs_entered_by_same_shop_fk:
+    -- tạo thêm bản trùng chỉ làm mỗi lần ghi phải kiểm tra hai lần).
     if not exists (
       select 1 from pg_constraint c
        where c.conrelid = format('%I', r.table_name)::regclass
-         and c.conname = r.constraint_name
+         and (c.conname = r.constraint_name
+              or (c.contype = 'f'
+                  and pg_get_constraintdef(c.oid) like format('FOREIGN KEY (%s) REFERENCES %s(%s)%%',
+                                                            r.source_columns, r.target_table, r.target_columns)))
     ) then
       execute format('alter table %I add constraint %I foreign key (%s) references %I (%s)%s',
         r.table_name, r.constraint_name, r.source_columns, r.target_table, r.target_columns,

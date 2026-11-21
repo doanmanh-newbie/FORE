@@ -331,12 +331,13 @@ begin
      where s.shop_id = app_shop_id()
        and s.active
        and (
-         (v_phone is not null and u.phone_confirmed_at is not null
-           and normalize_phone(u.phone::text) = v_phone)
+         -- _auth_phone: số đã xác thực, HOẶC số trong email giả p<số>@phone.fore-staff.app
+         -- (nhân viên đăng ký bằng số điện thoại không có phone_confirmed_at)
+         (v_phone is not null
+           and _auth_phone(u.phone::text, u.phone_confirmed_at, u.email::text) = v_phone)
          or
-         (v_email is not null and u.email_confirmed_at is not null
-           and not _is_phone_login(u.email::text)
-           and lower(btrim(u.email::text)) = v_email)
+         (v_email is not null
+           and _auth_email(u.email::text, u.email_confirmed_at) = v_email)
        )
   ) then
     raise exception 'ALREADY_MEMBER';
