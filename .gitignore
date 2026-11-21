@@ -23,3 +23,14 @@ qa-accounts.local.md
 .playwright-mcp/
 
 *.log
+
+# Firebase: cấu hình app và khóa service account (KHÔNG commit)
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+*firebase-adminsdk*.json
+service-account*.json
+# Supabase CLI: biến môi trường / secrets cục bộ
+supabase/.env
+supabase/functions/.env
+supabase/.temp/

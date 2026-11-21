@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/application/load_phase.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/format.dart';
+import '../../../core/telemetry/telemetry_repository.dart';
 import '../../../core/motion.dart';
 import '../../../core/design/skeleton_box.dart';
 import '../../../core/theme/app_colors.dart';
@@ -35,23 +39,42 @@ class BillScreen extends StatefulWidget {
     required this.repository,
     required this.billId,
     required this.servingLabel,
+    this.liveUpdates,
   });
 
   final SalesRepository repository;
   final String billId;
   final String servingLabel;
 
+  /// Realtime: tập mã bill vừa đổi ở máy khác (`null` = tải lại mọi bill, ví dụ vừa kết nối lại).
+  final Stream<Set<String>?>? liveUpdates;
+
   @override
   State<BillScreen> createState() => _BillScreenState();
 }
 
 class _BillScreenState extends State<BillScreen> {
-  late final BillController _c =
-      BillController(widget.repository, widget.billId)..load();
+  late final BillController _c = BillController(
+      widget.repository, widget.billId,
+      telemetry: context.read<TelemetryRepository?>() ??
+          const NoopTelemetryRepository())
+    ..load();
   int _tab = 0;
+  StreamSubscription<Set<String>?>? _live;
+
+  @override
+  void initState() {
+    super.initState();
+    _live = widget.liveUpdates?.listen((ids) {
+      // Bill này vừa đổi ở máy khác: tải lại (giữ nguyên giỏ món chưa gửi).
+      // Đang thao tác thì bỏ qua: thao tác xong tự tải lại.
+      if (ids == null || ids.contains(widget.billId)) _c.refreshFromRemote();
+    });
+  }
 
   @override
   void dispose() {
+    _live?.cancel();
     _c.dispose();
     super.dispose();
   }

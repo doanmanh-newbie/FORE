@@ -1,5 +1,6 @@
 import '../../../../core/application/action_notifier.dart';
 import '../../../../core/errors/app_failure.dart';
+import '../../../../core/telemetry/telemetry_repository.dart';
 import '../domain/ops_shift_models.dart';
 import '../domain/ops_shift_repository.dart';
 
@@ -8,9 +9,12 @@ enum OpsShiftPhase { loading, ready, error }
 /// Trạng thái ca của cả quán: tên quán, ca đang mở (hoặc chưa), và việc còn thiếu trước khi đóng ca.
 /// Mọi tab trong màn chính dựa vào controller này để biết có được dùng không.
 class OpsShiftController extends ActionNotifier {
-  OpsShiftController(this._repo);
+  OpsShiftController(this._repo,
+      {TelemetryRepository telemetry = const NoopTelemetryRepository()})
+      : _telemetry = telemetry;
 
   final OpsShiftRepository _repo;
+  final TelemetryRepository _telemetry;
 
   OpsShiftPhase phase = OpsShiftPhase.loading;
   ShopInfo? shop;
@@ -70,6 +74,8 @@ class OpsShiftController extends ActionNotifier {
     final done = await runAction<bool>(() async {
       await _repo.openShift(openingCash);
       await load();
+      _telemetry.trackEvent(TelemetryEvents.shiftOpen,
+          props: {'shift_id': shift?.id, 'opening_cash': openingCash});
       return true;
     });
     return done ?? false;
@@ -98,9 +104,12 @@ class OpsShiftController extends ActionNotifier {
         await loadCloseStatus();
         rethrow;
       }
+      final closedId = shift?.id;
       shift = null;
       closeStatus = null;
       notify();
+      _telemetry.trackEvent(TelemetryEvents.shiftClose,
+          props: {'shift_id': closedId, 'closing_cash': closingCash});
       return true;
     });
     return done ?? false;

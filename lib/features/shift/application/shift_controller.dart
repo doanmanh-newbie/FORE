@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/app_failure.dart';
+import '../../../core/telemetry/telemetry_repository.dart';
 import '../../../core/errors/failure_messages.dart';
 import '../../../core/format.dart';
 import '../domain/shift_models.dart';
@@ -47,7 +48,11 @@ enum OpenShiftResult {
 
 /// Logic ca làm việc: xem ca đang mở và mở ca.
 class ShiftController extends ChangeNotifier {
-  ShiftController(this._repository);
+  ShiftController(this._repository,
+      {TelemetryRepository telemetry = const NoopTelemetryRepository()})
+      : _telemetry = telemetry;
+
+  final TelemetryRepository _telemetry;
 
   /// Tiền đầu ca tối đa chấp nhận (chặn gõ nhầm thêm số 0).
   static const maxOpeningCash = 100000000;
@@ -75,6 +80,12 @@ class ShiftController extends ChangeNotifier {
 
   int _generation = 0;
   String? _scope;
+
+  /// Phạm vi có dạng `shopId|staffId` (xem `app.dart`).
+  String? get _scopeShopId {
+    final id = _scope?.split('|').first;
+    return (id == null || id.isEmpty || id == 'null') ? null : id;
+  }
 
   /// Gắn controller với phạm vi hiện tại (quán + người dùng; `null` khi đã đăng xuất).
   /// Đổi phạm vi thì quên ca đã tải, kể cả khi đăng xuất/đổi quán từ nơi không gọi [reset].
@@ -132,6 +143,9 @@ class ShiftController extends ChangeNotifier {
     notifyListeners();
     try {
       await _repository.openShift(openingCash: cash);
+      _telemetry.trackEvent(TelemetryEvents.shiftOpen,
+          props: {'opening_cash': cash, 'screen': 'open_shift'},
+          shopId: _scopeShopId);
       // Chưa tải lại ở đây: màn hình tải lại sau khi đóng màn mở ca, để người
       // dùng thấy thẻ ca và các tab được mở khóa ngay lúc quay về Trang chủ.
       return OpenShiftResult.opened;

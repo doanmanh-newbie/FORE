@@ -47,3 +47,12 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Push FCM: cần android/app/google-services.json (tải từ Firebase Console, KHÔNG commit).
+// Chưa có file thì bỏ qua plugin: app vẫn build và chạy, chỉ là không có push
+// (FirebasePushNotificationService tự tắt khi Firebase.initializeApp() lỗi).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.lifecycle("Fore: chưa có android/app/google-services.json -> build không kèm Firebase (không có push)")
+}

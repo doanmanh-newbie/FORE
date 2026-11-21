@@ -3,15 +3,19 @@ import 'package:flutter/foundation.dart';
 import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
+import '../../../core/telemetry/telemetry_repository.dart';
 import '../../../core/validation/field_validator.dart';
 import '../domain/auth_repository.dart';
 
 /// Logic màn Đăng nhập: kiểm tra ô nhập, gọi đăng nhập, giữ trạng thái.
 /// Màn hình chỉ vẽ và chuyển sự kiện vào đây.
 class LoginController extends ChangeNotifier with NotifyWhenAlive {
-  LoginController(this._repository);
+  LoginController(this._repository,
+      {TelemetryRepository telemetry = const NoopTelemetryRepository()})
+      : _telemetry = telemetry;
 
   final AuthRepository _repository;
+  final TelemetryRepository _telemetry;
 
   static const _emailValidator = CompositeValidator([
     RequiredValidator('Nhập email.'),
@@ -47,6 +51,7 @@ class LoginController extends ChangeNotifier with NotifyWhenAlive {
     notifyListeners();
     try {
       await _repository.signIn(email: cleanEmail, password: password);
+      _telemetry.trackLogin();
       return true;
     } on AppFailure catch (f) {
       _formError = f.userMessage;
