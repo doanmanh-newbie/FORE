@@ -19,6 +19,9 @@ import 'core/theme/theme_mode_toggle.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await loadThemeMode();
+  if (themeModeNotifier.value == ThemeMode.system) {
+    themeModeNotifier.value = ThemeMode.light;
+  }
 
   const useFake = bool.fromEnvironment('ADMIN_USE_FAKE', defaultValue: false);
   if (useFake) {
@@ -71,6 +74,7 @@ class _AdminStartupErrorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AdminTheme.light(),
       darkTheme: AdminTheme.dark(),
+      themeMode: ThemeMode.light,
       builder: (context, child) => AppPaletteSync(child: child!),
       home: Scaffold(
         backgroundColor: AppColors.background,

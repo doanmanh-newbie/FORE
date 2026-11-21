@@ -80,7 +80,7 @@ class ForeAdminApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AdminTheme.light(),
         darkTheme: AdminTheme.dark(),
-        themeMode: mode,
+        themeMode: mode == ThemeMode.system ? ThemeMode.light : mode,
         builder: (context, child) => AppPaletteSync(child: child!),
         home: _AdminGate(dependencies: dependencies),
       ),

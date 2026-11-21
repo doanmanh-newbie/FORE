@@ -1,6 +1,8 @@
 # Fore Admin Web — Hướng dẫn chạy, kiểm thử và triển khai
 
-Trang quản trị nền tảng (`lib/main_admin.dart`) dành riêng cho super-admin của Fore, chạy bằng Flutter Web trên cùng nền tảng Supabase và bộ giao diện `lib/core/` của ứng dụng.
+Trang quản trị nền tảng (`lib/main_admin.dart`) dành riêng cho super-admin của Fore, chạy bằng Flutter Web trên cùng nền tảng Supabase và bộ giao diện `lib/core/` của ứng dụng (mặc định chế độ nền sáng, có nút chuyển sáng/tối ở thanh tiêu đề).
+
+- **Bản triển khai trực tuyến (Cloudflare)**: https://misty-hat-fc9d.drikisipi.workers.dev/
 
 ## 1. Chuẩn bị môi trường & Supabase
 
@@ -105,8 +107,8 @@ Thư mục đầu ra nằm tại `build/web/`.
 
 ## 7. Cấu hình Authentication trên Supabase cho tên miền Web
 
-Sau khi có URL triển khai (ví dụ `https://fore-admin.pages.dev`):
-- Vào **Supabase Dashboard → Authentication → URL Configuration**, thêm URL đó vào **Additional Redirect URLs** (nếu cần).
+Sau khi có URL triển khai (hiện tại: `https://misty-hat-fc9d.drikisipi.workers.dev/`):
+- Vào **Supabase Dashboard → Authentication → URL Configuration**, thêm `https://misty-hat-fc9d.drikisipi.workers.dev/` vào **Additional Redirect URLs** (nếu cần).
 - Kiểm tra lại CORS mặc định của Supabase PostgREST đã cho phép truy cập từ trình duyệt.
 
 ## 8. Lưu ý gói miễn phí
