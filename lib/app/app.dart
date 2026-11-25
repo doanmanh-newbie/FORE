@@ -8,7 +8,16 @@ import '../core/theme/app_theme.dart';
 import '../core/theme/theme_mode_toggle.dart';
 import '../core/design/palette_sync.dart';
 import '../core/data/rpc_client.dart';
+import '../core/config/app_version.dart' as version;
+import '../core/push/push_message_listener.dart';
+import '../core/push/push_registration_controller.dart';
+import '../core/realtime/live_feed.dart';
+import '../core/remote_config/app_config_repository.dart';
+import '../core/remote_config/remote_config_controller.dart';
+import '../core/remote_config/remote_config_gate.dart';
+import '../core/telemetry/telemetry_repository.dart';
 import '../features/auth/application/session_controller.dart';
+import '../features/auth/domain/auth_models.dart';
 import '../features/auth/domain/auth_repository.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/inventory/data/rpc_inventory_repository.dart';
@@ -33,23 +42,77 @@ class ForeApp extends StatelessWidget {
     required this.authRepository,
     required this.shiftRepository,
     required this.shopRepository,
+    this.telemetryRepository = const NoopTelemetryRepository(),
+    this.appConfigRepository = const StaticAppConfigRepository(),
+    this.appVersion = version.appVersion,
+    this.liveFeed,
+    this.pushController,
   });
 
   final AuthRepository authRepository;
   final ShiftRepository shiftRepository;
   final ShopRepository shopRepository;
 
+  /// Ghi lỗi/sự kiện/đăng nhập (`09_admin.sql`). Test không truyền thì không ghi gì.
+  final TelemetryRepository telemetryRepository;
+
+  /// Cấu hình từ xa (`get_app_config`): bảo trì, phiên bản tối thiểu.
+  /// Test không truyền thì không chặn gì.
+  final AppConfigRepository appConfigRepository;
+
+  /// Phiên bản đang chạy, so với `min_version`.
+  final String appVersion;
+
+  /// Supabase Realtime cho ca và bill. `null` (test): màn chính tải lại theo giờ như cũ.
+  final LiveFeed? liveFeed;
+
+  /// Push FCM cho chủ quán. `null` (test): không đăng ký push.
+  final PushRegistrationController? pushController;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         Provider<AuthRepository>.value(value: authRepository),
+        Provider<TelemetryRepository>.value(value: telemetryRepository),
+        if (liveFeed != null) Provider<LiveFeed>.value(value: liveFeed!),
         ChangeNotifierProvider<SessionController>(
           create: (_) => SessionController(
             authRepository,
             minVisible: SplashScreen.introDuration,
           ),
         ),
+        ChangeNotifierProxyProvider<SessionController, RemoteConfigController>(
+          create: (_) => RemoteConfigController(appConfigRepository,
+              appVersion: appVersion),
+          update: (_, session, remote) {
+            // get_app_config cần đăng nhập: chỉ tải khi có tài khoản (kể cả phiên
+            // khôi phục lúc mở app), đăng xuất thì bỏ chặn.
+            final state = session.state;
+            final userId = state is SessionSignedOut
+                ? null
+                : authRepository.currentUser?.id;
+            scheduleMicrotask(() => remote!.bindUser(userId));
+            return remote!;
+          },
+        ),
+        // Phải nằm SAU ChangeNotifierProvider<SessionController>: provider proxy đọc phiên ở trên nó.
+        if (pushController != null)
+          ChangeNotifierProxyProvider<SessionController,
+              PushRegistrationController>(
+            create: (_) => pushController!,
+            update: (_, session, push) {
+              // Chỉ CHỦ của quán đang chọn mới cần push (Edge Function chỉ gửi cho chủ),
+              // nên nhân viên không bị hỏi quyền thông báo. Đăng xuất -> hủy token.
+              final state = session.state;
+              final userId =
+                  state is SessionReady && state.profile.role == StaffRole.owner
+                      ? authRepository.currentUser?.id
+                      : null;
+              scheduleMicrotask(() => push!.bindUser(userId));
+              return push!;
+            },
+          ),
         Provider<ShiftRepository>.value(value: shiftRepository),
         Provider<ShopRepository>.value(value: shopRepository),
         Provider<RpcClient>(
@@ -81,7 +144,8 @@ class ForeApp extends StatelessWidget {
           create: (_) => SupabaseMenuImageService(Supabase.instance.client),
         ),
         ChangeNotifierProxyProvider<SessionController, ShiftController>(
-          create: (_) => ShiftController(shiftRepository),
+          create: (_) =>
+              ShiftController(shiftRepository, telemetry: telemetryRepository),
           update: (_, session, shift) {
             final state = session.state;
             final scope = state is SessionReady
@@ -101,7 +165,9 @@ class ForeApp extends StatelessWidget {
           theme: AppTheme.light(),
           darkTheme: AppTheme.dark(),
           themeMode: mode,
-          builder: (context, child) => AppPaletteSync(child: child!),
+          builder: (context, child) => AppPaletteSync(
+              child:
+                  RemoteConfigGate(child: PushMessageListener(child: child!))),
           initialRoute: AppRoutes.splash,
           onGenerateRoute: AppRoutes.generate,
         ),

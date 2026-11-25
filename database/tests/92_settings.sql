@@ -151,7 +151,10 @@ begin
   perform set_config('request.jwt.claim.sub', owner_u, true); set local session authorization authenticated;
   perform team_revoke(nv1_id);
   if (select active from staff where id = nv1_id) then raise exception 'phai bi thu hoi'; end if;
+  -- deactivated_at không cấp cho authenticated (app đọc qua team_overview): kiểm tra bằng quyền quản trị
+  reset session authorization;
   if (select deactivated_at from staff where id = nv1_id) is null then raise exception 'phai ghi ngay thu hoi'; end if;
+  set local session authorization authenticated;
   if not exists (select 1 from staff where id = nv1_id) then raise exception 'khong duoc xoa dong thanh vien'; end if;
   perform team_revoke(nv1_id);  -- gọi lại không lỗi
   if not exists (select 1 from audit_log where action = 'revoke_member' and entity_id = nv1_id) then raise exception 'phai ghi nhat ky thu hoi'; end if;

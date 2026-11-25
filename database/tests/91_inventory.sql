@@ -74,7 +74,8 @@ begin
   perform pg_temp.expect_err($$select inv_group_save(null, 'đồ khô')$$, 'NAME_EXISTS');
   perform inv_ingredient_save(milk, jsonb_build_object('name', 'Sữa tươi', 'default_supplier_id', sup, 'min_stock_qty', 5000,
                                                        'importance', 'important'));
-  perform pg_temp.expect_err(format($$select inv_ingredient_save(%L, '{"name":"Sữa tươi","unit":"g"}')$$, milk), 'UNIT_INVALID');
+  -- Đơn vị không thuộc ml/g/piece: báo UNIT_INVALID (kể cả khi sửa nguyên liệu có sẵn)
+  perform pg_temp.expect_err(format($$select inv_ingredient_save(%L, '{"name":"Sữa tươi","unit":"kg"}')$$, milk), 'UNIT_INVALID');
 
   -- ===== Phiếu nhập của chủ: giá bình quân gia quyền =====
   po := po_save(null, jsonb_build_object('supplier_id', sup, 'lines', jsonb_build_array(
@@ -86,6 +87,8 @@ begin
   po := po_save((po->>'id')::uuid, jsonb_build_object('supplier_id', sup, 'lines', jsonb_build_array(
           jsonb_build_object('ingredient_id', milk, 'qty', 30000, 'unit_price', 50, 'lot_code', 'ST-0511', 'expiry_date', '2030-01-01'))), true);
   if po->>'status' <> 'confirmed' then raise exception 'phieu phai da xac nhan'; end if;
+  -- Đã có phiếu nhập (sổ kho): khóa đơn vị
+  perform pg_temp.expect_err(format($$select inv_ingredient_save(%L, '{"name":"Sữa tươi","unit":"g"}')$$, milk), 'UNIT_LOCKED');
   select unit_cost into cost from ingredients where id = milk;
   if cost <> 50 then raise exception 'gia binh quan dau tien phai la 50, nhan %', cost; end if;
   stock := pg_temp.stk(milk);

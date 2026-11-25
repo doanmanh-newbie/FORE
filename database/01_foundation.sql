@@ -971,7 +971,7 @@ end $$;
 revoke all on all functions in schema public from public, anon, authenticated;
 alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
 
-grant execute on function app_shop_id(), app_staff_id(), app_is_owner() to authenticated;   -- policy cần dùng
+grant execute on function app_shop_id(), app_staff_id(), app_is_owner(), _my_shop_ids() to authenticated;   -- policy cần dùng (shops_read gọi _my_shop_ids)
 grant execute on function
   set_staff_pin(uuid, text),
   open_shift(integer), close_shift(integer),

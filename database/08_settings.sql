@@ -408,6 +408,11 @@ declare v_shop uuid; v_id uuid := p_id; v_name text := btrim(coalesce(p_name, ''
 begin
   perform _require_perm('floor.manage'); v_shop := app_shop_id();
   if v_name = '' or char_length(v_name) > 40 then raise exception 'NAME_REQUIRED'; end if;
+  -- Trùng tên không phân biệt hoa thường ("Tầng trệt" = "tầng trệt"); ràng buộc của bảng chỉ chặn trùng y hệt.
+  if exists (select 1 from areas a where a.shop_id = v_shop and lower(btrim(a.name)) = lower(v_name)
+               and a.id is distinct from v_id) then
+    raise exception 'NAME_EXISTS';
+  end if;
   if v_id is null then
     insert into areas (name, sort_order) values (v_name, coalesce((select max(sort_order) + 1 from areas where shop_id = v_shop), 1))
     returning id into v_id;

@@ -3,14 +3,18 @@ import 'package:flutter/foundation.dart';
 import '../../../core/application/notify_when_alive.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/failure_messages.dart';
+import '../../../core/telemetry/telemetry_repository.dart';
 import '../domain/auth_repository.dart';
 import '../domain/staff_contact.dart';
 
 /// Đăng nhập nhân viên bằng số điện thoại hoặc email cùng mật khẩu.
 class StaffLoginController extends ChangeNotifier with NotifyWhenAlive {
-  StaffLoginController(this._repository);
+  StaffLoginController(this._repository,
+      {TelemetryRepository telemetry = const NoopTelemetryRepository()})
+      : _telemetry = telemetry;
 
   final AuthRepository _repository;
+  final TelemetryRepository _telemetry;
 
   ContactKind _kind = ContactKind.phone;
   ContactKind get kind => _kind;
@@ -45,6 +49,7 @@ class StaffLoginController extends ChangeNotifier with NotifyWhenAlive {
     notifyListeners();
     try {
       await _repository.signInStaff(contact, password);
+      _telemetry.trackLogin();
       _loading = false;
       notifyListeners();
       return true;

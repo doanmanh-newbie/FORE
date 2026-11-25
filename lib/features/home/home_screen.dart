@@ -13,6 +13,9 @@ import '../../core/widgets/adaptive_nav.dart';
 import '../../core/widgets/fore_header.dart';
 import '../../core/widgets/ops_icon.dart';
 import '../../core/format.dart';
+import '../../core/realtime/live_feed.dart';
+import '../../core/realtime/live_sync_controller.dart';
+import '../../core/telemetry/telemetry_repository.dart';
 import '../auth/application/session_controller.dart';
 import '../auth/domain/auth_models.dart';
 import '../inventory/data/rpc_inventory_repository.dart';
@@ -64,7 +67,9 @@ class _HomeScreenState extends State<OpsHomeScreen>
   late final _stockRepo = RpcStocktakeRepository(_rpc);
   late final _inventoryRepo = RpcInventoryRepository(_rpc);
 
-  late final OpsShiftController _shift = OpsShiftController(_shiftRepo);
+  late final OpsShiftController _shift = OpsShiftController(_shiftRepo,
+      telemetry: context.read<TelemetryRepository?>() ??
+          const NoopTelemetryRepository());
   late final TableMapController _tables = TableMapController(_salesRepo);
   late final TakeawayController _takeaway = TakeawayController(_salesRepo);
 
@@ -72,21 +77,51 @@ class _HomeScreenState extends State<OpsHomeScreen>
   bool _hadShift = false;
   Timer? _shiftTimer;
 
+  /// Realtime cho ca và bill (có [LiveFeed] trong cây widget, tức là app thật).
+  /// Khi kênh đang `live` thì tắt tải lại theo giờ; mất kết nối thì bật lại làm dự phòng.
+  LiveSyncController? _live;
+
+  /// Báo cho màn bill đang mở: tập mã bill vừa đổi, hoặc `null` = tải lại mọi bill.
+  final _billUpdates = StreamController<Set<String>?>.broadcast();
+
+  bool get _isLive => _live?.isLive ?? false;
+  bool _pollingTables = false;
+  bool _pollingTakeaway = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _shift.addListener(_onShiftChanged);
     _shift.load();
-    _shiftTimer = Timer.periodic(_shiftRefresh, (_) {
-      if (!_shift.busy) _shift.load();
-    });
+    _syncTimers();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final feed = context.read<LiveFeed?>();
+    // Test cũ / chưa cấu hình realtime: giữ tải lại theo giờ.
+    if (feed == null) return;
+    _live ??= LiveSyncController(
+      feed,
+      onShiftChanged: _onLiveShift,
+      onBillsChanged: _onLiveBills,
+      onResync: _onLiveResync,
+    )..addListener(_onLiveStatus);
+    // Đổi quán thì nghe quán mới (start() bỏ qua nếu vẫn là quán cũ).
+    final session = Provider.of<SessionController?>(context);
+    final state = session?.state;
+    _live!.start(state is SessionReady ? state.profile.shopId : null);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _shiftTimer?.cancel();
+    _live?.removeListener(_onLiveStatus);
+    _live?.dispose(); // gỡ kênh realtime
+    _billUpdates.close();
     _shift.removeListener(_onShiftChanged);
     _shift.dispose();
     _tables.dispose();
@@ -97,6 +132,7 @@ class _HomeScreenState extends State<OpsHomeScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _live?.reconnectNow();
       _shift.load();
       if (_shift.hasOpenShift) {
         _tables.load();
@@ -120,16 +156,63 @@ class _HomeScreenState extends State<OpsHomeScreen>
     if (mounted) setState(() {});
   }
 
-  void _syncTimers() {
-    if (_shift.hasOpenShift && _tab == 0) {
-      _tables.startAutoRefresh(_tablesRefresh);
-    } else {
-      _tables.stopAutoRefresh();
+  // ---------------------------------------------------------------- realtime
+  void _onLiveShift() {
+    if (!mounted) return;
+    if (!_shift.busy) _shift.load();
+    if (_shift.closeStatus != null) _shift.loadCloseStatus();
+  }
+
+  void _onLiveBills(Set<String> billIds) {
+    if (!mounted || !_shift.hasOpenShift) return;
+    if (!_tables.busy) _tables.load();
+    if (!_takeaway.busy) _takeaway.load();
+    if (_shift.closeStatus != null) _shift.loadCloseStatus();
+    if (!_billUpdates.isClosed) _billUpdates.add(billIds);
+  }
+
+  /// Vừa kết nối (lại): tải lại tất cả để bù thay đổi bị lỡ lúc mất kết nối.
+  void _onLiveResync() {
+    if (!mounted) return;
+    _shift.load();
+    if (_shift.hasOpenShift) {
+      _tables.load();
+      _takeaway.load();
     }
-    if (_shift.hasOpenShift && _tab == 1) {
-      _takeaway.startAutoRefresh(_tablesRefresh);
+    if (!_billUpdates.isClosed) _billUpdates.add(null);
+  }
+
+  void _onLiveStatus() {
+    _syncTimers();
+    if (mounted) setState(() {});
+  }
+
+  /// Tải lại theo giờ CHỈ khi không có realtime (chưa kết nối, mất kết nối, test cũ).
+  void _syncTimers() {
+    final poll = !_isLive;
+    if (poll) {
+      _shiftTimer ??= Timer.periodic(_shiftRefresh, (_) {
+        if (!_shift.busy) _shift.load();
+      });
     } else {
-      _takeaway.stopAutoRefresh();
+      _shiftTimer?.cancel();
+      _shiftTimer = null;
+    }
+    // Chỉ bật/tắt khi nhu cầu đổi: gọi startAutoRefresh lại sẽ đặt lại hẹn giờ từ đầu,
+    // mà trạng thái kênh đổi liên tục lúc mất kết nối (offline -> connecting -> offline).
+    final pollTables = poll && _shift.hasOpenShift && _tab == 0;
+    if (pollTables != _pollingTables) {
+      _pollingTables = pollTables;
+      pollTables
+          ? _tables.startAutoRefresh(_tablesRefresh)
+          : _tables.stopAutoRefresh();
+    }
+    final pollTakeaway = poll && _shift.hasOpenShift && _tab == 1;
+    if (pollTakeaway != _pollingTakeaway) {
+      _pollingTakeaway = pollTakeaway;
+      pollTakeaway
+          ? _takeaway.startAutoRefresh(_tablesRefresh)
+          : _takeaway.stopAutoRefresh();
     }
   }
 
@@ -148,7 +231,8 @@ class _HomeScreenState extends State<OpsHomeScreen>
     await _push(BillScreen(
         repository: _salesRepo,
         billId: billId,
-        servingLabel: _shift.servingLabel));
+        servingLabel: _shift.servingLabel,
+        liveUpdates: _live == null ? null : _billUpdates.stream));
     if (!mounted) return;
     _tables.load();
     _takeaway.load();

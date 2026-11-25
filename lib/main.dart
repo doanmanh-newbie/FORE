@@ -1,7 +1,17 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
+import 'core/config/app_version.dart';
+import 'core/data/rpc_client.dart';
+import 'core/push/push_notification_service.dart';
+import 'core/push/push_registration_controller.dart';
+import 'core/realtime/live_feed.dart';
+import 'core/remote_config/app_config_repository.dart';
+import 'core/telemetry/error_reporter.dart';
+import 'core/telemetry/telemetry_repository.dart';
 import 'core/theme/theme_mode_toggle.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/data/supabase_auth_repository.dart';
@@ -36,11 +46,35 @@ Future<void> main() async {
 
   await loadThemeMode();
   final client = Supabase.instance.client;
+  final rpc = SupabaseRpcClient(client);
+  final telemetry = RpcTelemetryRepository(rpc);
+  _installErrorReporting(telemetry, client);
   runApp(ForeApp(
     authRepository: SupabaseAuthRepository(client),
     shiftRepository: SupabaseShiftRepository(client),
     shopRepository: SupabaseShopRepository(client),
+    telemetryRepository: telemetry,
+    appConfigRepository: RpcAppConfigRepository(rpc),
+    liveFeed: SupabaseLiveFeed(client),
+    // Firebase lỗi / chưa cấu hình (thiếu google-services.json) thì push tự tắt, app vẫn chạy.
+    pushController: PushRegistrationController(
+      FirebasePushNotificationService(),
+      RpcPushTokenRepository(rpc),
+    ),
   ));
+}
+
+/// Gửi mọi lỗi chưa bắt lên `log_error` (chỉ khi đã đăng nhập, xem [ErrorReporter]).
+void _installErrorReporting(
+    TelemetryRepository telemetry, SupabaseClient client) {
+  final reporter = ErrorReporter(
+    telemetry: telemetry,
+    appVersion: appVersion,
+    platform: currentPlatformName(),
+    isLoggedIn: () => client.auth.currentSession != null,
+  );
+  FlutterError.onError = reporter.handleFlutterError;
+  PlatformDispatcher.instance.onError = reporter.handlePlatformError;
 }
 
 class StartupErrorApp extends StatelessWidget {

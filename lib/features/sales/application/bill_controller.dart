@@ -1,6 +1,7 @@
 import '../../../core/application/action_notifier.dart';
 import '../../../core/application/load_phase.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/telemetry/telemetry_repository.dart';
 import '../../../core/text.dart';
 import '../domain/sales_models.dart';
 import '../domain/sales_repository.dart';
@@ -10,9 +11,13 @@ import '../domain/sales_repository.dart';
 /// Giỏ món nằm ở máy cho tới khi bấm "Thêm vào bill": mỗi món chỉ gửi MỘT lần với số lượng đã chọn,
 /// nên bill gọn gàng và không gửi lệnh cho từng lần chạm "+".
 class BillController extends ActionNotifier {
-  BillController(this._repo, this.billId, {this.maxLineQty = 99});
+  BillController(this._repo, this.billId,
+      {this.maxLineQty = 99,
+      TelemetryRepository telemetry = const NoopTelemetryRepository()})
+      : _telemetry = telemetry;
 
   final SalesRepository _repo;
+  final TelemetryRepository _telemetry;
   final String billId;
 
   /// Giới hạn mỗi dòng. Database là nơi quyết định (cài đặt `max_line_qty`); số này chỉ để chặn sớm.
@@ -51,6 +56,13 @@ class BillController extends ActionNotifier {
 
   @override
   Future<void> onStale() => _refreshBill();
+
+  /// Bill vừa đổi ở máy khác (realtime): tải lại riêng bill, giữ giỏ món chưa gửi.
+  /// Chưa tải xong lần đầu thì để [load] lo.
+  Future<void> refreshFromRemote() async {
+    if (bill == null || busy) return;
+    await _refreshBill();
+  }
 
   /// Tải lại riêng bill (sau mỗi thao tác). Lỗi mạng ở đây không làm mất giao diện đang hiển thị.
   Future<void> _refreshBill() async {
@@ -189,6 +201,8 @@ class BillController extends ActionNotifier {
   /// Thu tiền. Trả số tiền đã thu; `null` nếu đang bận.
   Future<int?> pay(PaymentMethod method) => runAction<int>(() async {
         final total = await _repo.pay(billId, method);
+        _telemetry.trackEvent(TelemetryEvents.billPaid,
+            props: {'bill_id': billId, 'method': method.wire, 'total': total});
         await _refreshBill();
         return total;
       });

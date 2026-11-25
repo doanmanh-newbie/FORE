@@ -64,7 +64,7 @@ begin
     raise exception 'expected ledger actor tenant FK';
   exception when foreign_key_violation then
     get stacked diagnostics v_constraint = constraint_name;
-    if v_constraint <> 'stock_ledger_actor_same_shop_fk' then raise; end if;
+    if v_constraint <> 'stock_ledger_created_by_same_shop_fk' then raise; end if;
   end;
   begin
     insert into stock_ledger (shop_id, ingredient_id, kind, qty_delta)
@@ -96,7 +96,7 @@ begin
     raise exception 'expected waste actor tenant FK';
   exception when foreign_key_violation then
     get stacked diagnostics v_constraint = constraint_name;
-    if v_constraint <> 'waste_logs_actor_same_shop_fk' then raise; end if;
+    if v_constraint <> 'waste_logs_entered_by_same_shop_fk' then raise; end if;
   end;
 
   begin

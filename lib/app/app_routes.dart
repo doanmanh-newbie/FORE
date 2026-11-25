@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
+import '../core/telemetry/telemetry_repository.dart';
+
 import '../features/auth/application/login_controller.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/application/staff_login_controller.dart';
@@ -28,6 +30,7 @@ import '../core/design/gallery_screen.dart';
 /// Tên các màn hình. Đi tới màn nào thì dùng hằng ở đây, không gõ chuỗi rời.
 abstract final class AppRoutes {
   static const splash = '/';
+
   /// Màn chào mừng (giới thiệu), chỉ hiện khi mở app lúc chưa đăng nhập.
   static const onboarding = '/onboarding';
 
@@ -63,10 +66,14 @@ abstract final class AppRoutes {
       welcome => MultiProvider(
           providers: [
             ChangeNotifierProvider(
-              create: (ctx) => LoginController(ctx.read<AuthRepository>()),
+              create: (ctx) => LoginController(ctx.read<AuthRepository>(),
+                  telemetry: ctx.read<TelemetryRepository?>() ??
+                      const NoopTelemetryRepository()),
             ),
             ChangeNotifierProvider(
-              create: (ctx) => StaffLoginController(ctx.read<AuthRepository>()),
+              create: (ctx) => StaffLoginController(ctx.read<AuthRepository>(),
+                  telemetry: ctx.read<TelemetryRepository?>() ??
+                      const NoopTelemetryRepository()),
             ),
           ],
           child: const WelcomeScreen(),
