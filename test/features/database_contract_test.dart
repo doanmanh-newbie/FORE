@@ -21,6 +21,10 @@ import '../support/fakes.dart';
 dynamic fixture(String name) =>
     jsonDecode(File('test/fixtures/$name.json').readAsStringSync());
 
+/// Đọc file mã nguồn với xuống dòng LF: trên Windows `core.autocrlf=true` checkout thành CRLF.
+String readSource(String path) =>
+    File(path).readAsStringSync().replaceAll('\r\n', '\n');
+
 /// hàm database -> danh sách tên tham số (đã sắp xếp). Hàm không tham số thì để rỗng.
 const expectedCalls = <String, List<String>>{
   'add_bill_line': ['p_bill', 'p_qty', 'p_size'],
@@ -82,13 +86,10 @@ void main() {
     const expectedSessionRpc = <String, List<String>>{
       'my_session_context': ['p_preferred_shop'],
     };
-    final dartSource = File(
-      'lib/features/auth/data/supabase_auth_repository.dart',
-    ).readAsStringSync();
-    final migration =
-        File('database/04_membership_sessions.sql').readAsStringSync();
-    final contractSql =
-        File('database/tests/86_session_context.sql').readAsStringSync();
+    final dartSource =
+        readSource('lib/features/auth/data/supabase_auth_repository.dart');
+    final migration = readSource('database/04_membership_sessions.sql');
+    final contractSql = readSource('database/tests/86_session_context.sql');
 
     expect(dartSource, contains("'my_session_context',"));
     expect(dartSource, contains("'p_preferred_shop': preferredShopId"));
@@ -123,12 +124,9 @@ void main() {
 
   test('RPC biểu đồ doanh thu khớp migration và model', () {
     final source =
-        File('lib/features/owner/data/owner_dashboard_repository.dart')
-            .readAsStringSync();
-    final migration =
-        File('database/04_membership_sessions.sql').readAsStringSync();
-    final sqlTest =
-        File('database/tests/87_owner_sales_trend.sql').readAsStringSync();
+        readSource('lib/features/owner/data/owner_dashboard_repository.dart');
+    final migration = readSource('database/04_membership_sessions.sql');
+    final sqlTest = readSource('database/tests/87_owner_sales_trend.sql');
 
     expect(source, contains("'owner_sales_trend'"));
     expect(source, contains("'p_business_start':"));
