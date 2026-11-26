@@ -9,6 +9,8 @@ import '../core/theme/theme_mode_toggle.dart';
 import '../core/design/palette_sync.dart';
 import '../core/data/rpc_client.dart';
 import '../core/config/app_version.dart' as version;
+import '../core/firebase/firebase_services.dart';
+import '../core/permissions/app_permissions.dart';
 import '../core/push/push_message_listener.dart';
 import '../core/push/push_registration_controller.dart';
 import '../core/realtime/live_feed.dart';
@@ -47,6 +49,8 @@ class ForeApp extends StatelessWidget {
     this.appVersion = version.appVersion,
     this.liveFeed,
     this.pushController,
+    this.firebaseServices,
+    this.permissionGateway = const DevicePermissionGateway(),
   });
 
   final AuthRepository authRepository;
@@ -69,12 +73,22 @@ class ForeApp extends StatelessWidget {
   /// Push FCM cho chủ quán. `null` (test): không đăng ký push.
   final PushRegistrationController? pushController;
 
+  /// Firebase Analytics + Crashlytics. `null` (test): không ghi gì.
+  final FirebaseServices? firebaseServices;
+
+  /// Đọc/xin quyền của máy (test thay bằng bản trong bộ nhớ).
+  final PermissionGateway permissionGateway;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         Provider<AuthRepository>.value(value: authRepository),
         Provider<TelemetryRepository>.value(value: telemetryRepository),
+        Provider<PermissionGateway>.value(value: permissionGateway),
+        if (firebaseServices != null)
+          ChangeNotifierProvider<FirebaseServices>.value(
+              value: firebaseServices!),
         if (liveFeed != null) Provider<LiveFeed>.value(value: liveFeed!),
         ChangeNotifierProvider<SessionController>(
           create: (_) => SessionController(
@@ -168,6 +182,7 @@ class ForeApp extends StatelessWidget {
           builder: (context, child) => AppPaletteSync(
               child:
                   RemoteConfigGate(child: PushMessageListener(child: child!))),
+          navigatorObservers: firebaseServices?.navigatorObservers ?? const [],
           initialRoute: AppRoutes.splash,
           onGenerateRoute: AppRoutes.generate,
         ),

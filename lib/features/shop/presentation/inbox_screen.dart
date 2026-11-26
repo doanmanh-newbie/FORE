@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fore/core/theme/theme_mode_toggle.dart';
 
-import '../../../core/design/colors.dart';
 import 'invite_list.dart';
 import 'join_by_code_card.dart';
 
@@ -14,7 +13,7 @@ class InboxScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hộp thư'),
-        actions: const [ThemeModeToggle(color: AppColors.white)],
+        actions: const [ThemeModeToggle()],
       ),
       body: const InviteListView(
         header: Padding(

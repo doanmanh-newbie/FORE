@@ -1,4 +1,4 @@
-package com.example.fore
+package vn.fore.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
@@ -16,6 +18,8 @@ import '../../../core/widgets/fore_app_bar.dart';
 import '../../../core/widgets/fore_button.dart';
 import '../../../core/widgets/fore_card.dart';
 import '../../../core/widgets/fore_action_icons.dart';
+import '../../../core/permissions/permission_setup.dart';
+import '../../../core/widgets/notify.dart';
 import '../../../core/widgets/page_scaffold.dart';
 import '../../../core/widgets/status_chip.dart';
 import '../../auth/application/session_controller.dart';
@@ -31,6 +35,8 @@ import '../../inventory/presentation/stocktake_screens.dart';
 import '../../inventory/presentation/supplier_screens.dart';
 import '../../more/owner_more_hub.dart';
 import '../../settings/presentation/audit_screen.dart';
+import '../../settings/presentation/firebase_screen.dart';
+import '../../settings/presentation/permissions_screen.dart';
 import '../../settings/presentation/floor_screen.dart';
 import '../../settings/presentation/roles_screen.dart';
 import '../../settings/presentation/shop_profile_screen.dart';
@@ -90,6 +96,7 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
     with WidgetsBindingObserver {
   int _tab = 0;
   OwnerShiftReport? _selectedReport;
+  Timer? _onboardingTimer;
 
   /// Chuyển tab từ trang "Thêm" (dùng trong extension nên không gọi setState ở ngoài State).
   void _openTab(int index) => setState(() {
@@ -118,6 +125,14 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Lần đầu vào trang chủ trên máy này: lần lượt giải thích và xin các quyền app dùng
+    // (bỏ qua từng quyền được). Chờ một nhịp để dashboard hiện trước, không chặn ngay lúc mở.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _onboardingTimer = Timer(const Duration(milliseconds: 900), () {
+        if (mounted) PermissionOnboarding.runOnce(context);
+      });
+    });
     final source = context.read<OwnerDashboardDataSource>();
     _reconcile = ReconcileListController(
       loader: ({required from, required to, required filter, before}) =>
@@ -132,6 +147,7 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
 
   @override
   void dispose() {
+    _onboardingTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _reconcile.dispose();
     _menuStore?.dispose();
@@ -223,28 +239,32 @@ class _OwnerHomeContentState extends State<_OwnerHomeContent>
           }
           if (dashboard.failure == null) {
             return Column(children: [
-              MaterialBanner(
-                content: Text(
-                  'Chưa tải được: ${_unavailableNames(data.unavailable)}. '
-                  'Các số liệu còn lại vẫn đúng.',
-                ),
-                leading: const Icon(Icons.cloud_off_outlined),
-                actions: [
-                  TextButton(onPressed: _refresh, child: const Text('Thử lại')),
-                ],
-              ),
               Expanded(child: page),
+              SafeArea(
+                top: false,
+                child: InlineNotice(
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  message:
+                      'Chưa tải được: ${_unavailableNames(data.unavailable)}. '
+                      'Các số liệu còn lại vẫn đúng.',
+                  actionLabel: 'Thử lại',
+                  onAction: _refresh,
+                ),
+              ),
             ]);
           }
           return Column(children: [
-            MaterialBanner(
-              content: Text(_errorMessage(dashboard.failure)),
-              leading: const Icon(Icons.cloud_off_outlined),
-              actions: [
-                TextButton(onPressed: _refresh, child: const Text('Thử lại')),
-              ],
-            ),
             Expanded(child: page),
+            SafeArea(
+              top: false,
+              child: InlineNotice(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                kind: NoticeKind.error,
+                message: _errorMessage(dashboard.failure),
+                actionLabel: 'Thử lại',
+                onAction: _refresh,
+              ),
+            ),
           ]);
         },
       ),

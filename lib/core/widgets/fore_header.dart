@@ -6,7 +6,8 @@ import 'status_chip.dart';
 /// Đầu trang chung của mọi màn trong ca (màn vận hành): tên quán, "Nhân viên · tên",
 /// logo và (tùy chọn) nhãn trạng thái ca.
 ///
-/// Giao diện là header rêu [ForeAppBar] như không gian chủ quán; giữ nguyên tham số cũ
+/// Giao diện là header [ForeAppBar] như không gian chủ quán (trạng thái ca là một dòng
+/// gọn dưới tên quán, không có banner); giữ nguyên tham số cũ
 /// nên các nơi gọi không phải đổi.
 class ForeHeader extends StatelessWidget {
   const ForeHeader({
@@ -31,9 +32,7 @@ class ForeHeader extends StatelessWidget {
         onChooseShop: onChooseShop,
         onBack: onBack,
         backTooltip: 'Về màn quản lý',
-        bottom: pill == null
-            ? null
-            : Align(alignment: Alignment.centerLeft, child: pill),
+        status: pill,
       );
 }
 

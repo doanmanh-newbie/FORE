@@ -15,6 +15,16 @@ class AppConfig {
 
   bool get isComplete => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
+  /// Ẩn nút Google ở bản release (đặt `GOOGLE_LOGIN=false`) nếu project Supabase chưa bật Google.
+  static const googleLoginEnabled = bool.fromEnvironment('GOOGLE_LOGIN', defaultValue: true);
+
+  /// Bật nút Facebook (đặt `FACEBOOK_LOGIN=true` sau khi đã bật provider Facebook trên Supabase).
+  static const facebookLoginEnabled = bool.fromEnvironment('FACEBOOK_LOGIN');
+
+  /// Nơi trình duyệt trả về app sau khi đăng nhập OAuth (khớp intent-filter trong AndroidManifest
+  /// và danh sách Redirect URLs trên Supabase).
+  static const oauthRedirectUrl = 'vn.fore.app://login-callback';
+
   /// Độ dài mật khẩu tối thiểu. Phải khớp cài đặt Authentication trên Supabase.
   static const minPasswordLength = 8;
 }

@@ -55,6 +55,23 @@ class FakeAuthRepository implements AuthRepository {
     );
   }
 
+  /// Đăng nhập Google/Facebook: `true` để mô phỏng người dùng tự hủy.
+  bool socialCancelled = false;
+  final socialCalls = <SocialProvider>[];
+
+  @override
+  Future<AuthUser?> signInWithSocial(SocialProvider provider) async {
+    await _wait();
+    socialCalls.add(provider);
+    if (failure != null) throw failure!;
+    if (socialCancelled) return null;
+    return user = const AuthUser(
+      id: 'u1',
+      email: 'chu@gmail.com',
+      accountKind: AccountKind.owner,
+    );
+  }
+
   @override
   Future<bool> signUp({
     required String fullName,

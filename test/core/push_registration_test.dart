@@ -67,6 +67,32 @@ void main() {
     });
   });
 
+  group('xin quyền sau màn giải thích', () {
+    test('chưa có quyền: không tự hỏi khi đăng nhập; bấm Bật thì hỏi và đăng ký',
+        () async {
+      var granted = false;
+      final gated = PushRegistrationController(
+        push,
+        RpcPushTokenRepository(rpc),
+        isPermissionGranted: () async => granted,
+      );
+      addTearDown(gated.dispose);
+
+      await gated.bindUser('owner-1');
+      await flush();
+      expect(gated.state, PushState.awaitingPermission);
+      expect(push.permissionCalls, 0);
+      expect(callsTo('register_fcm_token'), isEmpty);
+
+      granted = true;
+      expect(await gated.enable(), isTrue);
+      await flush();
+      expect(push.permissionCalls, 1);
+      expect(gated.state, PushState.registered);
+      expect(callsTo('register_fcm_token'), hasLength(1));
+    });
+  });
+
   group('an toàn khi thiếu cấu hình / lỗi', () {
     test(
         'chưa có google-services.json: tắt push, không gọi server, không crash',

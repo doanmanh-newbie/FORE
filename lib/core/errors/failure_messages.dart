@@ -5,6 +5,8 @@ extension FailureMessage on AppFailure {
   String get userMessage => switch (this) {
         NoNetworkFailure() => 'Không có mạng. Kiểm tra kết nối rồi thử lại.',
         InvalidCredentialsFailure() => 'Email hoặc mật khẩu chưa đúng.',
+        SocialSignInFailure() =>
+          'Chưa đăng nhập được bằng tài khoản này. Thử lại hoặc dùng email và mật khẩu.',
         EmailAlreadyRegisteredFailure() => 'Email này đã được đăng ký.',
         WeakPasswordFailure() => 'Mật khẩu cần ít nhất 8 ký tự.',
         EmailNotConfirmedFailure() =>

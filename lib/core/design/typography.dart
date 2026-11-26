@@ -70,52 +70,55 @@ abstract final class AppTextStyles {
     fontFeatures: const [FontFeature.tabularFigures()],
     letterSpacing: -0.3,
   );
-  static TextStyle get sectionTitle => TextStyle(
-    fontFamily: AppFonts.body,
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    color: AppColors.brand,
-    height: 24 / 18,
-  );
+  /// Tiêu đề phần: một kiểu duy nhất cho cả app (bộ Navy) = [sectionHeading].
+  static TextStyle get sectionTitle => sectionHeading;
   static TextStyle get cardTitle => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 20 / 15,
   );
   static TextStyle get bodyLarge => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 16,
     color: AppColors.brand,
     height: 1.4,
   );
   static TextStyle get body => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 14,
     color: AppColors.textSecondary,
     height: 20 / 14,
   );
   static TextStyle get bodyStrong => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 20 / 14,
   );
   static TextStyle get label => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 13,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
   static TextStyle get caption => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 12,
     color: AppColors.textSecondary,
     height: 16 / 12,
   );
   static TextStyle get captionStrong => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
     height: 16 / 12,
   );
   static TextStyle get micro => TextStyle(
+    fontFamily: AppFonts.body,
     fontSize: 12,
     fontWeight: FontWeight.w600,
     color: AppColors.textSecondary,
@@ -248,13 +251,14 @@ abstract final class AppTextStyles {
     letterSpacing: -0.3,
   );
 
-  /// Tiêu đề phần / thẻ lớn: Inter 18/700, mực rêu (thay cho Newsreader `sectionTitle`).
+  /// Tiêu đề phần (bộ Navy): Newsreader 20/600, mực chính, như "Featured Properties"
+  /// của bản tham chiếu. Chữ có chân chỉ cho tiêu đề phần và tiêu đề banner.
   static TextStyle get sectionHeading => TextStyle(
-    fontFamily: AppFonts.body,
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    color: AppColors.brand,
-    height: 1.3,
+    fontFamily: AppFonts.display,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.25,
   );
 
   /// Nhãn dưới vòng bước (12/600).

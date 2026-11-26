@@ -2,22 +2,20 @@
 name: Fore
 description: Quản lý ca, bán hàng và đối soát thất thoát cho quán đồ uống nhỏ
 colors:
-  moss-ink: "#0D3B2E"
-  leaf: "#2D7A5E"
-  mustard: "#E4BD5A"
-  mustard-tint: "#F7EDD2"
-  cream: "#F8F7F2"
-  lime-pour: "#D8F27A"
-  night-shift: "#0D3B2E"
+  navy-ink: "#1E4A72"
+  navy-accent: "#2F6699"
+  gold-highlight: "#E4BD5A"
+  cool-mist: "#F4F6F9"
   clean-white: "#FFFFFF"
-  pale-tint: "#EFEEE6"
-  nav-indicator: "#DCEBE3"
-  hairline: "#E2E5E1"
-  card-edge: "#E9EBE6"
-  text-primary: "#0D3B2E"
-  text-secondary: "#5E6A63"
-  text-hint: "#69756E"
-  disabled-fill: "#E9EAE4"
+  pale-tint: "#EDF1F6"
+  nav-indicator: "#DCE7F3"
+  background-tint: "#E3ECF6"
+  hairline: "#DDE3EA"
+  card-edge: "#E6EBF1"
+  text-primary: "#14233A"
+  text-secondary: "#566273"
+  text-hint: "#66717F"
+  disabled-fill: "#E6EAF0"
   status-healthy: "#18794E"
   status-healthy-tint: "#E2F4EA"
   status-attention: "#8A5A00"
@@ -91,20 +89,20 @@ spacing:
   page-bottom: "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.mustard}"
-    textColor: "{colors.moss-ink}"
+    backgroundColor: "{colors.navy-ink}"
+    textColor: "{colors.clean-white}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.pill}"
     height: "48px (54px on auth screens)"
   button-secondary:
     backgroundColor: "{colors.clean-white}"
-    textColor: "{colors.moss-ink}"
+    textColor: "{colors.navy-ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.control}"
     height: "48px"
   button-hero-action:
-    backgroundColor: "{colors.lime-pour}"
-    textColor: "{colors.moss-ink}"
+    backgroundColor: "{colors.clean-white}"
+    textColor: "{colors.navy-ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.control}"
     height: "48px"
@@ -113,7 +111,7 @@ components:
     rounded: "{rounded.card}"
     padding: "16px"
   hero-card:
-    backgroundColor: "{colors.night-shift}"
+    backgroundColor: "{colors.navy-ink}"
     textColor: "{colors.clean-white}"
     rounded: "{rounded.card}"
     padding: "16px"
@@ -137,10 +135,10 @@ components:
     rounded: "{rounded.pill}"
   nav-bar:
     backgroundColor: "{colors.clean-white}"
-    textColor: "{colors.moss-ink}"
+    textColor: "{colors.navy-ink}"
     height: "68px"
   segmented-selected:
-    backgroundColor: "{colors.moss-ink}"
+    backgroundColor: "{colors.navy-ink}"
     textColor: "{colors.clean-white}"
     rounded: "{rounded.control}"
     height: "44px"
@@ -148,7 +146,51 @@ components:
 
 # Design System: Fore
 
-## Bộ "Rêu & Mù tạt" (11/2026)
+## Bộ "Navy" (big update 11/2026), đang dùng
+
+Thay bộ "Rêu & Mù tạt" bên dưới, theo bố cục tham chiếu "Real Estate Home Screen Redesign"
+(chỉ học bố cục và phân cấp, không chép nội dung). Token vẫn ở `lib/core/design/`; tên cũ
+`moss`, `leafFixed`, `cream`, `actionLime` giữ để khỏi sửa nơi gọi nhưng giá trị đã là navy.
+
+- **Màu:** mực navy `#1E4A72` (8,6:1 trên nền), xanh phụ `#2F6699`, nền xám lạnh `#F4F6F9`,
+  thẻ trắng, chữ chính `#14233A`, chữ phụ `#566273` (5,7:1), gợi ý `#66717F` (4,9:1 trên trắng).
+  Nút chính và chip đang chọn: navy chữ trắng (9,4:1). Mù tạt `#E4BD5A` chỉ còn là điểm nhấn
+  vàng **trên nền navy** (≈5:1), không bao giờ làm chữ trên nền sáng.
+- **Chế độ mặc định: nền sáng.** Không theo hệ thống; người dùng tự bật nền tối bằng nút mặt trăng
+  (`lib/core/theme/theme_mode_toggle.dart`). Bộ tối: nền `#0B1220`, thẻ `#131C2B`, mực `#CFE0F5`.
+- **Đầu trang tab chính (`ForeAppBar`):** hàng sáng gồm avatar chữ cái đầu, "Xin chào, {tên}" +
+  tên quán (bấm đổi quán), nút tròn trắng (sáng/tối, chuông có số đỏ). Tiêu đề trang, dòng phụ,
+  ô tìm kiếm/thống kê nằm trong **banner navy chuyển sắc** bo 24. Màn vận hành không có banner:
+  trạng thái ca là một dòng `status` dưới tên quán để bản đồ bàn lên cao.
+- **Màn con (`ScreenHeader`, header bill, `MenuTopBar`, `AppBar`):** nền sáng liền thân trang,
+  nút quay lại tròn trắng, tiêu đề 20–22/700 mực.
+- **Thẻ:** trắng, bo 20, viền `#E6EBF1`, bóng mềm (blur 22, lệch 6). Thẻ nổi bật (`HeroCard`)
+  navy chuyển sắc, nút chính trắng chữ navy.
+- **Tiêu đề phần:** một kiểu duy nhất `AppTextStyles.sectionHeading` = Newsreader 20/600 mực,
+  kèm "Xem tất cả" bên phải khi có trang danh sách. `sectionTitle` là bí danh của nó.
+- **Thanh điều hướng:** nền trắng có bóng, tab chọn icon navy trên viên `#DCE7F3` + nhãn navy
+  đậm; tab khác icon và nhãn chữ phụ, luôn có nhãn.
+- **Phân cấp:** tên (món, bàn, ca) luôn là chữ nổi nhất của thẻ; giá, chip, mô tả nhỏ hơn và
+  không tô màu nhấn. Mọi `TextStyle` trong `AppTextStyles` khai báo `fontFamily`, để thẻ đặt
+  lại `DefaultTextStyle` không rơi về font mặc định.
+- **Lựa chọn:** thẻ/chip đang chọn luôn nổi nhất (navy đặc); chưa chọn là trắng viền mảnh.
+
+- **Không có widget Material thô:** SnackBar, Dialog, ProgressIndicator, Divider, PopupMenu,
+  DropdownMenu, DatePicker/TimePicker, Tooltip, Badge, ListTile đều định kiểu trong
+  `app_theme.dart` (gọn hơn mặc định: ListTile ~52, TextButton 44, nút phụ trong thẻ 38).
+  Thông báo nổi qua `showNotice(context, msg, kind: NoticeKind.success|error|info)`; trạng thái
+  kéo dài (mất mạng, thiếu dữ liệu) dùng `InlineNotice` ở đáy màn, không dùng `MaterialBanner`.
+- **Xin quyền (`lib/core/permissions/`):** luôn qua màn giải thích `askPermission` (thẻ trắng bo 28,
+  đốm minh họa + icon navy, "Cho phép" / "Để sau"; quyền bị chặn thì "Mở cài đặt"). Xin tại chỗ
+  (camera/thư viện trước khi chọn ảnh món, vị trí ở Hồ sơ quán) và một chuỗi lần đầu cho chủ
+  quán (thông báo → camera → vị trí, mỗi quyền bỏ qua được, chỉ một lần mỗi máy). Không app nào
+  tự bật hộp thoại hệ thống khi chưa giải thích. Xem/bật lại ở Thêm > Quyền truy cập.
+- **Firebase:** Thêm > Kết nối Firebase hiển thị Core, Cloud Messaging, Analytics, Crashlytics
+  (bật/tắt, gửi thử). Dữ liệu nghiệp vụ vẫn ở Supabase.
+
+Các phần "Rêu & Mù tạt", Overview, Colors… bên dưới là lịch sử; khi mâu thuẫn, mục này thắng.
+
+## Bộ "Rêu & Mù tạt" (11/2026), đã thay bằng Navy
 
 Thiết kế lại bắt đầu từ ba màn Chào mừng, Đăng nhập, Đăng ký (Figma). Token sống trong
 `lib/core/design/` (`colors.dart`, `typography.dart`, `spacing.dart`, `app_theme.dart`);

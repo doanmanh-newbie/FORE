@@ -238,7 +238,7 @@ class _AreaChip extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.center,
-              // Khu đang chọn: viên mù tạt chữ rêu, như tab đang chọn ở thanh dưới.
+              // Khu đang chọn: viên navy chữ trắng (accent), như chip đang chọn của bản tham chiếu.
               decoration: BoxDecoration(
                 color: selected ? AppColors.accent : AppColors.surface,
                 borderRadius: BorderRadius.circular(999),
@@ -310,10 +310,11 @@ class _TableCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Bàn đang dùng: icon mù tạt trên nền rêu; bàn trống: icon xanh lá.
+                    // Bàn đang dùng: icon cùng màu chữ trên nền mực (nút chính giờ cũng là
+                    // mực nên không dùng accent, sẽ trùng nền); bàn trống: icon xanh phụ.
                     Icon(Icons.table_restaurant_outlined,
                         size: 20,
-                        color: busy ? AppColors.accent : AppColors.brandAccent),
+                        color: busy ? fg : AppColors.brandAccent),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

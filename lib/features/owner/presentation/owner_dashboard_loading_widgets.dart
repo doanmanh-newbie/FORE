@@ -9,13 +9,26 @@ class _OwnerDashboardLoading extends StatelessWidget {
         body: PageScaffold(
           padding: const EdgeInsets.only(bottom: AppSizes.pageBottomPadding),
           children: [
-            // Chỗ của header rêu, để trang không nhảy khi dữ liệu về.
-            Container(
-              height: 190,
-              decoration: const BoxDecoration(
-                color: AppColors.moss,
-                borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(AppRadius.panel)),
+            // Chỗ của header (hàng tên quán + banner navy), để trang không nhảy khi dữ liệu về.
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Column(children: [
+                  const Row(children: [
+                    SkeletonBox(width: 44, height: 44, radius: 22),
+                    SizedBox(width: 12),
+                    Expanded(child: SkeletonBox(height: 36)),
+                  ]),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 128,
+                    decoration: BoxDecoration(
+                      color: AppColors.moss,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ]),
               ),
             ),
             const Padding(

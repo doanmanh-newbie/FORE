@@ -129,8 +129,8 @@ class _WelcomePanel extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    // Panel luôn tối: dùng màu cố định để không đảo theo chế độ tối.
-                    backgroundColor: AppColors.mustard,
+                    // Panel luôn tối: nút trắng chữ navy cố định (8,6:1), như thẻ nổi bật.
+                    backgroundColor: AppColors.white,
                     foregroundColor: AppColors.moss,
                     minimumSize:
                         const Size.fromHeight(AppSizes.pillButtonHeight),

@@ -90,6 +90,15 @@ class EmailConfirmRequiredFailure extends AppFailure {
   const EmailConfirmRequiredFailure() : super('EMAIL_CONFIRM_REQUIRED');
 }
 
+/// Đăng nhập Google/Facebook chưa cấu hình (thiếu client ID, chưa bật provider trên Supabase)
+/// hoặc nhà cung cấp từ chối.
+class SocialSignInFailure extends AppFailure {
+  const SocialSignInFailure([this.detail]) : super('SOCIAL_SIGN_IN');
+
+  /// Chi tiết kỹ thuật để ghi log, không hiện cho người dùng.
+  final Object? detail;
+}
+
 class UnknownFailure extends AppFailure {
   const UnknownFailure([this.detail]) : super('UNKNOWN');
 

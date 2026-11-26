@@ -4,7 +4,7 @@ import 'colors.dart';
 import 'spacing.dart';
 import 'typography.dart';
 
-/// Thẻ nổi bật nền rêu đậm: tiêu đề trắng, nút chính viên thuốc mù tạt, nút phụ viền trắng.
+/// Thẻ nổi bật nền navy chuyển sắc: tiêu đề trắng, nút chính viên thuốc trắng, nút phụ viền trắng.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
@@ -28,7 +28,11 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.surfaceDark,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.surfaceDark, AppColors.leafFixed],
+          ),
           borderRadius: BorderRadius.circular(AppSizes.radiusCard),
         ),
         child: Padding(
@@ -61,8 +65,9 @@ class HeroCard extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       minimumSize:
                           const Size.fromHeight(AppSizes.controlHeight),
-                      // Nền thẻ luôn tối: dùng mù tạt cố định, không đảo theo chế độ.
-                      backgroundColor: AppColors.mustard,
+                      // Nền thẻ luôn tối: nút trắng chữ navy cố định (8,6:1), như nút
+                      // "Explore" trên banner của bản tham chiếu.
+                      backgroundColor: AppColors.white,
                       foregroundColor: AppColors.moss,
                     ),
                     onPressed: onPrimary,

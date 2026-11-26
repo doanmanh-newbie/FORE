@@ -5,8 +5,8 @@ import '../design/spacing.dart';
 import '../design/typography.dart';
 import '../motion.dart';
 
-/// Công tắc viên thuốc hai (hoặc nhiều) lựa chọn: rãnh xanh lá, viên chọn vàng mù tạt
-/// trượt sang lựa chọn đang bật.
+/// Công tắc viên thuốc hai (hoặc nhiều) lựa chọn (bộ Navy): rãnh nền nhạt, viên chọn navy
+/// chữ trắng trượt sang lựa chọn đang bật; lựa chọn khác chữ phụ.
 class PillSegmented<T> extends StatelessWidget {
   const PillSegmented({
     super.key,
@@ -35,8 +35,9 @@ class PillSegmented<T> extends StatelessWidget {
         height: height,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: AppColors.leafFixed,
+          color: AppColors.tint,
           borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: AppColors.cardBorder),
         ),
         child: Stack(
           children: [
@@ -51,11 +52,11 @@ class PillSegmented<T> extends StatelessWidget {
                 child: FractionallySizedBox(
                   widthFactor: 1 / items.length,
                   heightFactor: 1,
-                  child: const DecoratedBox(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.mustard,
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(AppRadius.pill)),
+                      color: AppColors.brand,
+                      borderRadius: const BorderRadius.all(
+                          Radius.circular(AppRadius.pill)),
                     ),
                   ),
                 ),
@@ -75,8 +76,8 @@ class PillSegmented<T> extends StatelessWidget {
                             duration: duration,
                             style: AppTextStyles.segment.copyWith(
                               color: v == value
-                                  ? AppColors.moss
-                                  : AppColors.white,
+                                  ? AppColors.onInk
+                                  : AppColors.textSecondary,
                             ),
                             child: Text(label),
                           ),

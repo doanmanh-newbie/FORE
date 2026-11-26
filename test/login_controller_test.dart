@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fore/core/errors/app_failure.dart';
 import 'package:fore/features/auth/application/login_controller.dart';
+import 'package:fore/features/auth/domain/auth_repository.dart';
 
 import 'support/fake_auth_repository.dart';
 
@@ -33,5 +35,22 @@ void main() {
     expect(ok, isTrue);
     expect(controller.formError, isNull);
     expect(repo.user?.email, 'an@quan.vn');
+  });
+
+  test('Google: tự hủy thì không báo lỗi, lỗi cấu hình thì có câu dễ hiểu', () async {
+    repo.socialCancelled = true;
+    expect(await controller.signInWithSocial(SocialProvider.google), isFalse);
+    expect(controller.formError, isNull);
+    expect(controller.loading, isFalse);
+
+    repo
+      ..socialCancelled = false
+      ..failure = const SocialSignInFailure();
+    expect(await controller.signInWithSocial(SocialProvider.google), isFalse);
+    expect(controller.formError, contains('Chưa đăng nhập được'));
+
+    repo.failure = null;
+    expect(await controller.signInWithSocial(SocialProvider.facebook), isTrue);
+    expect(controller.socialLoading, isNull);
   });
 }

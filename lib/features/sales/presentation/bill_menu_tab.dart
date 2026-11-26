@@ -20,7 +20,7 @@ class _BillLoadingState extends StatelessWidget {
       );
 }
 
-/// Header của bill: nền rêu cố định, bo hai góc dưới, chữ và icon trắng.
+/// Header của bill (bộ Navy): nền sáng, nút quay lại tròn, tiêu đề mực đậm.
 class _BillHeader extends StatelessWidget {
   const _BillHeader({
     required this.title,
@@ -35,38 +35,42 @@ class _BillHeader extends StatelessWidget {
   final VoidCallback? onCancel;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.moss,
-          borderRadius:
-              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
-        ),
+  Widget build(BuildContext context) => ColoredBox(
+        color: AppColors.background,
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 6, 4, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
             child: Row(
               children: [
-                IconButton(
-                  tooltip: 'Quay lại',
-                  onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back_rounded,
-                      color: AppColors.white),
+                _RoundButton(
+                  child: IconButton(
+                    tooltip: 'Quay lại',
+                    color: AppColors.textPrimary,
+                    onPressed: onBack,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
                 ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title,
-                          style: AppTextStyles.panelTitle.copyWith(fontSize: 20),
+                          style: TextStyle(
+                            fontFamily: AppFonts.body,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                       if (subtitle.isNotEmpty)
                         Text(subtitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: AppFonts.body,
                               fontSize: 12,
-                              color: AppColors.onDarkMuted,
+                              color: AppColors.textSecondary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
@@ -76,8 +80,8 @@ class _BillHeader extends StatelessWidget {
                 if (onCancel != null)
                   PopupMenuButton<String>(
                     tooltip: 'Thêm',
-                    icon: const Icon(Icons.more_horiz_rounded,
-                        color: AppColors.white),
+                    icon: Icon(Icons.more_horiz_rounded,
+                        color: AppColors.textPrimary),
                     onSelected: (_) => onCancel!(),
                     itemBuilder: (_) => const [
                       PopupMenuItem(value: 'cancel', child: Text('Hủy bill')),
@@ -87,6 +91,24 @@ class _BillHeader extends StatelessWidget {
             ),
           ),
         ),
+      );
+}
+
+/// Nút tròn nền trắng viền mảnh, cùng kiểu đầu trang chung.
+class _RoundButton extends StatelessWidget {
+  const _RoundButton({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Center(child: child),
       );
 }
 

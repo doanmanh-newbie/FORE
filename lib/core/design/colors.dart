@@ -93,20 +93,19 @@ class AppPalette {
   /// Chữ gợi ý trong ô nhập và icon đầu ô (4,8:1 trên nền trắng).
   final Color textHint;
 
-  // Bộ màu "Rêu & Mù tạt" (thiết kế lại 11/2026): rêu đậm làm mực, kem làm nền,
-  // vàng mù tạt cho hành động chính. Tỷ lệ tương phản ghi theo nền kem #F8F7F2.
+  // Bộ màu "Navy" (big update 11/2026): xanh navy làm mực và nút chính, nền xám lạnh rất nhạt,
+  // thẻ trắng. Tỷ lệ tương phản ghi theo nền #F4F6F9 (chữ) hoặc trắng (nút).
   static const light = AppPalette(
     brightness: Brightness.light,
-    brand: Color(0xFF0D3B2E), // rêu đậm, 11,6:1
+    brand: Color(0xFF1E4A72), // navy, 8,6:1 trên nền
     onInk: Color(0xFFFFFFFF),
-    brandAccent: Color(0xFF2D7A5E),
-    background: Color(0xFFF8F7F2), // kem / trắng ngà
+    brandAccent: Color(0xFF2F6699), // xanh phụ, 5,6:1 trên trắng
+    background: Color(0xFFF4F6F9),
     surface: Color(0xFFFFFFFF),
-    border: Color(0xFFE2E5E1),
-    textPrimary: Color(0xFF0D3B2E),
-    // Đậm hơn #69756E của bản Figma một chút để đạt 5,3:1 trên nền kem (bản gốc 4,48).
-    textSecondary: Color(0xFF5E6A63),
-    disabledFill: Color(0xFFE9EAE4),
+    border: Color(0xFFDDE3EA),
+    textPrimary: Color(0xFF14233A),
+    textSecondary: Color(0xFF566273), // 5,7:1 trên nền
+    disabledFill: Color(0xFFE6EAF0),
     statusHealthy: Color(0xFF18794E),
     statusAttention: Color(0xFF8A5A00),
     statusCritical: Color(0xFFB42318),
@@ -116,37 +115,37 @@ class AppPalette {
     warning: Color(0xFFED6C02),
     warningText: Color(0xFFB54708),
     warningSoft: Color(0xFFFFF4E5),
-    inkMuted: Color(0xFF5E6A63),
-    tint: Color(0xFFEFEEE6),
+    inkMuted: Color(0xFF566273),
+    tint: Color(0xFFEDF1F6),
     onInkMuted: Color(0xB3FFFFFF),
     onInkStrong: Color(0xCCFFFFFF),
-    scrim: Color(0x730D3B2E),
-    navIndicator: Color(0xFFDCEBE3),
-    cardBorder: Color(0xFFE9EBE6),
-    backgroundTint: Color(0xFFE3EEE7),
+    scrim: Color(0x7314233A),
+    navIndicator: Color(0xFFDCE7F3),
+    cardBorder: Color(0xFFE6EBF1),
+    backgroundTint: Color(0xFFE3ECF6),
     healthyBackground: Color(0xFFE6F4EC),
     warningOverlay: Color(0x66ED6C02),
-    shadowMedium: Color(0x330D3B2E),
-    shadowStrong: Color(0xDB0D3B2E),
-    accent: Color(0xFFE4BD5A),
-    onAccent: Color(0xFF0D3B2E),
-    accentTint: Color(0xFFF7EDD2),
-    leaf: Color(0xFF2D7A5E),
-    textHint: Color(0xFF69756E),
+    shadowMedium: Color(0x1F14233A),
+    shadowStrong: Color(0xDB14233A),
+    accent: Color(0xFF1E4A72), // nút chính tô navy như bản tham chiếu
+    onAccent: Color(0xFFFFFFFF), // 9,4:1
+    accentTint: Color(0xFFE3ECF6),
+    leaf: Color(0xFF2F6699),
+    textHint: Color(0xFF66717F), // 4,9:1 trên trắng
   );
 
-  /// Ca đêm, quầy thiếu sáng: nền rêu than, mực đảo thành xanh lá sáng, mù tạt giữ nguyên.
+  /// Ca đêm, quầy thiếu sáng: nền than xanh, mực đảo thành xanh nhạt.
   static const dark = AppPalette(
     brightness: Brightness.dark,
-    brand: Color(0xFFD4E7DC),
-    onInk: Color(0xFF0D3B2E),
-    brandAccent: Color(0xFF6FC29C),
-    background: Color(0xFF0B1A15),
-    surface: Color(0xFF12241D),
-    border: Color(0xFF2F4A3F),
-    textPrimary: Color(0xFFE6EFEA),
-    textSecondary: Color(0xFFA9BDB2),
-    disabledFill: Color(0xFF1F3329),
+    brand: Color(0xFFCFE0F5),
+    onInk: Color(0xFF14233A),
+    brandAccent: Color(0xFF8DB8E8),
+    background: Color(0xFF0B1220),
+    surface: Color(0xFF131C2B),
+    border: Color(0xFF2B3A50),
+    textPrimary: Color(0xFFE6ECF5),
+    textSecondary: Color(0xFFA8B6C9),
+    disabledFill: Color(0xFF1E2A3B),
     statusHealthy: Color(0xFF5DD39B),
     statusAttention: Color(0xFFF2BE55),
     statusCritical: Color(0xFFFF8E82),
@@ -156,24 +155,23 @@ class AppPalette {
     warning: Color(0xFFFF9A3D),
     warningText: Color(0xFFFFB070),
     warningSoft: Color(0xFF33240F),
-    inkMuted: Color(0xFF8FA89B),
-    tint: Color(0xFF1A2E25),
-    onInkMuted: Color(0xB30D3B2E),
-    onInkStrong: Color(0xCC0D3B2E),
+    inkMuted: Color(0xFF8E9DB3),
+    tint: Color(0xFF1A2536),
+    onInkMuted: Color(0xB314233A),
+    onInkStrong: Color(0xCC14233A),
     scrim: Color(0x99000000),
-    navIndicator: Color(0xFF23423A),
-    cardBorder: Color(0xFF1F362C),
-    backgroundTint: Color(0xFF16302A),
+    navIndicator: Color(0xFF24395A),
+    cardBorder: Color(0xFF1F2C40),
+    backgroundTint: Color(0xFF18263A),
     healthyBackground: Color(0xFF133325),
     warningOverlay: Color(0x66FF9A3D),
     shadowMedium: Color(0x59000000),
     shadowStrong: Color(0xE6000000),
-    accent: Color(0xFFE4BD5A),
-    onAccent: Color(0xFF0D3B2E),
-    // Mù tạt 22% trên nền thẻ tối #12241D: ô liu ngả xanh, hợp nền rêu (bản cũ #3A3018 lên màu nâu đục).
-    accentTint: Color(0xFF41452A),
-    leaf: Color(0xFF2D7A5E),
-    textHint: Color(0xFF9DB3A8),
+    accent: Color(0xFF9CC2EE),
+    onAccent: Color(0xFF0E2540),
+    accentTint: Color(0xFF1F3350),
+    leaf: Color(0xFF2F6699),
+    textHint: Color(0xFF9AA9BE),
   );
 
   static AppPalette of(Brightness b) => b == Brightness.dark ? dark : light;
@@ -227,18 +225,20 @@ abstract final class AppColors {
   static Color get textHint => current.textHint;
 
   // Không đổi theo chế độ: thẻ nổi bật luôn nền tối, chữ trên nó luôn sáng.
-  static const surfaceDark = Color(0xFF0D3B2E);
+  static const surfaceDark = Color(0xFF1E4A72);
 
+  // Bộ Navy: tên cũ `moss`/`leafFixed`/`cream`/`actionLime` giữ để khỏi sửa hàng chục chỗ gọi,
+  // giá trị giờ là navy / xanh phụ / nền xám lạnh / trắng.
   // Màu thương hiệu cố định (không đảo theo chế độ) cho các mảng đồ họa: thẻ vai trò,
   // panel chào mừng, vòng bước đăng ký. Chữ đặt trên chúng luôn là [white] hoặc [moss].
-  static const moss = Color(0xFF0D3B2E);
-  static const leafFixed = Color(0xFF2D7A5E);
+  static const moss = Color(0xFF1E4A72);
+  static const leafFixed = Color(0xFF2F6699);
   static const mustard = Color(0xFFE4BD5A);
-  static const cream = Color(0xFFF8F7F2);
-  static const actionLime = Color(0xFFD8F27A);
+  static const cream = Color(0xFFF4F6F9);
+  static const actionLime = Color(0xFFFFFFFF);
   static const onDarkMuted = Color(0xB3FFFFFF);
   /// Chữ trên nền lime: luôn mực đậm (11,8:1), không đảo theo chế độ tối.
-  static const onLime = Color(0xFF0C2D32);
+  static const onLime = Color(0xFF1E4A72);
   static const onDarkBorder = Color(0x66FFFFFF);
   /// Chữ cảnh báo trên thẻ nền tối (vd "Lãi thấp"): 9,6:1 trên Night Shift.
   static const onDarkWarning = Color(0xFFFFD28A);

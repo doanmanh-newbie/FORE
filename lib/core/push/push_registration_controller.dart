@@ -33,6 +33,10 @@ enum PushState {
   /// Máy chưa cấu hình Firebase: không có push, app vẫn chạy.
   unavailable,
 
+  /// Chưa có quyền thông báo và chưa hỏi: chờ người dùng bấm "Bật" ở màn giải thích
+  /// (chỉ khi controller tạo với `isPermissionGranted`).
+  awaitingPermission,
+
   /// Người dùng từ chối quyền thông báo.
   denied,
 
@@ -47,13 +51,23 @@ enum PushState {
 /// đăng xuất / đổi tài khoản thì hủy token cũ. Mọi lỗi đều được nuốt: push hỏng không
 /// bao giờ làm hỏng đăng nhập hay app.
 class PushRegistrationController extends ChangeNotifier {
-  PushRegistrationController(this._service, this._tokens);
+  PushRegistrationController(this._service, this._tokens,
+      {Future<bool> Function()? isPermissionGranted})
+      : _isPermissionGranted = isPermissionGranted;
 
   final PushNotificationService _service;
   final PushTokenRepository _tokens;
 
+  /// Kiểm tra quyền mà không hỏi. Có giá trị thì khi đăng nhập KHÔNG tự bật hộp thoại hệ thống:
+  /// đã có quyền thì đăng ký luôn, chưa có thì chờ [enable] (sau màn giải thích của app).
+  /// `null` (test cũ): hỏi quyền ngay khi đăng nhập như trước.
+  final Future<bool> Function()? _isPermissionGranted;
+
   PushState _state = PushState.idle;
   PushState get state => _state;
+
+  /// Token FCM đã lưu của máy (màn "Kết nối Firebase" hiển thị rút gọn).
+  String? get token => _token;
 
   String? _userId;
   String? _token;
@@ -100,11 +114,30 @@ class PushRegistrationController extends ChangeNotifier {
       onError: (Object e) => debugPrint('Fore: lỗi nhận push: $e'),
     );
 
+    final check = _isPermissionGranted;
+    if (check != null && !await _guard(check, fallback: false)) {
+      if (generation == _generation) _setState(PushState.awaitingPermission);
+      return;
+    }
+    await _requestAndRegister(generation);
+  }
+
+  /// Người dùng đồng ý ở màn giải thích: hỏi quyền hệ thống rồi đăng ký máy.
+  /// Trả `true` nếu được quyền. Không có ai đăng nhập hoặc Firebase chưa sẵn sàng thì `false`.
+  Future<bool> enable() async {
+    if (_disposed || _userId == null) return false;
+    if (_state == PushState.unavailable || _state == PushState.idle) return false;
+    await _requestAndRegister(_generation);
+    return _state != PushState.denied;
+  }
+
+  Future<void> _requestAndRegister(int generation) async {
     if (!await _guard(_service.requestPermission, fallback: false)) {
       if (generation == _generation) _setState(PushState.denied);
       return;
     }
     if (generation != _generation) return;
+    await _refreshSub?.cancel();
     // Nghe token TRƯỚC khi đăng ký để không lỡ token đầu tiên; token mới về sau cũng qua đây.
     _refreshSub = _service.onToken.listen(
       (t) => _register(t, generation),

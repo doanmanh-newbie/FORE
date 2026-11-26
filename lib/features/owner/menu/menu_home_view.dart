@@ -122,12 +122,12 @@ class _MenuHomeViewState extends State<MenuHomeView> {
               : 'Thực đơn',
       action: offline
           ? null
-          // Viên mù tạt chữ rêu trên nền header (màu cố định, không đổi theo chế độ).
+          // Nút trắng chữ navy trên banner (màu cố định, không đổi theo chế độ).
           : FilledButton(
               onPressed: () =>
                   openMenuPage<void>(context, const CategoryListPage()),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.mustard,
+                backgroundColor: AppColors.white,
                 foregroundColor: AppColors.moss,
                 minimumSize: const Size(48, 40),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -137,7 +137,11 @@ class _MenuHomeViewState extends State<MenuHomeView> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              child: const Text('Quản lý danh mục'),
+              // Nhãn ngắn để vừa một dòng cạnh tiêu đề banner; đọc màn hình vẫn đủ nghĩa.
+              child: Semantics(
+                label: 'Quản lý danh mục',
+                child: const ExcludeSemantics(child: Text('Danh mục')),
+              ),
             ),
       search: _SearchRow(
         controller: _search,
@@ -382,10 +386,10 @@ class _SearchRow extends StatelessWidget {
               onPressed: onFilter,
               icon: const Icon(Icons.tune_rounded),
               constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-              // Trên header: nút tròn mù tạt, icon rêu.
+              // Trên banner: nút tròn trắng, icon navy.
               style: onDark
                   ? IconButton.styleFrom(
-                      backgroundColor: AppColors.mustard,
+                      backgroundColor: AppColors.white,
                       foregroundColor: AppColors.moss,
                       side: BorderSide.none,
                     )
@@ -584,9 +588,11 @@ class _ItemCard extends StatelessWidget {
     final single = sizes.length == 1 ? sizes.first : null;
     final lines = <Widget>[];
 
-    // Giá là thông tin chính của dòng: chữ đậm màu xanh lá.
+    // Giá đứng sau tên món (tên là mốc chính của dòng): 13/600 chữ phụ, không tô màu
+    // để không cạnh tranh với tên (lỗi phân cấp ngược đã nêu khi review UI).
     lines.add(Text(priceSummary(item) + (single != null && single.cost != null ? ' · Vốn ${formatVnd(single.cost!)}' : ''),
-        style: AppTextStyles.bodyStrong.copyWith(color: AppColors.brandAccent)));
+        style: AppTextStyles.bodyStrong.copyWith(
+            fontSize: 13, color: AppColors.textSecondary)));
 
     if (draft) {
       lines.add(Text('Bản nháp · chưa bán', style: AppTextStyles.caption));
