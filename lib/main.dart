@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 import 'core/config/app_version.dart';
 import 'core/data/rpc_client.dart';
+import 'core/firebase/firebase_services.dart';
+import 'core/permissions/app_permissions.dart';
 import 'core/push/push_notification_service.dart';
 import 'core/push/push_registration_controller.dart';
 import 'core/realtime/live_feed.dart';
@@ -45,10 +47,14 @@ Future<void> main() async {
   }
 
   await loadThemeMode();
+  // Firebase (Analytics, Crashlytics; push dùng chung app Firebase). Lỗi / chậm không chặn app.
+  final firebase = DeviceFirebaseServices();
+  await firebase.init().timeout(const Duration(seconds: 6), onTimeout: () {});
   final client = Supabase.instance.client;
   final rpc = SupabaseRpcClient(client);
   final telemetry = RpcTelemetryRepository(rpc);
-  _installErrorReporting(telemetry, client);
+  _installErrorReporting(telemetry, client, firebase);
+  const permissions = DevicePermissionGateway();
   runApp(ForeApp(
     authRepository: SupabaseAuthRepository(client),
     shiftRepository: SupabaseShiftRepository(client),
@@ -57,24 +63,37 @@ Future<void> main() async {
     appConfigRepository: RpcAppConfigRepository(rpc),
     liveFeed: SupabaseLiveFeed(client),
     // Firebase lỗi / chưa cấu hình (thiếu google-services.json) thì push tự tắt, app vẫn chạy.
+    // Không tự bật hộp thoại quyền khi đăng nhập: chủ quán bấm "Bật thông báo" ở màn giải thích.
     pushController: PushRegistrationController(
       FirebasePushNotificationService(),
       RpcPushTokenRepository(rpc),
+      isPermissionGranted: () async =>
+          (await permissions.status(AppPermission.notification)).isGranted,
     ),
+    firebaseServices: firebase,
+    permissionGateway: permissions,
   ));
 }
 
 /// Gửi mọi lỗi chưa bắt lên `log_error` (chỉ khi đã đăng nhập, xem [ErrorReporter]).
-void _installErrorReporting(
-    TelemetryRepository telemetry, SupabaseClient client) {
+void _installErrorReporting(TelemetryRepository telemetry,
+    SupabaseClient client, FirebaseServices firebase) {
   final reporter = ErrorReporter(
     telemetry: telemetry,
     appVersion: appVersion,
     platform: currentPlatformName(),
     isLoggedIn: () => client.auth.currentSession != null,
   );
-  FlutterError.onError = reporter.handleFlutterError;
-  PlatformDispatcher.instance.onError = reporter.handlePlatformError;
+  // Ghi lỗi lên cả server (log_error) và Firebase Crashlytics.
+  FlutterError.onError = (details) {
+    reporter.handleFlutterError(details);
+    firebase.recordError(details.exception, details.stack,
+        reason: details.context?.toDescription());
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    firebase.recordError(error, stack, fatal: true);
+    return reporter.handlePlatformError(error, stack);
+  };
 }
 
 class StartupErrorApp extends StatelessWidget {

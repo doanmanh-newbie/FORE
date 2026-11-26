@@ -256,12 +256,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.appBarTitle.copyWith(color: AppColors.brand),
-            ),
-          ),
+          Expanded(child: Text(title, style: AppTextStyles.sectionHeading)),
           if (trailing != null) trailing!,
         ]),
       );

@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleListener;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
 
+import '../../../core/config/app_config.dart';
 import '../../../core/data/rpc_errors.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/errors/network_errors.dart';
@@ -42,6 +44,58 @@ class SupabaseAuthRepository implements AuthRepository {
         if (user == null) throw const InvalidCredentialsFailure();
         return _toAuthUser(user);
       });
+
+  @override
+  Future<AuthUser?> signInWithSocial(SocialProvider provider) =>
+      // Google và Facebook cùng đi qua trang đăng nhập của nhà cung cấp (Custom Tab trên máy,
+      // chuyển trang trên web). Không dùng Credential Manager: lỗi cấu hình SHA-1/test user ở đó
+      // bị báo thành "người dùng hủy" nên app im lặng, khó biết vì sao không vào được.
+      _guard(() => _signInWithOAuth(_oauthOf(provider)));
+
+  static OAuthProvider _oauthOf(SocialProvider p) => switch (p) {
+        SocialProvider.google => OAuthProvider.google,
+        SocialProvider.facebook => OAuthProvider.facebook,
+      };
+
+  /// Đăng nhập qua trang web của nhà cung cấp. Trên máy: mở trình duyệt, chờ deep link
+  /// [AppConfig.oauthRedirectUrl] đưa phiên về. Quay lại app mà không có phiên (đóng trình duyệt)
+  /// thì coi như hủy.
+  Future<AuthUser?> _signInWithOAuth(OAuthProvider provider) async {
+    if (kIsWeb) {
+      // Quay về đúng trang đang chạy app (không phải Site URL mặc định của Supabase).
+      await _client.auth.signInWithOAuth(provider, redirectTo: Uri.base.origin);
+      return null;
+    }
+    final done = Completer<AuthUser?>();
+    final sub = _client.auth.onAuthStateChange.listen((change) {
+      final user = change.session?.user;
+      if (change.event == AuthChangeEvent.signedIn &&
+          user != null &&
+          !done.isCompleted) {
+        done.complete(_toAuthUser(user));
+      }
+    }, onError: (Object e) {
+      // Nhà cung cấp/Supabase trả lỗi qua deep link (vd sai client secret, chưa là test user).
+      debugPrint('Fore auth: đăng nhập OAuth lỗi: $e');
+      if (!done.isCompleted) done.completeError(SocialSignInFailure(e));
+    });
+    final lifecycle = AppLifecycleListener(onResume: () {
+      // Deep link cần vài giây để đổi mã lấy phiên; quá lâu thì người dùng đã bỏ ngang.
+      Future<void>.delayed(const Duration(seconds: 6), () {
+        if (!done.isCompleted) done.complete(null);
+      });
+    });
+    try {
+      final launched = await _client.auth
+          .signInWithOAuth(provider, redirectTo: AppConfig.oauthRedirectUrl);
+      if (!launched) throw const SocialSignInFailure('Không mở được trình duyệt');
+      return await done.future
+          .timeout(const Duration(minutes: 5), onTimeout: () => null);
+    } finally {
+      await sub.cancel();
+      lifecycle.dispose();
+    }
+  }
 
   @override
   Future<bool> signUp({
@@ -115,7 +169,9 @@ class SupabaseAuthRepository implements AuthRepository {
       });
 
   @override
-  Future<void> signOut() => _guard(() => _client.auth.signOut());
+  Future<void> signOut() => _guard(() async {
+        await _client.auth.signOut();
+      });
 
   @override
   Future<void> sendPasswordReset(String email) =>

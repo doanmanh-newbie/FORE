@@ -25,11 +25,13 @@ void main() {
       ),
     );
 
-    // Header rêu (bộ "Rêu & Mù tạt"): tên quán Inter đậm, trắng trên nền rêu.
+    // Header sáng (bộ Navy): tên quán Inter đậm màu mực, lời chào theo tên người dùng,
+    // trạng thái ca là một dòng dưới tên quán (không có banner).
     final shopName = tester.widget<Text>(find.text('Quán Cà phê của Mạnh'));
     expect(shopName.style?.fontFamily, AppFonts.body);
     expect(shopName.style?.fontWeight, FontWeight.w700);
-    expect(shopName.style?.color, AppColors.white);
+    expect(shopName.style?.color, AppColors.textPrimary);
+    expect(find.text('Xin chào, Mạnh'), findsOneWidget);
     expect(find.byTooltip('Về màn quản lý'), findsOneWidget);
     expect(find.text('Ca của Minh Anh đang mở'), findsOneWidget);
     expect(tester.takeException(), isNull);

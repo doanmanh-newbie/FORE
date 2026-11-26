@@ -93,7 +93,8 @@ class AuthScaffold extends StatelessWidget {
 }
 
 /// Thẻ chọn vai trò (Chủ quán / Nhân viên) ở màn Đăng nhập.
-/// Đang chọn: nền rêu đậm, viền mù tạt, dấu tích; chưa chọn: nền xanh lá, vòng tròn rỗng.
+/// Đang chọn: nền navy, nội dung trắng, dấu tích; chưa chọn: thẻ trắng viền mảnh, hình và
+/// chữ navy, vòng tròn rỗng. Thẻ đang chọn luôn là thẻ nổi nhất (bộ Navy).
 class RoleCard extends StatelessWidget {
   const RoleCard({
     super.key,
@@ -125,12 +126,21 @@ class RoleCard extends StatelessWidget {
             curve: Curves.easeOutCubic,
             height: AppSizes.roleCardHeight,
             decoration: BoxDecoration(
-              color: selected ? AppColors.moss : AppColors.leafFixed,
+              color: selected ? AppColors.moss : AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadius.roleCard),
               border: Border.all(
-                color: selected ? AppColors.mustard : Colors.transparent,
+                color: selected ? AppColors.moss : AppColors.border,
                 width: 1.5,
               ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.moss.withValues(alpha: 0.28),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : null,
             ),
             child: Stack(
               children: [
@@ -141,21 +151,28 @@ class RoleCard extends StatelessWidget {
                   child: selected
                       ? SvgPicture.asset(AuthAssets.roleSelected,
                           width: 22, height: 22)
-                      : const TintedSvg(AuthAssets.roleUnselected,
-                          color: AppColors.white, size: 22),
+                      : TintedSvg(AuthAssets.roleUnselected,
+                          color: AppColors.textHint, size: 22),
                 ),
                 Center(
                   child: ExcludeSemantics(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Image.asset(imageAsset, width: 68, height: 68),
+                        // Hình nét trắng: chưa chọn thì tô navy để hiện trên nền trắng.
+                        ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            selected ? AppColors.white : AppColors.brand,
+                            BlendMode.srcIn,
+                          ),
+                          child: Image.asset(imageAsset, width: 68, height: 68),
+                        ),
                         const SizedBox(height: AppGaps.md),
                         Text(
                           label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppFonts.body,
-                            color: AppColors.white,
+                            color: selected ? AppColors.white : AppColors.brand,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

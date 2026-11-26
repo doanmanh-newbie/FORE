@@ -148,7 +148,7 @@ class _TeamScreenState extends State<TeamScreen> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Nhân viên'),
-          actions: const [ThemeModeToggle(color: AppColors.white)],
+          actions: const [ThemeModeToggle()],
         ),
         body: ErrorRetry(
           message: _accessError!,
@@ -165,7 +165,7 @@ class _TeamScreenState extends State<TeamScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nhân viên'),
-        actions: const [ThemeModeToggle(color: AppColors.white)],
+        actions: const [ThemeModeToggle()],
       ),
       floatingActionButton: FloatingActionButton.extended(
         // Nút nổi = hành động chính của màn: viên thuốc mù tạt.

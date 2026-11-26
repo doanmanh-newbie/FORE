@@ -3236,8 +3236,13 @@ create or replace function _stamp_account_kind() returns trigger
 language plpgsql security definer set search_path = public, auth as $$
 begin
   if not (coalesce(new.raw_app_meta_data, '{}'::jsonb) ? 'fore_account_kind') then
+    -- Đăng nhập Google/Facebook không gửi account_kind: tài khoản tạo theo đường đó là chủ quán
+    -- (nhân viên luôn do luồng đăng ký nhân viên tạo, có account_kind = 'staff').
     new.raw_app_meta_data := coalesce(new.raw_app_meta_data, '{}'::jsonb)
-      || jsonb_build_object('fore_account_kind', new.raw_user_meta_data->>'account_kind');
+      || jsonb_build_object('fore_account_kind', coalesce(
+           new.raw_user_meta_data->>'account_kind',
+           case when new.raw_app_meta_data->>'provider' in ('google', 'facebook')
+                then 'owner' end));
   end if;
   return new;
 end $$;

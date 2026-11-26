@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../../../app/app_routes.dart';
@@ -7,6 +8,8 @@ import '../../../core/design/primary_button.dart';
 import '../../../core/design/spacing.dart';
 import '../../../core/design/typography.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/permissions/app_permissions.dart';
+import '../../../core/permissions/permission_setup.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/notify.dart';
 import '../../auth/application/session_controller.dart';
@@ -33,6 +36,45 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
   final _email = TextEditingController();
   final _phone = TextEditingController();
   final _address = TextEditingController();
+  bool _locating = false;
+
+  /// Lấy tọa độ hiện tại (sau màn giải thích quyền vị trí) và điền vào địa chỉ:
+  /// ô trống thì điền tọa độ, đã có chữ thì thêm tọa độ trong ngoặc để mở bản đồ chính xác.
+  Future<void> _useLocation() async {
+    if (!await ensurePermission(context, AppPermission.location)) return;
+    if (!mounted) return;
+    setState(() => _locating = true);
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        if (mounted) {
+          showNotice(context, 'Định vị của máy đang tắt. Bật GPS rồi thử lại.',
+              kind: NoticeKind.error);
+        }
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+      final coords =
+          '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}';
+      final current = _address.text.trim();
+      _address.text = current.isEmpty ? coords : '$current ($coords)';
+      if (mounted) {
+        showNotice(context, 'Đã thêm tọa độ quán vào địa chỉ.',
+            kind: NoticeKind.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        showNotice(context, 'Chưa lấy được vị trí. Thử lại ở nơi thoáng hơn.',
+            kind: NoticeKind.error);
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
   bool _openDaily = true;
   TimeOfDay _open = const TimeOfDay(hour: 6, minute: 0);
   TimeOfDay _close = const TimeOfDay(hour: 22, minute: 0);
@@ -156,6 +198,21 @@ class _ShopProfileScreenState extends State<ShopProfileScreen> {
                     label: 'Địa chỉ hiển thị *',
                     controller: _address,
                     enabled: canEdit),
+                if (canEdit)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _locating ? null : _useLocation,
+                      icon: _locating
+                          ? const SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.my_location_rounded, size: 18),
+                      label: Text(_locating
+                          ? 'Đang lấy vị trí…'
+                          : 'Dùng vị trí hiện tại'),
+                    ),
+                  ),
                 const SizedBox(height: 12),
                 AppTextField(
                     label: 'Số điện thoại quán',

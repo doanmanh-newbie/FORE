@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/app_theme.dart';
 import '../theme/theme_mode_toggle.dart';
 
-/// Đầu trang của màn phụ (đẩy lên từ tab): nền rêu bo góc dưới, nút quay lại,
-/// tiêu đề trắng, dòng mô tả trắng mờ. Màu cố định ở cả hai chế độ.
+/// Đầu trang của màn phụ (đẩy lên từ tab), bộ Navy: nền sáng liền thân trang, nút quay
+/// lại tròn trắng, tiêu đề mực đậm, dòng mô tả chữ phụ.
 class ScreenHeader extends StatelessWidget {
   const ScreenHeader(
       {super.key,
@@ -23,28 +22,27 @@ class ScreenHeader extends StatelessWidget {
   final double? maxContentWidth;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.moss,
-          borderRadius:
-              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
-        ),
+  Widget build(BuildContext context) => ColoredBox(
+        color: AppColors.background,
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 6, 12, 18),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: _Constrain(
                 maxWidth: maxContentWidth,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton(
-                      tooltip: 'Quay lại',
-                      onPressed:
-                          onBack ?? () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.arrow_back_rounded,
-                          color: AppColors.white),
+                    _Circle(
+                      child: IconButton(
+                        tooltip: 'Quay lại',
+                        color: AppColors.textPrimary,
+                        onPressed:
+                            onBack ?? () => Navigator.of(context).maybePop(),
+                        icon: const Icon(Icons.arrow_back_rounded),
+                      ),
                     ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 8),
@@ -52,15 +50,20 @@ class ScreenHeader extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(title,
-                                style: AppTextStyles.panelTitle
-                                    .copyWith(fontSize: 22, height: 1.2)),
+                                style: TextStyle(
+                                  fontFamily: AppFonts.body,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  height: 1.2,
+                                )),
                             if (subtitle != null) ...[
                               const SizedBox(height: 4),
                               Text(subtitle!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: AppFonts.body,
                                     fontSize: 13,
-                                    color: AppColors.onDarkMuted,
+                                    color: AppColors.textSecondary,
                                     height: 1.4,
                                   )),
                             ],
@@ -68,11 +71,31 @@ class ScreenHeader extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const ThemeModeToggle(color: AppColors.white),
+                    const SizedBox(width: 8),
+                    _Circle(
+                        child: ThemeModeToggle(color: AppColors.textPrimary)),
                   ],
                 )),
           ),
         ),
+      );
+}
+
+/// Nút tròn nền trắng viền mảnh, cùng kiểu với đầu trang các tab chính.
+class _Circle extends StatelessWidget {
+  const _Circle({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Center(child: child),
       );
 }
 

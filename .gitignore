@@ -34,3 +34,12 @@ service-account*.json
 supabase/.env
 supabase/functions/.env
 supabase/.temp/
+
+# File OAuth client tải từ Google Cloud (chứa client secret)
+client_secret_*.json
+
+# Rác của Kotlin/Gradle, ảnh chụp QA, trạng thái công cụ AI: không đưa lên repo
+.kotlin/
+artifacts/
+.superpowers/
+.impeccable/

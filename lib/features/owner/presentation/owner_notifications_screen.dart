@@ -59,12 +59,11 @@ class _OwnerNotificationsScreenState extends State<OwnerNotificationsScreen> {
       appBar: AppBar(
         title: const Text('Thông báo'),
         actions: [
-          const ThemeModeToggle(color: AppColors.white),
+          const ThemeModeToggle(),
           if (unread.isNotEmpty)
             TextButton(
               onPressed: _marking ? null : () => _markRead(unread),
-              style: TextButton.styleFrom(foregroundColor: AppColors.mustard),
-              child: Text(_marking ? 'Đang lưu…' : 'Đánh dấu tất cả đã đọc'),
+                            child: Text(_marking ? 'Đang lưu…' : 'Đánh dấu tất cả đã đọc'),
             ),
         ],
       ),

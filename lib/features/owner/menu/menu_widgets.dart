@@ -239,50 +239,56 @@ class MenuTopBar extends StatelessWidget {
   final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        // Thanh rêu bo góc dưới như các màn con khác; màu cố định ở cả hai chế độ.
-        decoration: const BoxDecoration(
-          color: AppColors.moss,
-          borderRadius:
-              BorderRadius.vertical(bottom: Radius.circular(AppRadius.panel)),
-        ),
+  Widget build(BuildContext context) => ColoredBox(
+        // Thanh sáng liền thân trang như các màn con khác (bộ Navy).
+        color: AppColors.background,
         child: SafeArea(
           bottom: false,
           child: Padding(
             padding:
-                const EdgeInsets.fromLTRB(8, 6, AppSizes.screenGutter, 14),
+                const EdgeInsets.fromLTRB(16, 8, AppSizes.screenGutter, 8),
             child: Row(
               children: [
-                if (onBack != null)
-                  IconButton(
-                    tooltip: 'Quay lại',
-                    onPressed: onBack,
-                    color: AppColors.white,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    constraints:
-                        const BoxConstraints.tightFor(width: 48, height: 48),
-                  )
-                else
-                  const SizedBox(width: 8),
-                const Text(
-                  'Fore',
+                if (onBack != null) ...[
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.cardBorder),
+                    ),
+                    child: Center(
+                      child: IconButton(
+                        tooltip: 'Quay lại',
+                        onPressed: onBack,
+                        color: AppColors.textPrimary,
+                        icon: const Icon(Icons.arrow_back_rounded),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Text(
+                  'Thực đơn',
                   style: TextStyle(
                     fontFamily: AppFonts.body,
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
+                const SizedBox(width: 12),
                 const Spacer(),
                 Flexible(
                   child: Text(
                     menuShopName(context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppFonts.body,
                       fontSize: 12,
-                      color: AppColors.onDarkMuted,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

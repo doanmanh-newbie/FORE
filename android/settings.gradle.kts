@@ -23,6 +23,8 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.4.0" apply false
     // Firebase (push FCM). Chỉ áp dụng ở app/build.gradle.kts khi có google-services.json.
     id("com.google.gms.google-services") version "4.4.2" apply false
+    // Crashlytics: tải mapping/ký hiệu khi build release. Cùng điều kiện google-services.json.
+    id("com.google.firebase.crashlytics") version "3.0.4" apply false
 }
 
 include(":app")

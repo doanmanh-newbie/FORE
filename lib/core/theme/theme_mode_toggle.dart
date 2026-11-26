@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Chế độ sáng/tối của cả app, lưu trên thiết bị. Mặc định theo hệ thống.
-final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.system);
+/// Chế độ sáng/tối của cả app, lưu trên thiết bị. Mặc định nền sáng (không theo hệ thống);
+/// người dùng tự chuyển sang tối bằng [ThemeModeToggle].
+final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 
 const _key = 'theme.mode.v1';
 
@@ -10,7 +11,7 @@ const _key = 'theme.mode.v1';
 Future<void> loadThemeMode() async {
   final saved = (await SharedPreferences.getInstance()).getString(_key);
   themeModeNotifier.value = ThemeMode.values
-      .firstWhere((m) => m.name == saved, orElse: () => ThemeMode.system);
+      .firstWhere((m) => m.name == saved, orElse: () => ThemeMode.light);
 }
 
 /// Nút đổi sáng/tối, gắn ở đầu trang mọi màn chức năng.

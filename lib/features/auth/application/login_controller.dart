@@ -24,7 +24,17 @@ class LoginController extends ChangeNotifier with NotifyWhenAlive {
   static const _passwordValidator = RequiredValidator('Nhập mật khẩu.');
 
   bool _loading = false;
-  bool get loading => _loading;
+
+  /// Đang đăng nhập (email hoặc Google/Facebook): khóa cả form.
+  bool get loading => _loading || _socialLoading != null;
+
+  /// Chỉ nút email/mật khẩu đang quay.
+  bool get passwordLoading => _loading;
+
+  SocialProvider? _socialLoading;
+
+  /// Nút Google/Facebook đang chờ (để quay đúng nút đó).
+  SocialProvider? get socialLoading => _socialLoading;
 
   String? _emailError;
   String? get emailError => _emailError;
@@ -58,6 +68,29 @@ class LoginController extends ChangeNotifier with NotifyWhenAlive {
       return false;
     } finally {
       _loading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Đăng nhập bằng Google/Facebook. Trả `true` nếu đã có phiên; người dùng tự hủy thì
+  /// trả `false` và không hiện lỗi.
+  Future<bool> signInWithSocial(SocialProvider provider) async {
+    if (loading) return false;
+    _emailError = null;
+    _passwordError = null;
+    _formError = null;
+    _socialLoading = provider;
+    notifyListeners();
+    try {
+      final user = await _repository.signInWithSocial(provider);
+      if (user == null) return false;
+      _telemetry.trackLogin();
+      return true;
+    } on AppFailure catch (f) {
+      _formError = f.userMessage;
+      return false;
+    } finally {
+      _socialLoading = null;
       notifyListeners();
     }
   }

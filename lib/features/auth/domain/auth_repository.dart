@@ -1,6 +1,15 @@
 import 'auth_models.dart';
 import 'staff_contact.dart';
 
+/// Nhà cung cấp đăng nhập ngoài cho chủ quán.
+enum SocialProvider {
+  google('Google'),
+  facebook('Facebook');
+
+  const SocialProvider(this.label);
+  final String label;
+}
+
 /// Hợp đồng truy cập tài khoản. Controller và màn hình chỉ biết lớp này,
 /// không biết Supabase. Nhờ vậy:
 ///  - test dùng được bản giả (không cần mạng),
@@ -16,6 +25,11 @@ abstract interface class AuthRepository {
   Stream<String?> get userIdChanges;
 
   Future<AuthUser> signIn({required String email, required String password});
+
+  /// Đăng nhập (hoặc tạo tài khoản chủ quán lần đầu) bằng Google/Facebook.
+  /// Trả `null` nếu người dùng tự hủy giữa chừng, hoặc trên web khi trang chuyển sang
+  /// nhà cung cấp (phiên về sau qua [userIdChanges]).
+  Future<AuthUser?> signInWithSocial(SocialProvider provider);
 
   /// Tạo tài khoản chủ quán (email + mật khẩu). Trả về `true` nếu đã đăng nhập luôn
   /// (Supabase tắt xác nhận email), `false` nếu phải xác nhận email rồi mới đăng nhập.

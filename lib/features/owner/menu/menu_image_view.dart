@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/permissions/app_permissions.dart';
+import '../../../core/permissions/permission_setup.dart';
+
 import '../../../core/design/colors.dart';
 import '../../../core/design/typography.dart';
 import 'menu_image_service.dart';
@@ -87,6 +90,17 @@ class _MenuImagePageState extends State<MenuImagePage> {
   Future<void> _pick(MenuImageSource source) async {
     final service = context.read<MenuImageService>();
     setState(() => _permissionDenied = false);
+    // Giải thích lý do trước khi hệ thống hỏi quyền camera / thư viện ảnh.
+    final allowed = await ensurePermission(
+        context,
+        source == MenuImageSource.camera
+            ? AppPermission.camera
+            : AppPermission.photos);
+    if (!mounted) return;
+    if (!allowed) {
+      setState(() => _permissionDenied = true);
+      return;
+    }
     try {
       final image = await service.pick(source);
       if (image == null || !mounted) return;

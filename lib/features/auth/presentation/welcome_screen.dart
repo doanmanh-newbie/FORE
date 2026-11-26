@@ -13,10 +13,12 @@ import '../../shift/application/shift_controller.dart';
 import '../../shop/application/auto_join.dart';
 import '../../shop/domain/shop_repository.dart';
 import '../application/login_controller.dart';
+import '../domain/auth_repository.dart';
 import '../application/session_controller.dart';
 import 'forgot_password_dialog.dart';
 import 'staff_login_panel.dart';
 import 'widgets/auth_ui.dart';
+import 'widgets/social_sign_in_buttons.dart';
 
 enum _Mode { owner, staff }
 
@@ -91,6 +93,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (ok) await _afterSignIn();
   }
 
+  /// Google/Facebook: tài khoản mới được tạo là chủ quán, đi tiếp tạo quán như đăng ký thường.
+  Future<void> _submitSocial(SocialProvider provider) async {
+    final login = context.read<LoginController>();
+    if (_sessionError != null) setState(() => _sessionError = null);
+    final ok = await login.signInWithSocial(provider);
+    if (ok && mounted) await _afterSignIn();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
@@ -145,6 +155,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   password: _password,
                   sessionError: _sessionError,
                   onSubmit: _submitOwner,
+                  onSocial: _submitSocial,
                 ),
               _Mode.staff => _StaffForm(
                   key: const ValueKey('staff'),
@@ -176,6 +187,7 @@ class _PasswordForm extends StatelessWidget {
     required this.password,
     required this.sessionError,
     required this.onSubmit,
+    this.onSocial,
   });
 
   final bool isOwner;
@@ -183,6 +195,7 @@ class _PasswordForm extends StatelessWidget {
   final TextEditingController password;
   final String? sessionError;
   final VoidCallback onSubmit;
+  final ValueChanged<SocialProvider>? onSocial;
 
   @override
   Widget build(BuildContext context) {
@@ -232,11 +245,19 @@ class _PasswordForm extends StatelessWidget {
         LoadingButton(
           label: 'Đăng nhập  →',
           loadingLabel: 'Đang đăng nhập',
-          loading: c.loading,
-          onPressed: onSubmit,
+          loading: c.passwordLoading,
+          onPressed: c.loading ? null : onSubmit,
           height: AppSizes.pillButtonHeight,
           textStyle: AppTextStyles.pillButton,
         ),
+        if (onSocial != null) ...[
+          const SizedBox(height: AppGaps.xl),
+          SocialSignInButtons(
+            onPressed: onSocial!,
+            loading: c.socialLoading,
+            enabled: !c.loading,
+          ),
+        ],
         const SizedBox(height: AppGaps.md),
         if (isOwner)
           AuthPromptLink(

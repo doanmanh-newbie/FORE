@@ -1,4 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Quyền app dùng. Mỗi quyền nhạy cảm đều được xin tại chỗ (màn giải thích trước khi
+         hệ thống hỏi) và có thể xem/đổi ở Thêm > Quyền truy cập. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Thông báo đẩy (Android 13+): ca lệch, lời mời, đối soát. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Camera: chụp ảnh món cho thực đơn. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Thư viện ảnh: chọn ảnh món có sẵn (Android 13+ / cũ hơn). -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <!-- Vị trí: lấy tọa độ quán ở Hồ sơ quán (chỉ khi đang dùng app). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="fore"
         android:name="${applicationName}"
@@ -24,6 +39,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Deep link đăng nhập do Supabase (app_links) xử lý. Tắt deep linking sẵn có của Flutter,
+                 nếu không Flutter coi vn.fore.app://login-callback?code=... là một route và đẩy app về màn đầu. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+            <!-- Quay lại app sau khi đăng nhập Google/Facebook trên trình duyệt (Supabase OAuth). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="vn.fore.app" android:host="login-callback"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

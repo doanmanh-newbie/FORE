@@ -6,6 +6,8 @@ import '../../core/widgets/fore_card.dart';
 import '../../core/design/action_tile.dart';
 import '../../core/widgets/fore_action_icons.dart';
 import '../../core/widgets/page_scaffold.dart';
+import '../settings/presentation/firebase_screen.dart';
+import '../settings/presentation/permissions_screen.dart';
 
 /// Tab "Thêm": ghi hao hụt, thu/chi tiền mặt, tài khoản và đăng xuất.
 /// Các việc của chủ quán (báo cáo, thực đơn, cài đặt) sẽ thêm ở đây sau; nhân viên không thấy.
@@ -133,6 +135,25 @@ class MoreView extends StatelessWidget {
                     onPressed: onSignOut, child: const Text('Đăng xuất')),
               ],
             ),
+          ),
+          const SizedBox(height: 24),
+          Text('Ứng dụng', style: AppTextStyles.sectionHeading),
+          const SizedBox(height: 12),
+          ActionTile(
+            icon: Icon(Icons.verified_user_outlined, color: AppColors.ink),
+            title: 'Quyền truy cập',
+            subtitle: 'Thông báo, camera, thư viện ảnh, vị trí',
+            onTap: () => Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                builder: (_) => const PermissionsScreen())),
+          ),
+          const SizedBox(height: 12),
+          ActionTile(
+            icon: Icon(Icons.local_fire_department_outlined,
+                color: AppColors.ink),
+            title: 'Kết nối Firebase',
+            subtitle: 'Thông báo đẩy, Analytics, Crashlytics',
+            onTap: () => Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                builder: (_) => const FirebaseScreen())),
           ),
         ],
       );

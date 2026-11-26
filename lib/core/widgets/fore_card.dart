@@ -36,10 +36,11 @@ class ForeCard extends StatelessWidget {
             border: Border.all(color: AppColors.cardBorder),
             boxShadow: elevated
                 ? [
+                    // Bóng mềm, lan rộng như thẻ của bản tham chiếu (bộ Navy).
                     BoxShadow(
-                      color: AppColors.shadowMedium.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      color: AppColors.shadowMedium.withValues(alpha: 0.55),
+                      blurRadius: 22,
+                      offset: const Offset(0, 6),
                     ),
                   ]
                 : null,
@@ -107,7 +108,7 @@ class SectionHeader extends StatelessWidget {
       );
 }
 
-/// Tiêu đề phần kiểu mới (Inter 18/700) có nút tùy chọn bên phải ("Xem tất cả").
+/// Tiêu đề phần (Newsreader 20/600, mực) có nút tùy chọn bên phải ("Xem tất cả").
 class ForeSectionTitle extends StatelessWidget {
   const ForeSectionTitle({super.key, required this.title, this.trailing});
 
@@ -121,7 +122,7 @@ class ForeSectionTitle extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.appBarTitle.copyWith(color: AppColors.brand),
+              style: AppTextStyles.sectionHeading,
             ),
           ),
           if (trailing != null) trailing!,
