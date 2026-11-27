@@ -64,6 +64,13 @@ abstract interface class AuthRepository {
 
   Future<void> sendPasswordReset(String email);
 
+  /// Phát mỗi khi app được mở từ link "đặt lại mật khẩu" trong email (đã có phiên tạm),
+  /// để hiện màn đặt mật khẩu mới.
+  Stream<void> get passwordRecoveries;
+
+  /// Đặt mật khẩu mới cho người đang đăng nhập (dùng sau link đặt lại mật khẩu).
+  Future<void> updatePassword(String newPassword);
+
   /// Hồ sơ trong quán của người đang đăng nhập; `null` nếu chưa được thêm.
   Future<Profile?> fetchProfile();
 }

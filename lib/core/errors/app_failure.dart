@@ -99,6 +99,14 @@ class SocialSignInFailure extends AppFailure {
   final Object? detail;
 }
 
+/// Máy chủ trả lỗi 5xx (vd Supabase không gửi được email). Khác mất mạng: thử lại chưa chắc được.
+class ServerFailure extends AppFailure {
+  const ServerFailure([this.detail]) : super('SERVER_ERROR');
+
+  /// Chi tiết kỹ thuật để ghi log, không hiện cho người dùng.
+  final Object? detail;
+}
+
 class UnknownFailure extends AppFailure {
   const UnknownFailure([this.detail]) : super('UNKNOWN');
 

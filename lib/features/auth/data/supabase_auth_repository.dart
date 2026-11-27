@@ -175,7 +175,19 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendPasswordReset(String email) =>
-      _guard(() => _client.auth.resetPasswordForEmail(email));
+      // Link trong email mở thẳng app (deep link), không về Site URL.
+      _guard(() => _client.auth.resetPasswordForEmail(email,
+          redirectTo: kIsWeb ? null : AppConfig.oauthRedirectUrl));
+
+  @override
+  Stream<void> get passwordRecoveries => _client.auth.onAuthStateChange
+      .where((c) => c.event == AuthChangeEvent.passwordRecovery)
+      .map((_) {});
+
+  @override
+  Future<void> updatePassword(String newPassword) => _guard(() async {
+        await _client.auth.updateUser(UserAttributes(password: newPassword));
+      });
 
   @override
   Future<Profile?> fetchProfile() => _guard(() async {
@@ -259,7 +271,12 @@ class SupabaseAuthRepository implements AuthRepository {
       return await action();
     } on AppFailure {
       rethrow;
-    } on AuthRetryableFetchException {
+    } on AuthRetryableFetchException catch (e) {
+      // Có mã trạng thái (5xx) là máy chủ trả lỗi, không phải mất mạng.
+      if (e.statusCode != null) {
+        debugPrint('Fore auth: máy chủ lỗi ${e.statusCode}: ${e.message}');
+        throw ServerFailure(e);
+      }
       throw const NoNetworkFailure();
     } on AuthWeakPasswordException {
       throw const WeakPasswordFailure();
