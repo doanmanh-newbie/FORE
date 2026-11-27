@@ -1,0 +1,8 @@
+{
+  "name": "fore-sql-tests",
+  "private": true,
+  "type": "module",
+  "description": "Chạy database/tests/*.sql trên PGlite (Postgres WASM) khi máy không có psql/Docker.",
+  "scripts": { "test": "node run.mjs" },
+  "dependencies": { "@electric-sql/pglite": "0.5.17" }
+}
