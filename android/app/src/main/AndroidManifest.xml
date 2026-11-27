@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
-        android:label="fore"
+        android:label="Fore"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
@@ -56,6 +56,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Bật đăng ký push theo Firebase Installation ID (register()/onRegistered của
+             firebase_messaging 17). Thiếu dòng này register() báo "API disabled". -->
+        <meta-data
+            android:name="firebase_messaging_installation_id_enabled"
+            android:value="true" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
