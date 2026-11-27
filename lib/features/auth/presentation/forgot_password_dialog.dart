@@ -37,9 +37,16 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
     final c = context.watch<ForgotPasswordController>();
     return AlertDialog(
       title: const Text('Quên mật khẩu'),
-      content: c.sent
-          ? const Text('Đã gửi. Kiểm tra hộp thư để đặt lại mật khẩu.')
-          : AppTextField(
+      // Column co theo nội dung: không có nó hộp thoại kéo dài gần hết màn hình.
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (c.sent)
+            const Text(
+                'Đã gửi. Mở email trên điện thoại này và bấm liên kết để đặt mật khẩu mới.')
+          else
+            AppTextField(
               label: 'Email',
               controller: _email,
               errorText: c.error,
@@ -47,6 +54,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
               keyboardType: TextInputType.emailAddress,
               onSubmitted: () => c.submit(_email.text),
             ),
+        ],
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

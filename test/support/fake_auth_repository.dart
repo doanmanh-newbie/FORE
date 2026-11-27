@@ -148,6 +148,22 @@ class FakeAuthRepository implements AuthRepository {
     if (failure != null) throw failure!;
   }
 
+  final _recoveries = StreamController<void>.broadcast();
+  String? updatedPassword;
+
+  /// Mô phỏng app được mở từ link đặt lại mật khẩu.
+  void emitPasswordRecovery() => _recoveries.add(null);
+
+  @override
+  Stream<void> get passwordRecoveries => _recoveries.stream;
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    await _wait();
+    if (failure != null) throw failure!;
+    updatedPassword = newPassword;
+  }
+
   @override
   Future<Profile?> fetchProfile() async {
     await _wait();

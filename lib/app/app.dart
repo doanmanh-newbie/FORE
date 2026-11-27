@@ -18,6 +18,7 @@ import '../core/remote_config/app_config_repository.dart';
 import '../core/remote_config/remote_config_controller.dart';
 import '../core/remote_config/remote_config_gate.dart';
 import '../core/telemetry/telemetry_repository.dart';
+import '../features/auth/presentation/password_recovery_listener.dart';
 import '../features/auth/application/session_controller.dart';
 import '../features/auth/domain/auth_models.dart';
 import '../features/auth/domain/auth_repository.dart';
@@ -38,6 +39,9 @@ import 'app_routes.dart';
 
 /// Gốc của app. Nhận các repository từ ngoài vào (dependency injection):
 /// `main.dart` truyền bản Supabase, test truyền bản giả.
+/// Navigator gốc: để các listener đặt phía trên Navigator (vd link đặt lại mật khẩu) mở được hộp thoại.
+final appNavigatorKey = GlobalKey<NavigatorState>();
+
 class ForeApp extends StatelessWidget {
   const ForeApp({
     super.key,
@@ -179,9 +183,12 @@ class ForeApp extends StatelessWidget {
           theme: AppTheme.light(),
           darkTheme: AppTheme.dark(),
           themeMode: mode,
+          navigatorKey: appNavigatorKey,
           builder: (context, child) => AppPaletteSync(
-              child:
-                  RemoteConfigGate(child: PushMessageListener(child: child!))),
+              child: RemoteConfigGate(
+                  child: PasswordRecoveryListener(
+                      navigatorKey: appNavigatorKey,
+                      child: PushMessageListener(child: child!)))),
           navigatorObservers: firebaseServices?.navigatorObservers ?? const [],
           initialRoute: AppRoutes.splash,
           onGenerateRoute: AppRoutes.generate,
